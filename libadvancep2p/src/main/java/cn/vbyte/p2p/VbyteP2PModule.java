@@ -257,13 +257,12 @@ public final class VbyteP2PModule {
         System.loadLibrary("event");
         // 测试用
         // System.loadLibrary("framework");
-        System.loadLibrary("p2pmodule");
-        /*
+        // System.loadLibrary("p2pmodule");
         if(soFilePath == "p2pmodule") {
             System.loadLibrary("p2pmodule");
         } else {
             System.load(soFilePath);
-        } */
+        }
 
         _pointer = this._construct();
         if (_pointer == 0) {

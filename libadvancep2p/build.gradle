@@ -2,8 +2,8 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
-group = 'cn.vbyte.cn'
-version = '1.0.1'
+group = 'cn.vbyte.p2p'
+version = '1.0.2'
 
 android {
     compileSdkVersion 23

@@ -7,17 +7,7 @@ VbyteP2P Android SDK
 
 如果您的项目是一个使用gradle编译的AndroidStudio项目，那么集成是非常简单的。
 
-- 首先，在buildscript的repositories里面加入mavenCenter，因为我们的库是公开在maven central的
-```
-buildscript {
-    repositories {
-        jcenter()
-        maven {
-            url 'http://dl.bintray.com/vbyte/maven'  // 暂时的，还没用
-        }
-    }
-}
-```
+- 首先在[devcenter][]上注册帐号，创建应用，创建应用时要写对包名。然后得到app id,app key与app secret key
 - 然后添加依赖，随后等gradle同步之后，即可使用该SDK的各种接口
 ```
 dependencies {
@@ -26,12 +16,33 @@ dependencies {
     compile 'cn.vbyte.p2p:libadvancep2p:1.0.1'  
 }
 ```
+- 在应用启动之初，启动VbyteP2PModule
+```java
+// 初始化VbyteP2PModule的相关变量，这是Android sample的样例
+final String APP_ID = "577cdcabe0edd1325444c91f";
+final String APP_KEY = "G9vjcbxMYZ5ybgxy";
+final String APP_SECRET = "xdAEKlyF9XIjDnd9IwMw2b45b4Fq9Nq9";
+
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+
+    // 初始化P2P模块
+    try {
+        VbyteP2PModule.create(this.getBaseContext(), APP_ID, APP_KEY, APP_SECRET);
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    // ... 
+
+}
+```
 
 ### 传统的Eclipse编译
 
 如果您的项目是一个传统的Eclipse项目，那可能要稍微麻烦一点。
-- 首先，下载libevent.so,libstun.so,libp2pstream.so，将其放在项目根目录的libs/armeabi-v7a/下面
-- 然后，下载libp2p.jar、libvbytep2p.jar文件，放在libs/下面，并添加到编译依赖包里面
+- 首先，下载[libevent.so][]、[libstun.so][]、[libp2pstream.so][]，将其放在项目根目录的libs/armeabi-v7a/下面
+- 然后，下载[libp2p.jar][]、[libadvancep2p.jar][]文件，放在libs/下面，并添加到编译依赖包里面
 - 以上完成后，即可使用该SDK里面的API
 
 ## 文档
@@ -129,3 +140,10 @@ public Myextends Handler {
 * **Error.UNKNOWN_PACKET**: 收到一个未知类型的包，将忽略
 * **Error.INVALID_PACKET**: 收到一个数据不一致的包，将忽略
 * **Error.INTERNAL**: 内部错误
+
+[libevent.so]: http://www.vbyte.cn/app/android-lib/1.0.2/libs/armeabi-v7a/libevent.so
+[libstun.so]: http://www.vbyte.cn/app/android-lib/1.0.2/libs/armeabi-v7a/libstun.so
+[libp2pmodule.so]: http://www.vbyte.cn/app/android-lib/1.0.2/libs/armeabi-v7a/libp2pmodule.so
+[libp2p.jar]: http://www.vbyte.cn/app/android-lib/1.0.2/libs/libp2p-release.jar
+[libadvancep2p.jar]: http://www.vbyte.cn/app/android-lib/1.0.2/libs/libadvancep2p-release.jar
+[devcenter]: http://devcenter.vbyte.cn

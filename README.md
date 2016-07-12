@@ -41,7 +41,7 @@ protected void onCreate(Bundle savedInstanceState) {
 ### 传统的Eclipse编译
 
 如果您的项目是一个传统的Eclipse项目，那可能要稍微麻烦一点。
-- 首先，下载[libevent.so][]、[libstun.so][]、[libp2pstream.so][]，将其放在项目根目录的libs/armeabi-v7a/下面
+- 首先，下载[libevent.so][]、[libstun.so][]、[libp2pmodule.so][]，将其放在项目根目录的libs/armeabi-v7a/下面
 - 然后，下载[libp2p.jar][]、[libadvancep2p.jar][]文件，放在libs/下面，并添加到编译依赖包里面
 - 以上完成后，即可使用该SDK里面的API
 
@@ -141,9 +141,9 @@ public Myextends Handler {
 * **Error.INVALID_PACKET**: 收到一个数据不一致的包，将忽略
 * **Error.INTERNAL**: 内部错误
 
-[libevent.so]: http://www.vbyte.cn/app/android-lib/1.0.2/libs/armeabi-v7a/libevent.so
-[libstun.so]: http://www.vbyte.cn/app/android-lib/1.0.2/libs/armeabi-v7a/libstun.so
-[libp2pmodule.so]: http://www.vbyte.cn/app/android-lib/1.0.2/libs/armeabi-v7a/libp2pmodule.so
-[libp2p.jar]: http://www.vbyte.cn/app/android-lib/1.0.2/libs/libp2p-release.jar
-[libadvancep2p.jar]: http://www.vbyte.cn/app/android-lib/1.0.2/libs/libadvancep2p-release.jar
+[libevent.so]: http://www.vbyte.cn/app/android-lib/1.0.3/libs/armeabi-v7a/libevent.so
+[libstun.so]: http://www.vbyte.cn/app/android-lib/1.0.3/libs/armeabi-v7a/libstun.so
+[libp2pmodule.so]: http://www.vbyte.cn/app/android-lib/1.0.3/libs/armeabi-v7a/libp2pmodule.so
+[libp2p.jar]: http://www.vbyte.cn/app/android-lib/1.0.3/libs/libp2p-release.jar
+[libadvancep2p.jar]: http://www.vbyte.cn/app/android-lib/1.0.3/libs/libadvancep2p-release.jar
 [devcenter]: http://devcenter.vbyte.cn

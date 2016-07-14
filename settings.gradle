@@ -1,1 +1,1 @@
-include ':libadvancep2p'
+include ':libp2pimpl'

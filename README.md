@@ -13,7 +13,7 @@ VbyteP2P Android SDK
 dependencies {
     // 加入下面依赖
     compile 'cn.vbyte.p2p:libp2p:1.0.0'  
-    compile 'cn.vbyte.p2p:libadvancep2p:1.0.3'  
+    compile 'cn.vbyte.p2p:libp2pimpl:1.0.0'  
 }
 ```
 - 在应用启动之初，启动VbyteP2PModule
@@ -42,7 +42,7 @@ protected void onCreate(Bundle savedInstanceState) {
 
 如果您的项目是一个传统的Eclipse项目，那可能要稍微麻烦一点。
 - 首先，下载[libevent.so][]、[libstun.so][]、[libp2pmodule.so][]，将其放在项目根目录的libs/armeabi-v7a/下面
-- 然后，下载[libp2p.jar][]、[libadvancep2p.jar][]文件，放在libs/下面，并添加到编译依赖包里面
+- 然后，下载[libp2p.jar][]、[libp2pimpl.jar][]文件，放在libs/下面，并添加到编译依赖包里面
 - 以上完成后，即可使用该SDK里面的API
 
 ## 文档
@@ -145,5 +145,5 @@ public Myextends Handler {
 [libstun.so]: http://www.vbyte.cn/app/android-lib/1.0.3/libs/armeabi-v7a/libstun.so
 [libp2pmodule.so]: http://www.vbyte.cn/app/android-lib/1.0.3/libs/armeabi-v7a/libp2pmodule.so
 [libp2p.jar]: http://www.vbyte.cn/app/android-lib/1.0.3/libs/libp2p-release.jar
-[libadvancep2p.jar]: http://www.vbyte.cn/app/android-lib/1.0.3/libs/libadvancep2p-release.jar
+[libp2pimpl.jar]: http://www.vbyte.cn/app/android-lib/1.0.3/libs/libadvancep2p-release.jar
 [devcenter]: http://devcenter.vbyte.cn

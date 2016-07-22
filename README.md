@@ -1,6 +1,8 @@
 VbyteP2P Android SDK
 ===
 
+**[demo下载][]**
+
 ## 依赖安装
 
 ### gradle编译（推荐）
@@ -141,6 +143,7 @@ public Myextends Handler {
 * **Error.INVALID_PACKET**: 收到一个数据不一致的包，将忽略
 * **Error.INTERNAL**: 内部错误
 
+[demo下载]: http://www.vbyte.cn/app/android-apk/ijkplayer-sample-all32-debug.apk
 [libevent.so]: http://www.vbyte.cn/app/android-lib/1.0.3/libs/armeabi-v7a/libevent.so
 [libstun.so]: http://www.vbyte.cn/app/android-lib/1.0.3/libs/armeabi-v7a/libstun.so
 [libp2pmodule.so]: http://www.vbyte.cn/app/android-lib/1.0.3/libs/armeabi-v7a/libp2pmodule.so

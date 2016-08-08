@@ -8,6 +8,12 @@ import android.net.Uri;
 public interface IController {
 
     /**
+     * 设置接下来即将播放的媒体的格式
+     * @param format 即将播放的媒体的格式，只能为"hls"、"flv"、"mp4"等格式
+     */
+    public void setMediaFormat(String format);
+
+    /**
      * 加载一个频道，此函数没有起始时间参数
      * @param channel 对直播是频道ID，对点播是资源链接
      * @param resolution 统一为 "UHD"

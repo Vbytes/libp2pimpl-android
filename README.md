@@ -15,7 +15,7 @@ VbyteP2P Android SDK
 dependencies {
     // 加入下面依赖
     compile 'cn.vbyte.p2p:libp2p:1.0.0'  
-    compile 'cn.vbyte.p2p:libp2pimpl:1.0.0'  
+    compile 'cn.vbyte.p2p:libp2pimpl:1.1.0'  
 }
 ```
 - 在应用启动之初，启动VbyteP2PModule
@@ -59,12 +59,12 @@ protected void onCreate(Bundle savedInstanceState) {
 
 此接口销毁P2P模块，这本身已经是一个异步操作，与create创建相对应，create应该在程序启动的时候，dismiss应该在程序退出的时候。
 
-> VbyteP2PModule.setErrorHandler(errorHandler);
+> VbyteP2PModule.setErrorHandler(errorHandler);  
 > VbyteP2PModule.setEventHandler(eventHandler);
 
 这2个接口设置一个P2P模块的错误处理器和一般事件处理器，其中errorHandler、eventHandler是一个普通的Handler，可以像下面这样实现
 ```java
-public Myextends Handler {
+public MyHandler extends Handler {
     public void handleMessage(Message msg) {   
         String instruction = (String) msg.obj;
         switch (msg.what) {   
@@ -144,9 +144,9 @@ public Myextends Handler {
 * **Error.INTERNAL**: 内部错误
 
 [demo下载]: http://www.vbyte.cn/app/android-apk/ijkplayer-sample-all32-debug.apk
-[libevent.so]: http://www.vbyte.cn/app/android-lib/1.0.3/libs/armeabi-v7a/libevent.so
-[libstun.so]: http://www.vbyte.cn/app/android-lib/1.0.3/libs/armeabi-v7a/libstun.so
-[libp2pmodule.so]: http://www.vbyte.cn/app/android-lib/1.0.3/libs/armeabi-v7a/libp2pmodule.so
-[libp2p.jar]: http://www.vbyte.cn/app/android-lib/1.0.3/libs/libp2p-release.jar
-[libp2pimpl.jar]: http://www.vbyte.cn/app/android-lib/1.0.3/libs/libadvancep2p-release.jar
+[libevent.so]: http://www.vbyte.cn/app/android-lib/1.1.0/libs/armeabi-v7a/libevent.so
+[libstun.so]: http://www.vbyte.cn/app/android-lib/1.1.0/libs/armeabi-v7a/libstun.so
+[libp2pmodule.so]: http://www.vbyte.cn/app/android-lib/1.1.0/libs/armeabi-v7a/libp2pmodule.so
+[libp2p.jar]: http://www.vbyte.cn/app/android-lib/1.1.0/libs/libp2p-release.jar
+[libp2pimpl.jar]: http://www.vbyte.cn/app/android-lib/1.1.0/libs/libadvancep2p-release.jar
 [devcenter]: http://devcenter.vbyte.cn

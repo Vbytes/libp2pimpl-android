@@ -72,16 +72,6 @@ public final class VodController extends BaseController implements IController {
         return instance;
     }
 
-    /**
-     * 销毁并释放点播控制器，必须在应用退出前主动调用
-     */
-    public static void dismiss() {
-        if (instance != null) {
-            instance.destruct();
-            instance = null;
-        }
-    }
-
     private long _pointer;
 
     private VodController() {
@@ -93,7 +83,7 @@ public final class VodController extends BaseController implements IController {
      * @param url 资源链接，主要为点播调用
      * @param resolution 统一为 "UHD"
      * @param startTime 视频的起始位置，以秒为单位
-     * @return uri 播放器可打开的uri，可能是个文件地址，也可能是个http链接
+     * @return
      */
     @Override
     public Uri load(String url, String resolution, double startTime) {
@@ -106,10 +96,6 @@ public final class VodController extends BaseController implements IController {
      */
     public int getDuration() {
         return this._getDuration(_pointer);
-    }
-
-    public int getMediaFormat() {
-        return this._getMediaFormat(_pointer);
     }
     
     /**
@@ -145,22 +131,11 @@ public final class VodController extends BaseController implements IController {
         this._unload(_pointer);
     }
 
-    /**
-     * 销毁并退出点播控制器
-     */
-    private void destruct() {
-        this._destruct(_pointer);
-    }
-
     private native long _construct();
-
-    private native void _destruct(long pointer);
 
     private native String _load(long pointer, String url, String resolution, double startTime);
 
     private native int _getDuration(long pointer);
-
-    private native int _getMediaFormat(long pointer);
     
     private native void _seek(long _pointer, double startTime);
 

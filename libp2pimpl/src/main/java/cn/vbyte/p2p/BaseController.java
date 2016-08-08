@@ -7,11 +7,14 @@ import android.net.Uri;
  */
 public abstract class BaseController implements IController {
 
+    @Override
+    public void setMediaFormat(String format) {}
+
     /**
      * 为方便子类实现
      * @param channel 对直播是频道ID，对点播是资源链接
      * @param resolution 统一为 "UHD"
-     * @return uri 播放器可打开的uri，可能是个文件地址，也可能是个http链接
+     * @return
      */
     @Override
     public Uri load(String channel, String resolution) {

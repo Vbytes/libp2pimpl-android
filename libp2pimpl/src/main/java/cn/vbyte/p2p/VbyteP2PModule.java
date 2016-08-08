@@ -187,15 +187,6 @@ public final class VbyteP2PModule {
     public static VbyteP2PModule getInstance() {
     	return instance;
     }
-    /**
-     * 退出并销毁P2P模块。在应用退出的时候调用
-     */
-    public static void dismiss() {
-        if (instance != null) {
-            instance.destruct();
-            instance = null;
-        }
-    }
 
     /**
      * 获取native应用的版本号
@@ -257,12 +248,13 @@ public final class VbyteP2PModule {
         System.loadLibrary("event");
         // 测试用
         // System.loadLibrary("framework");
-        // System.loadLibrary("p2pmodule");
+        System.loadLibrary("p2pmodule");
+        /*
         if(soFilePath == "p2pmodule") {
             System.loadLibrary("p2pmodule");
         } else {
             System.load(soFilePath);
-        }
+        } */
 
         _pointer = this._construct();
         if (_pointer == 0) {
@@ -319,21 +311,11 @@ public final class VbyteP2PModule {
         }
     }
 
-    private void destruct() {
-        this._destruct(_pointer);
-    }
-
     /**
      * native应用初始化
      * @return 成功返回native代码里面对应对象的指针，失败返回0
      */
     private native long _construct();
-
-    /**
-     * native应用销毁
-     * @param pointer native层对应对象的指针
-     */
-    private native void _destruct(long pointer);
     
     /**
      * 设置context

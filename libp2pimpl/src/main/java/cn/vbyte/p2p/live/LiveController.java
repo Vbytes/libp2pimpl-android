@@ -54,20 +54,15 @@ public final class LiveController extends BaseController implements IController 
         return instance;
     }
 
-    /**
-     * 销毁直播控制器，必须在应用退出前显式调用
-     */
-    public static void dismiss() {
-        if (instance != null) {
-            instance.destruct();
-            instance = null;
-        }
-    }
-
     private long _pointer;
 
     private LiveController() {
         _pointer = _construct();
+    }
+
+    @Override
+    public void setMediaFormat(String format) {
+        this._setMediaFormat(_pointer, format);
     }
 
     /**
@@ -75,7 +70,7 @@ public final class LiveController extends BaseController implements IController 
      * @param channel 直播流频道ID
      * @param resolution 统一为 "UHD"
      * @param startTime 视频的起始位置，以秒为单位
-     * @return uri 播放器可打开的uri，可能是个文件地址，也可能是个http链接
+     * @return
      */
     @Override
     public Uri load(String channel, String resolution, double startTime) {
@@ -92,13 +87,9 @@ public final class LiveController extends BaseController implements IController 
         this._unload(_pointer);
     }
 
-    private void destruct() {
-        this._destruct(_pointer);
-    }
-
     private native long _construct();
 
-    private native void _destruct(long pointer);
+    private native void _setMediaFormat(long pointer, String format);
 
     private native String _load(long pointer, String channel, String resolution);
 

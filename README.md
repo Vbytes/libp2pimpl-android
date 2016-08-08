@@ -1,6 +1,8 @@
 VbyteP2P Android SDK
 ===
 
+**[jcenter链接][]**
+
 **[demo下载][]**
 
 ## 依赖安装
@@ -143,10 +145,11 @@ public MyHandler extends Handler {
 * **Error.INVALID_PACKET**: 收到一个数据不一致的包，将忽略
 * **Error.INTERNAL**: 内部错误
 
+[jcenter链接]: https://bintray.com/vbyte/maven/libp2pimpl
 [demo下载]: http://www.vbyte.cn/app/android-apk/ijkplayer-sample-all32-debug.apk
 [libevent.so]: http://www.vbyte.cn/app/android-lib/1.1.0/libs/armeabi-v7a/libevent.so
 [libstun.so]: http://www.vbyte.cn/app/android-lib/1.1.0/libs/armeabi-v7a/libstun.so
 [libp2pmodule.so]: http://www.vbyte.cn/app/android-lib/1.1.0/libs/armeabi-v7a/libp2pmodule.so
-[libp2p.jar]: http://www.vbyte.cn/app/android-lib/1.1.0/libs/libp2p-release.jar
-[libp2pimpl.jar]: http://www.vbyte.cn/app/android-lib/1.1.0/libs/libadvancep2p-release.jar
+[libp2p.jar]: http://www.vbyte.cn/app/android-lib/1.0.2/libs/libp2p-release.jar
+[libp2pimpl.jar]: http://www.vbyte.cn/app/android-lib/1.1.0/libs/libp2pimpl-debug.jar
 [devcenter]: http://devcenter.vbyte.cn

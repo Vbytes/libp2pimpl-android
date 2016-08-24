@@ -167,6 +167,6 @@ public MyHandler extends Handler {
 [libevent.so]: http://www.vbyte.cn/app/android-lib/1.2.0/libs/armeabi-v7a/libevent.so
 [libstun.so]: http://www.vbyte.cn/app/android-lib/1.2.0/libs/armeabi-v7a/libstun.so
 [libp2pmodule.so]: http://www.vbyte.cn/app/android-lib/1.2.0/libs/armeabi-v7a/libp2pmodule.so
-[libp2p.jar]: http://www.vbyte.cn/app/android-lib/1.2.0/libs/libp2p-release.jar
-[libp2pimpl.jar]: http://www.vbyte.cn/app/android-lib/1.2.0/libs/libp2pimpl-debug.jar
+[libp2p.jar]: http://www.vbyte.cn/app/android-lib/1.2.0/libp2p-release.jar
+[libp2pimpl.jar]: http://www.vbyte.cn/app/android-lib/1.2.0/libp2pimpl-debug.jar
 [devcenter]: http://devcenter.vbyte.cn

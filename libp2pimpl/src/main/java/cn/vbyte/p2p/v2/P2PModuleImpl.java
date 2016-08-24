@@ -5,11 +5,12 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 
+import com.vbyte.p2p.OnLoadedListener;
 import com.vbyte.p2p.P2PHandler;
 import com.vbyte.p2p.P2PModule;
 
 import cn.vbyte.p2p.VbyteP2PModule;
-import cn.vbyte.p2p.live.LiveController;
+import cn.vbyte.p2p.LiveController;
 
 /**
  * Created by passion on 16-5-13.
@@ -51,8 +52,16 @@ public class P2PModuleImpl implements P2PModule {
 
     @Override
     public String getPlayPath(String channel) {
-        Uri uri = LiveController.getInstance().load(channel, "UHD");
-        return uri.toString();
+        return null;
+    }
+
+    @Override
+    public void getPlayPath(String channel, OnLoadedListener listener) {
+        try {
+            LiveController.getInstance().load(channel, "UHD", listener);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -83,9 +92,9 @@ public class P2PModuleImpl implements P2PModule {
         /**
          * aHander就是为了满足俊哥而弄的代理
          */
-        Handler aHandler = new Handler() {
+        Handler aHandler = new Handler(new Handler.Callback() {
             @Override
-            public void handleMessage(Message msg) {
+            public boolean handleMessage(Message msg) {
                 Message message = Message.obtain();
                 message.obj = msg.obj;
                 switch (msg.what) {
@@ -119,8 +128,9 @@ public class P2PModuleImpl implements P2PModule {
                     default:
                         break;
                 }
+                return true;
             }
-        };
+        });
         if (proxy != null) {
             proxy.setEventHandler(aHandler);
             proxy.setErrorHandler(aHandler);

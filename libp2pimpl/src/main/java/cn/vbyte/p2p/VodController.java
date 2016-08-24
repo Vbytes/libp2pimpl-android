@@ -1,9 +1,9 @@
-package cn.vbyte.p2p.vod;
+package cn.vbyte.p2p;
 
 import android.net.Uri;
 
-import cn.vbyte.p2p.BaseController;
-import cn.vbyte.p2p.IController;
+import com.vbyte.p2p.IController;
+import com.vbyte.p2p.OnLoadedListener;
 
 /**
  * Created by passion on 16-1-14.
@@ -80,17 +80,39 @@ public final class VodController extends BaseController implements IController {
 
     /**
      * 从随机的某时间点加载播放点播视频
-     * @param url 资源链接，主要为点播调用
-     * @param resolution 统一为 "UHD"
+     * @param channel 资源链接，主要为点播调用
+     * @param resolution 资源的清晰度，现在统一为"UHD"
      * @param startTime 视频的起始位置，以秒为单位
-     * @return
+     * @param listener 当成功load时的回调函数
+     * @throws Exception 当load/unload没有成对调用时，会抛出异常提示
      */
     @Override
-    public Uri load(String url, String resolution, double startTime) {
-        String path = this._load(_pointer, url, resolution, startTime);
-        return Uri.parse(path);
+    public void load(String channel, String resolution, double startTime, OnLoadedListener listener)
+            throws  Exception {
+        if (loadQueue.size() > 2) {
+            throw new Exception("You must forget to unload last channel!");
+        }
+        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener);
+        loadQueue.add(loadEvent);
+        if (loadQueue.size() == 1) {
+            this._load(_pointer, channel, resolution, startTime);
+        }
     }
 
+    protected void onEvent(int code, String msg) {
+        switch (code) {
+            case Event.START:
+                LoadEvent loadEvent = loadQueue.get(0);
+                Uri uri = Uri.parse(msg);
+                loadEvent.listener.onLoaded(uri);
+                break;
+        }
+    }
+
+    @Override
+    protected void loadDirectly(String url, String resolution, double startTime) {
+        this._load(_pointer, url, resolution, startTime);
+    }
     /*
     获取点播视频的总时长
      */

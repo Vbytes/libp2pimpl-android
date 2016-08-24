@@ -6,6 +6,7 @@ import android.util.Log;
 import android.os.Handler;
 
 import java.io.File;
+import java.util.List;
 
 import com.vbyte.update.*;
 
@@ -21,11 +22,11 @@ public final class VbyteP2PModule {
 
     private IFileUpdateFinished callback = new IFileUpdateFinished() {
         public void solve(boolean needUpdate, String newestFilePath, String newestVersion) {
-            if(needUpdate) {
-                File tmpFile = new File(newestFilePath);
-                tmpFile.renameTo(new File(VbyteP2PModule.mContext.getFilesDir().getAbsolutePath() + "/" + VbyteP2PModule.soFileName + ".newest.so"));
-                tmpFile.delete();
-            }
+        if(needUpdate) {
+            File tmpFile = new File(newestFilePath);
+            tmpFile.renameTo(new File(VbyteP2PModule.mContext.getFilesDir().getAbsolutePath() + "/" + VbyteP2PModule.soFileName + ".newest.so"));
+            tmpFile.delete();
+        }
         }
     };
 
@@ -235,6 +236,7 @@ public final class VbyteP2PModule {
     // 事件监听
     private Handler eventHandler = null;
     private Handler errorHandler = null;
+    private Handler vbyteHandler = new VbyteHandler();
     // native代码对应的对象实例，标准做法
     private long _pointer;
 
@@ -247,14 +249,12 @@ public final class VbyteP2PModule {
         System.loadLibrary("stun");
         System.loadLibrary("event");
         // 测试用
-        // System.loadLibrary("framework");
-        System.loadLibrary("p2pmodule");
-        /*
-        if(soFilePath == "p2pmodule") {
+        // System.loadLibrary("p2pmodule");
+        if(soFilePath.equals("p2pmodule")) {
             System.loadLibrary("p2pmodule");
         } else {
             System.load(soFilePath);
-        } */
+        }
 
         _pointer = this._construct();
         if (_pointer == 0) {
@@ -294,20 +294,49 @@ public final class VbyteP2PModule {
     }
     
     private void onEvent(int code, String msg) {
+        Log.i(TAG, "received code " + code + ", message is " + msg);
+        List<BaseController.LoadEvent> loadQueue = BaseController.loadQueue;
+        if (code == LiveController.Event.STOPPED || code == VodController.Event.STOPPED) {
+            if (!loadQueue.isEmpty()) {
+                loadQueue.remove(0);
+            }
+            if (!loadQueue.isEmpty()) {
+                BaseController.LoadEvent loadEvent = loadQueue.get(0);
+                if (loadEvent.videoType == BaseController.VIDEO_LIVE) {
+                    LiveController.getInstance().loadDirectly(loadEvent.channel, loadEvent.resolution, loadEvent.startTime);
+                } else {
+                    VodController.getInstance().loadDirectly(loadEvent.channel, loadEvent.resolution, loadEvent.startTime);
+                }
+            }
+        }
+        Message message = Message.obtain();
+        message.what = code;
+        message.obj = msg;
+        vbyteHandler.sendMessage(message);
         if (eventHandler != null) {
-            Message message = Message.obtain();
-            message.what = code;
-            message.obj = msg;
-            eventHandler.sendMessage(message);
+            eventHandler.sendMessage(Message.obtain(message));
         }
     }
 
     private void onError(int code, String msg) {
+        List<BaseController.LoadEvent> loadQueue = BaseController.loadQueue;
+        if (!loadQueue.isEmpty()) {
+            loadQueue.remove(0);
+        }
+        if (!loadQueue.isEmpty()) {
+            BaseController.LoadEvent loadEvent = loadQueue.get(0);
+            if (loadEvent.videoType == BaseController.VIDEO_LIVE) {
+                LiveController.getInstance().loadDirectly(loadEvent.channel, loadEvent.resolution, loadEvent.startTime);
+            } else {
+                VodController.getInstance().loadDirectly(loadEvent.channel, loadEvent.resolution, loadEvent.startTime);
+            }
+        }
+        Message message = Message.obtain();
+        message.what = code;
+        message.obj = msg;
+        vbyteHandler.sendMessage(message);
         if (errorHandler != null) {
-            Message message = Message.obtain();
-            message.what = code;
-            message.obj = msg;
-            errorHandler.sendMessage(message);
+            errorHandler.sendMessage(Message.obtain(message));
         }
     }
 

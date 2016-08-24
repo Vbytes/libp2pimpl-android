@@ -8,13 +8,13 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/libadvancep2p" />
+            <option value="$PROJECT_DIR$/libp2pimpl" />
           </set>
         </option>
         <option name="myModules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/libadvancep2p" />
+            <option value="$PROJECT_DIR$/libp2pimpl" />
           </set>
         </option>
       </GradleProjectSettings>

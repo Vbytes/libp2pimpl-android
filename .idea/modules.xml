@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/libadvancep2p/libadvancep2p.iml" filepath="$PROJECT_DIR$/libadvancep2p/libadvancep2p.iml" />
+      <module fileurl="file://$PROJECT_DIR$/libp2pimpl/libp2pimpl.iml" filepath="$PROJECT_DIR$/libp2pimpl/libp2pimpl.iml" />
       <module fileurl="file://$PROJECT_DIR$/libp2pimpl-android.iml" filepath="$PROJECT_DIR$/libp2pimpl-android.iml" />
     </modules>
   </component>

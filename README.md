@@ -16,8 +16,8 @@ VbyteP2P Android SDK
 ```
 dependencies {
     // 加入下面依赖
-    compile 'cn.vbyte.p2p:libp2p:1.0.0'  
-    compile 'cn.vbyte.p2p:libp2pimpl:1.1.0'  
+    compile 'cn.vbyte.p2p:libp2p:1.1.0'  
+    compile 'cn.vbyte.p2p:libp2pimpl:1.2.0'  
 }
 ```
 - 在应用启动之初，启动VbyteP2PModule
@@ -41,6 +41,23 @@ protected void onCreate(Bundle savedInstanceState) {
 
 }
 ```
+- 启动一个频道的过程如下:
+```java
+try {
+    LiveController.getInstance().load("your channel id", "UHD", new OnLoadedListener() {
+        @Override
+        public void onLoaded(Uri uri) {
+            mVideoPath = uri.toString();
+            mVideoView.setVideoURI(uri);
+            mVideoView.start();
+        }
+    });
+} catch (Exception e) {
+    // 如果打印了此exception，说明load/unload没有成对出现
+    e.printStackTrace();
+}
+```
+- 然后就可以尽情地使用IJKPlayer和我们的P2P带来的便利功能吧
 
 ### 传统的Eclipse编译
 
@@ -89,17 +106,17 @@ public MyHandler extends Handler {
 
 这2个接口是debug开关的接口，默认是打开的，在发布App时，应关闭debug。
 
-> LiveCtroller.load(channel, resolution);
+> LiveCtroller.load(channel, resolution, startTime, listener);
 
-该接口载入一个直播频道，频道为channel，分辨率为resolution的源，并使用P2P加速。该函数会返回一个URI，一般使用该URI可直接给播放器打开并播放之。
+该接口载入一个直播频道，频道为channel，分辨率为resolution的源，并使用P2P加速。该函数的最后一个参数是一个回调函数，会返回一个URI，一般使用该URI可直接给播放器打开并播放之。
 
 > LiveCtroller.unload();
 
 该接口与load相对应，用于关闭一个频道，应用同一时刻只能播放一个源，所以调用此函数会将上一个您加载的源关闭。该函数应该用在您想让播放器退出的时候。
 
-> VodCtroller.load(channel, resolution, startTime);
+> VodCtroller.load(channel, resolution, startTime, listener);
 
-该接口载入一个点播视频，频道为channel，分辨率为resolution的源，startTime是从哪一时间开始播，并使用P2P加速。该函数会返回一个URI，一般使用该URI可直接给播放器打开并播放之。
+该接口载入一个点播视频，频道为channel，分辨率为resolution的源，startTime是从哪一时间开始播，并使用P2P加速。该函数的最后一个参数是一个回调函数，会返回一个URI，一般使用该URI可直接给播放器打开并播放之。
 
 > VodCtroller.unload();
 
@@ -147,9 +164,9 @@ public MyHandler extends Handler {
 
 [jcenter链接]: https://bintray.com/vbyte/maven/libp2pimpl
 [demo下载]: http://www.vbyte.cn/app/android-apk/ijkplayer-sample-all32-debug.apk
-[libevent.so]: http://www.vbyte.cn/app/android-lib/1.1.0/libs/armeabi-v7a/libevent.so
-[libstun.so]: http://www.vbyte.cn/app/android-lib/1.1.0/libs/armeabi-v7a/libstun.so
-[libp2pmodule.so]: http://www.vbyte.cn/app/android-lib/1.1.0/libs/armeabi-v7a/libp2pmodule.so
-[libp2p.jar]: http://www.vbyte.cn/app/android-lib/1.0.2/libs/libp2p-release.jar
-[libp2pimpl.jar]: http://www.vbyte.cn/app/android-lib/1.1.0/libs/libp2pimpl-debug.jar
+[libevent.so]: http://www.vbyte.cn/app/android-lib/1.2.0/libs/armeabi-v7a/libevent.so
+[libstun.so]: http://www.vbyte.cn/app/android-lib/1.2.0/libs/armeabi-v7a/libstun.so
+[libp2pmodule.so]: http://www.vbyte.cn/app/android-lib/1.2.0/libs/armeabi-v7a/libp2pmodule.so
+[libp2p.jar]: http://www.vbyte.cn/app/android-lib/1.2.0/libs/libp2p-release.jar
+[libp2pimpl.jar]: http://www.vbyte.cn/app/android-lib/1.2.0/libs/libp2pimpl-debug.jar
 [devcenter]: http://devcenter.vbyte.cn

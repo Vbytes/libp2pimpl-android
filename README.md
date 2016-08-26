@@ -17,7 +17,7 @@ VbyteP2P Android SDK
 dependencies {
     // 加入下面依赖
     compile 'cn.vbyte.p2p:libp2p:1.1.0'  
-    compile 'cn.vbyte.p2p:libp2pimpl:1.2.0'  
+    compile 'cn.vbyte.p2p:libp2pimpl:1.2.1'  
 }
 ```
 - 在应用启动之初，启动VbyteP2PModule

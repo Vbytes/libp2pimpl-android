@@ -319,18 +319,6 @@ public final class VbyteP2PModule {
     }
 
     private void onError(int code, String msg) {
-        List<BaseController.LoadEvent> loadQueue = BaseController.loadQueue;
-        if (!loadQueue.isEmpty()) {
-            loadQueue.remove(0);
-        }
-        if (!loadQueue.isEmpty()) {
-            BaseController.LoadEvent loadEvent = loadQueue.get(0);
-            if (loadEvent.videoType == BaseController.VIDEO_LIVE) {
-                LiveController.getInstance().loadDirectly(loadEvent.channel, loadEvent.resolution, loadEvent.startTime);
-            } else {
-                VodController.getInstance().loadDirectly(loadEvent.channel, loadEvent.resolution, loadEvent.startTime);
-            }
-        }
         Message message = Message.obtain();
         message.what = code;
         message.obj = msg;

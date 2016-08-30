@@ -17,7 +17,7 @@ VbyteP2P Android SDK
 dependencies {
     // 加入下面依赖
     compile 'cn.vbyte.p2p:libp2p:1.1.0'  
-    compile 'cn.vbyte.p2p:libp2pimpl:1.2.1'  
+    compile 'cn.vbyte.p2p:libp2pimpl:1.2.2'  
 }
 ```
 - 在应用启动之初，启动VbyteP2PModule
@@ -73,10 +73,6 @@ try {
 > VbyteP2PModule.create("app id", "app kkey", "app secret key");
 
 此接口传入您申请的appId，appKey，appSecretKey，来完成P2P模块的载入和初始化
-
-> VbyteP2PModule.dismiss();
-
-此接口销毁P2P模块，这本身已经是一个异步操作，与create创建相对应，create应该在程序启动的时候，dismiss应该在程序退出的时候。
 
 > VbyteP2PModule.setErrorHandler(errorHandler);  
 > VbyteP2PModule.setEventHandler(eventHandler);

@@ -100,6 +100,14 @@ public final class LiveController extends BaseController implements IController 
         this._unload(_pointer);
     }
 
+    /**
+     * 获取当前播放时间，仅对flv格式有效
+     * @return 当前播放的时间点
+     */
+    public int getCurrentPlayTime() {
+        return _getCurrentPlayTime(_pointer);
+    }
+
     @Override
     protected void onEvent(int code, String msg) {
         switch (code) {
@@ -117,5 +125,5 @@ public final class LiveController extends BaseController implements IController 
 
     private native void _unload(long pointer);
 
-    private native long _cdnprobe(long pointer);
+    private native int _getCurrentPlayTime(long pointer);
 }

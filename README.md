@@ -16,8 +16,8 @@ VbyteP2P Android SDK
 ```
 dependencies {
     // 加入下面依赖
-    compile 'cn.vbyte.p2p:libp2p:1.1.0'  
-    compile 'cn.vbyte.p2p:libp2pimpl:1.2.2'  
+    compile 'cn.vbyte.p2p:libp2p:1.2.1'  
+    compile 'cn.vbyte.p2p:libp2pimpl:1.2.4'  
 }
 ```
 - 在应用启动之初，启动VbyteP2PModule
@@ -159,10 +159,10 @@ public MyHandler extends Handler {
 * **Error.INTERNAL**: 内部错误
 
 [jcenter链接]: https://bintray.com/vbyte/maven/libp2pimpl
-[demo下载]: http://www.vbyte.cn/app/android-apk/ijkplayer-sample-all32-debug.apk
-[libevent.so]: http://www.vbyte.cn/app/android-lib/1.2.0/libs/armeabi-v7a/libevent.so
-[libstun.so]: http://www.vbyte.cn/app/android-lib/1.2.0/libs/armeabi-v7a/libstun.so
-[libp2pmodule.so]: http://www.vbyte.cn/app/android-lib/1.2.0/libs/armeabi-v7a/libp2pmodule.so
-[libp2p.jar]: http://www.vbyte.cn/app/android-lib/1.2.0/libp2p-release.jar
-[libp2pimpl.jar]: http://www.vbyte.cn/app/android-lib/1.2.0/libp2pimpl-debug.jar
+[demo下载]: http://data1.vbyte.cn/pkg/ijkplayer-sample-all32-debug.apk
+[libevent.so]: http://data1.vbyte.cn/pkg/1.2.3/libs/armeabi-v7a/libevent.so
+[libstun.so]: http://data1.vbyte.cn/pkg/1.2.3/libs/armeabi-v7a/libstun.so
+[libp2pmodule.so]: http://data1.vbyte.cn/pkg/1.2.3/libs/armeabi-v7a/libp2pmodule.so
+[libp2p.jar]: http://data1.vbyte.cn/pkg/1.2.3/libp2p-release.jar
+[libp2pimpl.jar]: http://data1.vbyte.cn/pkg/1.2.3/libp2pimpl-release.jar
 [devcenter]: http://devcenter.vbyte.cn

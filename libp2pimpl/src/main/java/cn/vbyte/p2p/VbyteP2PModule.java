@@ -34,18 +34,13 @@ public final class VbyteP2PModule {
         if(HostAppUtil.isRecored(mContext)) {
             String newestFilePath = mContext.getFilesDir().getAbsolutePath() + "/" + soFileName + ".newest.so";
             String filePath = mContext.getFilesDir().getAbsolutePath() + "/" + soFileName + ".so";
-            Log.e("MyMSG", "newestfile" + newestFilePath);
-            Log.e("MyMSG", "file :" + filePath);
             File newestFile = new File(newestFilePath);
             File file = new File(filePath);
             if(newestFile.exists()) {
                 newestFile.renameTo(file);
-                Log.e("MyMSG", "replace file with downloaded newestfile last time");
             }
 
             if(file.exists()) {
-                Log.e("MyMSG", MD5Util.MD5(file));
-                Log.e("MyMSG", MD5Util.MD5(file));
                 return file.getAbsolutePath();
             }
 
@@ -294,7 +289,6 @@ public final class VbyteP2PModule {
     }
     
     private void onEvent(int code, String msg) {
-        Log.i(TAG, "received code " + code + ", message is " + msg);
         List<BaseController.LoadEvent> loadQueue = BaseController.loadQueue;
         if (code == LiveController.Event.STOPPED || code == VodController.Event.STOPPED) {
             if (!loadQueue.isEmpty()) {

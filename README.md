@@ -62,7 +62,7 @@ try {
 ### 传统的Eclipse编译
 
 如果您的项目是一个传统的Eclipse项目，那可能要稍微麻烦一点。
-- 首先，下载[archive][]，将libs下的内容放在项目根目录的libs/armeabi-v7a/下面
+- 首先，下载[archive][]，将libs下的内容放在项目根目录的libs/下面
 - 添加到编译依赖libp2p.jar、libp2pimpl.jar
 - 以上完成后，即可使用该SDK里面的API
 

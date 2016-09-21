@@ -1,11 +1,10 @@
 package cn.vbyte.p2p;
 
 import android.content.Context;
+import android.os.Environment;
 import android.os.Message;
-import android.util.Log;
 import android.os.Handler;
 
-import java.io.File;
 import java.util.List;
 
 import com.vbyte.update.*;
@@ -14,44 +13,7 @@ import com.vbyte.update.*;
  * Created by passion on 15-11-5.
  */
 public final class VbyteP2PModule {
-    private static final String TAG = "cn.vbyte.p2p";
-
-    private static String soFileName = "libp2pmodule";
-    private static String soFilePath;
-    private static Context mContext;
-
-    private IFileUpdateFinished callback = new IFileUpdateFinished() {
-        public void solve(boolean needUpdate, String newestFilePath, String newestVersion) {
-        if(needUpdate) {
-            File tmpFile = new File(newestFilePath);
-            tmpFile.renameTo(new File(VbyteP2PModule.mContext.getFilesDir().getAbsolutePath() + "/" + VbyteP2PModule.soFileName + ".newest.so"));
-            tmpFile.delete();
-        }
-        }
-    };
-
-    private static String locateSoFile() {
-        if(HostAppUtil.isRecored(mContext)) {
-            String newestFilePath = mContext.getFilesDir().getAbsolutePath() + "/" + soFileName + ".newest.so";
-            String filePath = mContext.getFilesDir().getAbsolutePath() + "/" + soFileName + ".so";
-            File newestFile = new File(newestFilePath);
-            File file = new File(filePath);
-            if(newestFile.exists()) {
-                newestFile.renameTo(file);
-            }
-
-            if(file.exists()) {
-                return file.getAbsolutePath();
-            }
-
-        }
-        return "p2pmodule";
-    }
-
-    private void checkUpdate(String updateDir, String version) {
-        CanUpdateFile soFile = new CanUpdateFile("libp2pmodule", soFilePath, updateDir, version, "http://update.vbyte.cn:8080/checkupdate");
-        (new Thread(new FileUpdate(soFile, this.callback))).start();
-    }
+    private static final String DYNAMIC_LIB_NAME = "libp2pmodule";
 
     public static class Event {
         /**
@@ -172,10 +134,7 @@ public final class VbyteP2PModule {
     public static VbyteP2PModule create(Context context, String appId, String appKey, String appSecretKey)
             throws Exception {
         if (instance == null) {
-            mContext = context;
-            soFilePath = locateSoFile();
             instance = new VbyteP2PModule(context, appId, appKey, appSecretKey);
-            instance.checkUpdate(context.getFilesDir().getAbsolutePath(), getVersion());
         }
         return instance;
     }
@@ -232,6 +191,7 @@ public final class VbyteP2PModule {
     private Handler eventHandler = null;
     private Handler errorHandler = null;
     private Handler vbyteHandler = new VbyteHandler();
+    private DynamicLibManager dynamicLibManager;
     // native代码对应的对象实例，标准做法
     private long _pointer;
 
@@ -243,13 +203,20 @@ public final class VbyteP2PModule {
 
         System.loadLibrary("stun");
         System.loadLibrary("event");
-        // 测试用
-        // System.loadLibrary("p2pmodule");
-        if(soFilePath.equals("p2pmodule")) {
+
+        dynamicLibManager = new DynamicLibManager(context);
+        String soFilePath = null;
+        try {
+            soFilePath = dynamicLibManager.locate(DYNAMIC_LIB_NAME);
+        } catch (Exception e) {
+            // 因获取不到程序版本号而导致的自动升级失败，默认使用安装时自带的
+        }
+        if(soFilePath == null) {
             System.loadLibrary("p2pmodule");
         } else {
             System.load(soFilePath);
         }
+        dynamicLibManager.checkUpdate(DYNAMIC_LIB_NAME, getVersion());
 
         _pointer = this._construct();
         if (_pointer == 0) {
@@ -259,11 +226,10 @@ public final class VbyteP2PModule {
         // TODO: 获取包名、cacheDir、diskDir等信息传入instance
         this._setContext(_pointer, context);
         String cacheDir = context.getCacheDir().getAbsolutePath();
-        Log.d(TAG, "Cache dir is " + cacheDir);
         try {
-            String diskDir = context.getExternalCacheDir().getAbsolutePath();
+            String diskDir = Environment.getExternalStorageDirectory().getAbsolutePath();
             this._setDiskDir(_pointer, diskDir);
-        } catch (NullPointerException e) {
+        } catch (Exception e) {
             this._setDiskDir(_pointer, cacheDir);
         }
         this._setCacheDir(_pointer, cacheDir);

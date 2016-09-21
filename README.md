@@ -16,8 +16,8 @@ VbyteP2P Android SDK
 ```
 dependencies {
     // 加入下面依赖
-    compile 'cn.vbyte.p2p:libp2p:1.2.1'  
-    compile 'cn.vbyte.p2p:libp2pimpl:1.2.4'  
+    compile 'cn.vbyte.p2p:libp2p:1.2.2'  
+    compile 'cn.vbyte.p2p:libp2pimpl:1.2.7'  
 }
 ```
 - 在应用启动之初，启动VbyteP2PModule
@@ -62,8 +62,8 @@ try {
 ### 传统的Eclipse编译
 
 如果您的项目是一个传统的Eclipse项目，那可能要稍微麻烦一点。
-- 首先，下载[libevent.so][]、[libstun.so][]、[libp2pmodule.so][]，将其放在项目根目录的libs/armeabi-v7a/下面
-- 然后，下载[libp2p.jar][]、[libp2pimpl.jar][]文件，放在libs/下面，并添加到编译依赖包里面
+- 首先，下载[archive][]，将libs下的内容放在项目根目录的libs/armeabi-v7a/下面
+- 添加到编译依赖libp2p.jar、libp2pimpl.jar
 - 以上完成后，即可使用该SDK里面的API
 
 ## 文档
@@ -159,10 +159,6 @@ public MyHandler extends Handler {
 * **Error.INTERNAL**: 内部错误
 
 [jcenter链接]: https://bintray.com/vbyte/maven/libp2pimpl
-[demo下载]: http://data1.vbyte.cn/pkg/ijkplayer-sample-all32-debug.apk
-[libevent.so]: http://data1.vbyte.cn/pkg/1.2.3/libs/armeabi-v7a/libevent.so
-[libstun.so]: http://data1.vbyte.cn/pkg/1.2.3/libs/armeabi-v7a/libstun.so
-[libp2pmodule.so]: http://data1.vbyte.cn/pkg/1.2.3/libs/armeabi-v7a/libp2pmodule.so
-[libp2p.jar]: http://data1.vbyte.cn/pkg/1.2.3/libp2p-release.jar
-[libp2pimpl.jar]: http://data1.vbyte.cn/pkg/1.2.3/libp2pimpl-release.jar
+[demo下载]: http://data1.vbyte.cn/apk/vbyte-demo.20160921.apk
+[archive]: http://data1.vbyte.cn/pkg/20160921.tar.gz
 [devcenter]: http://devcenter.vbyte.cn

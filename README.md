@@ -70,9 +70,9 @@ try {
 
 ### 接口API
 
-> VbyteP2PModule.create("app id", "app kkey", "app secret key");
+> VbyteP2PModule.create(context, "app id", "app kkey", "app secret key");
 
-此接口传入您申请的appId，appKey，appSecretKey，来完成P2P模块的载入和初始化
+此接口传入应用上下文以及您申请的appId，appKey，appSecretKey，来完成P2P模块的载入和初始化
 
 > VbyteP2PModule.setErrorHandler(errorHandler);  
 > VbyteP2PModule.setEventHandler(eventHandler);

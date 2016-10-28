@@ -16,7 +16,7 @@ VbyteP2P Android SDK
 ```
 dependencies {
     // 加入下面依赖
-    compile 'cn.vbyte.p2p:libp2p:1.2.4'  
+    compile 'cn.vbyte.p2p:libp2p:1.2.5'  
     compile 'cn.vbyte.p2p:libp2pimpl:1.2.7'  
 }
 ```

@@ -1,25 +1,42 @@
-VbyteP2P Android SDK
+Vbyte P2P Android SDK
 ===
 
-**[jcenter链接][]**
+vbyte云视频解决方案，可帮助用户直接使用经过大规模验证的直播流媒体分发服务,通过vbyte成熟的P2P技术大幅节省带宽，提供更优质的用户体验。开发者可通过SDK中简洁的接口快速同自有应用集成，实现Android设备上的视频P2P加速功能。
 
-**[demo下载][]**
+### 功能
 
-## 依赖安装
+- 直播、点播基本功能+P2P
+- 直播时移支持
+- HLS P2P原生支持
+- 防盗播支持
 
-### gradle编译（推荐）
+### 依赖安装
 
-如果您的项目是一个使用gradle编译的AndroidStudio项目，那么集成是非常简单的。
+#### gradle编译（推荐）
 
-- 首先在[devcenter][]上注册帐号，创建应用，创建应用时要写对包名。然后得到app id,app key与app secret key
-- 然后添加依赖，随后等gradle同步之后，即可使用该SDK的各种接口
+Android SDK托管于第三方android lib平台[jcenter][9]上，依赖部署是非常简单的。凭借这设计良好的接口，在使用上也非常方便。如果您的项目是一个使用gradle编译的AndroidStudio项目，那么集成是非常简单的。
+
+添加如下依赖，随后等gradle同步之后，即可使用该SDK的各种接口:
+
 ```
 dependencies {
     // 加入下面依赖
     compile 'cn.vbyte.p2p:libp2p:1.2.7'
-    compile 'cn.vbyte.p2p:libp2pimpl:1.2.8'
+    compile 'cn.vbyte.p2p:libp2pimpl:1.2.8'  
 }
 ```
+
+#### 传统的Eclipse编译
+
+如果您的项目是一个传统的Eclipse项目，首先建议您转换到Android Studio上面去，否则可能要麻烦一点:
+
+- 首先，下载[archive][7]，将libs下的内容放在项目根目录的libs/下面
+- 添加到编译依赖libp2p.jar、libp2pimpl.jar
+- 以上完成后，即可使用该SDK里面的API
+
+### 开始使用
+
+- 首先参考[资源管理][8]在[开发者中心][1]上注册帐号，创建应用，创建应用时要写对包名，并创建频道。然后得到app id,app key与app secret key
 - 在应用启动之初，启动VbyteP2PModule
 ```java
 // 初始化VbyteP2PModule的相关变量，这是Android sample的样例
@@ -41,7 +58,12 @@ protected void onCreate(Bundle savedInstanceState) {
 
 }
 ```
-- 启动一个频道的过程如下:
+
+#### 使用直播
+
+直播大家都很熟悉，观众一进来都是直接看到最新的直播内容，本是没有暂停、随机播放（回看）功能。但是应时移回看需求的增长，我们的SDK也提供了时移回看的方式，详细见[API文档][2]。
+
+- 启动一个直播频道的过程如下，其中第2个参数是写死的，必须为UHD；未来多码率支持可能会有HD等更多参数选择:
 ```java
 try {
     LiveController.getInstance().load("your channel id", "UHD", new OnLoadedListener() {
@@ -57,108 +79,68 @@ try {
     e.printStackTrace();
 }
 ```
-- 然后就可以尽情地使用IJKPlayer和我们的P2P带来的便利功能吧
-
-### 传统的Eclipse编译
-
-如果您的项目是一个传统的Eclipse项目，那可能要稍微麻烦一点。
-- 首先，下载[archive][]，将libs下的内容放在项目根目录的libs/下面
-- 添加到编译依赖libp2p.jar、libp2pimpl.jar
-- 以上完成后，即可使用该SDK里面的API
-
-## 文档
-
-### 接口API
-
-> VbyteP2PModule.create(context, "app id", "app kkey", "app secret key");
-
-此接口传入应用上下文以及您申请的appId，appKey，appSecretKey，来完成P2P模块的载入和初始化
-
-> VbyteP2PModule.setErrorHandler(errorHandler);  
-> VbyteP2PModule.setEventHandler(eventHandler);
-
-这2个接口设置一个P2P模块的错误处理器和一般事件处理器，其中errorHandler、eventHandler是一个普通的Handler，可以像下面这样实现
+- 退出当前直播播放频道，只需要调用unload即可
 ```java
-public MyHandler extends Handler {
-    public void handleMessage(Message msg) {   
-        String instruction = (String) msg.obj;
-        switch (msg.what) {   
-            case VbyteP2PModule.INITED:  
-                Log.d(TAG, instruction);
-                break;   
-            // ... something 
-        }   
-        super.handleMessage(msg);   
-    }  
-}
+    LiveController.getInstance().unload();
 ```
 
-> VbyteP2PModule.version();  
+#### 使用点播
 
- 该接口获取P2P模块的版本号，返回一个一`v`开头的字符串，您可以看需使用。
+点播与直播最大的不同是点播视频是固定的，包括文件大小固定、视频时长固定，有暂停、恢复、随机播放等操作。
 
-> VbyteP2PModule.enableDebug();  
-> VbyteP2PModule.disableDebug();
+- 启动一个点播频道的过程如下:
+```java
+try {
+    VodController.getInstance().load("your vod channel id", "UHD", 0, new OnLoadedListener() {
+        @Override
+        public void onLoaded(Uri uri) {
+            mVideoPath = uri.toString();
+            mVideoView.setVideoURI(uri);
+            mVideoView.start();
+        }
+    });
+} catch (Exception e) {
+    // 如果打印了此exception，说明load/unload没有成对出现
+    e.printStackTrace();
+}
+```
+- 暂停和恢复当前点播节目:
+```java
+    // 暂停当前节目
+    VodController.getInstance().pause();
+    // 恢复播放当前节目
+    VodController.getInstance().resume();
+```
+- 点播视频支持在不重启播放器的情况下随机位置播放，这在观众滑动进度条时发生，此时播放器会从进度条位置重新加载，而P2P模块能自动感知这样的seek行为，您不用为此做什么。
+- 退出当前点播播放频道，只需要调用unload即可
+```java
+    VodController.getInstance().unload();
+```
 
-这2个接口是debug开关的接口，默认是打开的，在发布App时，应关闭debug。
+#### 高级功能
 
-> LiveCtroller.load(channel, resolution, startTime, listener);
+更多高级功能诸如开启debug开关、事件监听、直播时移等请参见[Android版API][2]文档，然后就可以尽情地使用P2P SDK带来的便利功能吧！
 
-该接口载入一个直播频道，频道为channel，分辨率为resolution的源，并使用P2P加速。该函数的最后一个参数是一个回调函数，会返回一个URI，一般使用该URI可直接给播放器打开并播放之。
+### 扩展链接
 
-> LiveCtroller.unload();
+* **[Github][3]**: SDK的开源代码仓库
+* **[AndroidSample][4]**: 一个使用ijkplayer的简单样例
+* **[API Doc][2]**: 更加详细的API文档，其中包含如直播时移的高级功能
+* **[jcenter][5]**: Android SDK在jcenter上的位置
+* **[demo下载][6]**: 此即为AndroidSample已编译完成的版本，里面的内容属于[开发者中心][1]测试帐号的，欢迎试用
 
-该接口与load相对应，用于关闭一个频道，应用同一时刻只能播放一个源，所以调用此函数会将上一个您加载的源关闭。该函数应该用在您想让播放器退出的时候。
+### 技术支持
 
-> VodCtroller.load(channel, resolution, startTime, listener);
+感谢阅读本篇文档，希望能帮您尽快上手Android SDK的用法，再次欢迎您使用月光石P2P加速SDK！
 
-该接口载入一个点播视频，频道为channel，分辨率为resolution的源，startTime是从哪一时间开始播，并使用P2P加速。该函数的最后一个参数是一个回调函数，会返回一个URI，一般使用该URI可直接给播放器打开并播放之。
+*温馨提示*：如果你需要任何帮助，或有任何疑问，请[联系我们](mailto:contact@exatech.cn)。
 
-> VodCtroller.unload();
-
-该接口与load相对应，用于关闭一个点播视频，应用同一时刻只能播放一个源，所以调用此函数会将上一个您加载的源关闭。该函数应该用在您想让播放器退出的时候。
-
-### 事件
-
-#### 正常事件
-
-* **Event.INITED:** : 标志着P2P模块的创建成功
-* **Event.START**: 标志着P2P成功加载频道
-* **Event.STOP**: 表明P2P成功停止了上一个频道（上一个频道可能早被停止过了）
-* **Event.EXIT**: 表明P2P模块收到了退出信号，即将退出
-* **Event.DESTROY**: 标志着P2P模块成功销毁了自己
-* **Event.STUN_SUCCESS**: 表明P2P模块成功获取到了自己的公网地址
-* **Event.JOIN_SUCCESS**: 表明P2P模块在载入一个频道的过程中成功加入了P2P的大军
-* **Event.HTBT_SUCCESS**: 表明此时当前程序实例没有掉队
-* **Event.BYE_SUCCESS**: 表明当前程序实例要退出P2P了，这在播放器停止播放，程序调用unload之后会发生
-* **Event.NEW_PARTNER**: 表明当前应用程序又获取了一个伙伴
-* **Event.STREAM_READY**: 表明即将载入频道的数据流已经就绪，将会给播放器数据，在播放器有足够的缓冲后（这取决于播放器自己的设定），就会有画面呈现
-* **Event.P2P_STABLE**: 表明当前程序实例的P2P效果很稳定
-* **Event.BLOCK**: 表明在写数据时遇到了阻塞，这可能会造成播放器的卡顿
-* **Event.REPORT**: 表明P2P模块将上传数据，要上传的数据在message里面，是一段json数据
-
-**注意**: 请务必处理这些事件时不要执行耗时的操作，因为它跟Android ui主线程一样，如果耗时太久，将会阻止数据流的连续载入；如需要耗时的操作，请使用异步处理。
-
-#### 异常和错误
-
-* **Error.CONF_UNAVAILABLE**: 配置服务器不可用，将停止载入，不会播放！
-* **Error.AUTH_FAILED**: 认证失败，此时您应确保您填入的app id，app key， app secret key都正确
-* **Error.CONF_INVALID**: 配置不对，此时，应联系运营人员或者我们，及时修改
-* **Error.CHANNEL_EMPTY**: 您在载入一个频道时没有传频道或者频道为空
-* **Error.RESOLUTION_INVALID**: 该频道不存在这个分辨率，您填写的分辨率不合法或者超出的源本有的清晰度
-* **Error.NO_SUCH_CHANNEL**: 不存在你想要播放的频道，请检查和确认你填写的频道是否正确，是否被下线等
-* **Error.BAD_NETWORK**: 网络差，或者程序没有连接上网络，这个错误将会在P2P模块联网超时N次超时后抛出
-* **Error.STUN_FAILED**: 获取自己的公网地址失败，此时应用程序将退化为和普通CDN一样拉去数据流，将没有P2P效果
-* **Error.CDN_UNSTABLE**: 表明CDN不稳定，可能因网络造成，可能因源本身就不太稳定，P2P模块在连续N次获取数据失败后会抛出此错误，并停止加载，您的程序收到此错误后，可让用户刷新重试。
-* **Error.JOIN_FAILED**: 加入P2P大军失败，后续会继续尝试
-* **Error.HTBT_FAILED**: 表明应用程序已掉队，对P2P效果会减弱，并且可能会带来片刻的卡顿
-* **Error.BYE_FAILED**: 退出P2P大军时失败，然而这不会影响当前应用程序从P2P大军中剔除
-* **Error.REPORT_FAILED**: 应用程序上报统计数据失败
-* **Error.UNKNOWN_PACKET**: 收到一个未知类型的包，将忽略
-* **Error.INVALID_PACKET**: 收到一个数据不一致的包，将忽略
-* **Error.INTERNAL**: 内部错误
-
-[jcenter链接]: https://bintray.com/vbyte/maven/libp2pimpl
-[demo下载]: http://data1.vbyte.cn/apk/vbyte-demo.20160921.apk
-[archive]: http://data1.vbyte.cn/pkg/20160921.tar.gz
-[devcenter]: http://devcenter.vbyte.cn
+[1]: http://devcenter.vbyte.cn
+[2]: http://docs.vbyte.cn/api/android/
+[3]: https://github.com/Vbytes/libp2pimpl-android
+[4]: https://github.com/Vbytes/android-sample
+[5]: https://bintray.com/vbyte/maven/libp2pimpl
+[6]: http://data1.vbyte.cn/apk/vbyte-demo.20160921.apk
+[7]: http://data1.vbyte.cn/pkg/20160921.tar.gz
+[8]: /manage/base/
+[9]: https://bintray.com/

@@ -4,6 +4,7 @@ import android.net.Uri;
 
 import com.vbyte.p2p.IController;
 import com.vbyte.p2p.OnLoadedListener;
+import com.vbyte.p2p.UrlGenerator;
 
 /**
  * Created by passion on 16-1-14.
@@ -20,20 +21,39 @@ public final class VodController extends BaseController implements IController {
         /**
          * 告诉应用媒体已分析完毕
          */
-        public static final int HEADER_READY = 10020001;           // 媒体数据的header解析完毕
-        public static final int SEEK = 10020002;                   // 点播专有
-        /**
-         * 告诉应用已经探测到最后一片数据，即将结束
-         */
-        public static final int FINISHED = 10020003;
+        public static final int STARTED = 10020001;
         /**
          * 停止
          */
-        public static final int STOP = 10020004;
+        public static final int STOP = 10020002;
         /**
          * 告诉应用，点播频道已经被停止
          */
-        public static final int STOPPED = 10020005;
+        public static final int STOPPED = 10020003;
+        /**
+         * 点播专有，暂停
+         */
+        public static final int PAUSE = 10020004;
+        /**
+         * 点播专有,恢复
+         */
+        public static final int RESUME = 10020005;
+        /**
+         * 通知应用层要重新获取防盗链url
+         */
+        public static final int RETRIEVE_URL = 10020006;
+        /**
+         *应用层已经重新生成url
+         */
+        public static final int RETRIEVED_URL = 10020007;
+        /**
+         * 告诉应用已经探测到最后一片数据，即将结束
+         */
+        public static final int FINISHED = 10020008;
+        public static final int HEADER_READY = 10020009;           // 媒体数据的header解析完毕
+
+
+
     }
 
     public static class Error {
@@ -73,6 +93,7 @@ public final class VodController extends BaseController implements IController {
     }
 
     private long _pointer;
+    private UrlGenerator urlGenerator;
 
     private VodController() {
         _pointer = _construct();
@@ -101,10 +122,17 @@ public final class VodController extends BaseController implements IController {
 
     protected void onEvent(int code, String msg) {
         switch (code) {
-            case Event.START:
+            case Event.STARTED:
                 LoadEvent loadEvent = loadQueue.get(0);
                 Uri uri = Uri.parse(msg);
                 loadEvent.listener.onLoaded(uri);
+                break;
+            case Event.RETRIEVE_URL:
+                if (urlGenerator != null) {
+                    String sourceId = msg;
+                    String newUrl = urlGenerator.createSecurityUrl(sourceId);
+                    _setNewUrl(_pointer, newUrl);
+                }
                 break;
         }
     }
@@ -113,11 +141,28 @@ public final class VodController extends BaseController implements IController {
     protected void loadDirectly(String url, String resolution, double startTime) {
         this._load(_pointer, url, resolution, startTime);
     }
-    /*
-    获取点播视频的总时长
+
+    /**
+     * 获取点播视频的总时长
      */
     public int getDuration() {
         return this._getDuration(_pointer);
+    }
+
+    /**
+     * 设置防盗链url生成器，这在播放时url因时间超时失效时发挥作用，重新获取新的防盗链url去播放
+     * @param urlGenerator 传入的url生成器实例
+     */
+    public void setUrlGenerator(UrlGenerator urlGenerator) {
+        this.urlGenerator = urlGenerator;
+    }
+
+    /**
+     * 获取防盗链url生成器
+     * @return 防盗链url生成器
+     */
+    public UrlGenerator getUrlGenerator() {
+        return urlGenerator;
     }
     
     /**
@@ -159,11 +204,13 @@ public final class VodController extends BaseController implements IController {
 
     private native int _getDuration(long pointer);
     
-    private native void _seek(long _pointer, double startTime);
+    private native void _seek(long pointer, double startTime);
 
-    private native void _pause(long _pointer);
+    private native void _pause(long pointer);
 
-    private native void _resume(long _pointer);
+    private native void _resume(long pointer);
 
     private native void _unload(long pointer);
+
+    private native void _setNewUrl(long pointer, String newUrl);
 }

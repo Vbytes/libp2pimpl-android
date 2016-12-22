@@ -145,7 +145,7 @@ public final class VbyteP2PModule {
 
     /**
      * 获取native应用的版本号
-     * @return P2PModuld SDK的版本号
+     * @return P2PModule SDK的版本号
      */
     public static String getVersion() {
         if (SDK_VERSION == null) {
@@ -183,6 +183,7 @@ public final class VbyteP2PModule {
      * 关闭调试模式，应用上线时应关闭调试模式
      */
     private static native void _disableDebug();
+
 
     /////////////////////////////////////////////////////////////
     /*=========================================================*/

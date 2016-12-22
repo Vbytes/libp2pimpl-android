@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="libp2p-1.2.8">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/libp2pimpl/build/intermediates/exploded-aar/cn.vbyte.p2p/libp2p/1.2.8/res" />
+      <root url="jar://$PROJECT_DIR$/libp2pimpl/build/intermediates/exploded-aar/cn.vbyte.p2p/libp2p/1.2.8/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/cn.vbyte.p2p/libp2p/1.2.8/e83aa0b85b6fd6140238a4e02c18243e6e54f917/libp2p-1.2.8-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

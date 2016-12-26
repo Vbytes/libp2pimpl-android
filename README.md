@@ -91,13 +91,37 @@ try {
 - 启动一个点播频道的过程如下:
 ```java
 try {
+    /**
+     * 考虑到vod的资源大部分都是防盗链，这个函数设置防盗链的url生成规则，
+     * 开发者需要根据自己的加密规则自行实现
+     * SecurityUrl可以设置url、method，并能传入防盗链需要的http头信息
+     *
+     * 提示: 设置UrlGenerator应用生命周期内设置一次即可
+     */
+    Vodcontroller.getInstance().setUrlGenerator(new UrlGenerator() {
+
+        @Override
+        public SecurityUrl createSecurityUrl(String sourceId) {
+            // TODO: 实现sourceId对应防盗链url的生成规则
+            String url = getSecurityUrlById(sourceId);
+
+            SecurityUrl securityUrl = new SecurityUrl(url);
+            securityUrl.setMethod("GET")                                // 默认就是GET
+                       .addHeader("User-Agent", "xxx_player1.1")        // 有需要根据请求头设置防盗链的可在此设置
+                       .addHeader("Authorization", "Basic a2jeh=");
+            return securityUrl;
+        }
+
+    });
     VodController.getInstance().load("your vod channel id", "UHD", 0, new OnLoadedListener() {
+    
         @Override
         public void onLoaded(Uri uri) {
             mVideoPath = uri.toString();
             mVideoView.setVideoURI(uri);
             mVideoView.start();
         }
+        
     });
 } catch (Exception e) {
     // 如果打印了此exception，说明load/unload没有成对出现

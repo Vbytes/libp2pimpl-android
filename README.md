@@ -21,8 +21,8 @@ Android SDK托管于第三方android lib平台[jcenter][9]上，依赖部署是�
 ```
 dependencies {
     // 加入下面依赖
-    compile 'cn.vbyte.p2p:libp2p:1.2.8'
-    compile 'cn.vbyte.p2p:libp2pimpl:1.2.9'  
+    compile 'cn.vbyte.p2p:libp2p:1.2.9'
+    compile 'cn.vbyte.p2p:libp2pimpl:1.2.11'  
 }
 ```
 

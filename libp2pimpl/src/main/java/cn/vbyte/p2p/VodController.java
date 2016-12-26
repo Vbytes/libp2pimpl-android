@@ -4,6 +4,7 @@ import android.net.Uri;
 
 import com.vbyte.p2p.IController;
 import com.vbyte.p2p.OnLoadedListener;
+import com.vbyte.p2p.SecurityUrl;
 import com.vbyte.p2p.UrlGenerator;
 
 /**
@@ -129,9 +130,16 @@ public final class VodController extends BaseController implements IController {
                 break;
             case Event.RETRIEVE_URL:
                 if (urlGenerator != null) {
-                    String sourceId = msg;
-                    String newUrl = urlGenerator.createSecurityUrl(sourceId);
-                    _setNewUrl(_pointer, newUrl);
+                    final String sourceId = msg;
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            SecurityUrl securityUrl = urlGenerator.createSecurityUrl(sourceId);
+                            if (securityUrl != null) {
+                                _setNewUrl(_pointer, securityUrl.toString());
+                            }
+                        }
+                    }).start();
                 }
                 break;
         }

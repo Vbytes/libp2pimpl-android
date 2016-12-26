@@ -270,21 +270,27 @@ public final class VbyteP2PModule {
                 }
             }
         }
-        Message message = Message.obtain();
+        Message message = vbyteHandler.obtainMessage();
         message.what = code;
         message.obj = msg;
         vbyteHandler.sendMessage(message);
         if (eventHandler != null) {
+            message = eventHandler.obtainMessage();
+            message.what = code;
+            message.obj = msg;
             eventHandler.sendMessage(Message.obtain(message));
         }
     }
 
     private void onError(int code, String msg) {
-        Message message = Message.obtain();
+        Message message = vbyteHandler.obtainMessage();
         message.what = code;
         message.obj = msg;
         vbyteHandler.sendMessage(message);
         if (errorHandler != null) {
+            message = errorHandler.obtainMessage();
+            message.what = code;
+            message.obj = msg;
             errorHandler.sendMessage(Message.obtain(message));
         }
     }

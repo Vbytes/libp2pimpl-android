@@ -130,11 +130,16 @@ public final class VodController extends BaseController implements IController {
                 break;
             case Event.RETRIEVE_URL:
                 if (urlGenerator != null) {
-                    String sourceId = msg;
-                    SecurityUrl securityUrl = urlGenerator.createSecurityUrl(sourceId);
-                    if (securityUrl != null) {
-                        _setNewUrl(_pointer, securityUrl.toString());
-                    }
+                    final String sourceId = msg;
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            SecurityUrl securityUrl = urlGenerator.createSecurityUrl(sourceId);
+                            if (securityUrl != null) {
+                                _setNewUrl(_pointer, securityUrl.toString());
+                            }
+                        }
+                    }).start();
                 }
                 break;
         }

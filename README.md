@@ -19,10 +19,15 @@ Android SDK托管于第三方android lib平台[jcenter][9]上，依赖部署是�
 添加如下依赖，随后等gradle同步之后，即可使用该SDK的各种接口:
 
 ```
+android.defaultConfig.ndk {
+    // 如果需要设置想用的abi，设置以下编译选项
+    abiFilters 'armeabi-v7a' //,'x86','armeabi','x86_64','arm64-v8a'
+}
+
 dependencies {
     // 加入下面依赖
-    compile 'cn.vbyte.p2p:libp2p:1.2.9'
-    compile 'cn.vbyte.p2p:libp2pimpl:1.2.12'  
+    compile 'cn.vbyte.p2p:libp2p:1.3.0'
+    compile 'cn.vbyte.p2p:libp2pimpl:1.3.0'  
 }
 ```
 

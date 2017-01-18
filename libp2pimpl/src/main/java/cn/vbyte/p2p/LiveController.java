@@ -11,7 +11,6 @@ import com.vbyte.p2p.OnLoadedListener;
  */
 public final class LiveController extends BaseController implements IController {
     private static final String TAG = "cn.vbyte.p2p.live";
-    private static String originUrl = null;
 
     public static class Event {
         /**
@@ -80,9 +79,11 @@ public final class LiveController extends BaseController implements IController 
         if (loadQueue.size() > 2) {
             throw new Exception("You must forget unload last channel!");
         }
-        if (strIsUrl(channel)){     //针对于原始的url，截取channel并conf，失败后直接播放该Url
-            originUrl = channel;
-            channel = cutChannelFromUrl(channel);
+        if (channel.startsWith("http") || channel.startsWith("rtmp")){     //针对于原始的url，截取channel并conf，失败后直接播放该Url
+            Uri uri = Uri.parse(channel);
+            String lastPathSegment = uri.getLastPathSegment();
+            String[] segments = lastPathSegment.split(".");
+            channel = segments[0];
         }
         LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, listener);
         loadQueue.add(loadEvent);
@@ -91,36 +92,6 @@ public final class LiveController extends BaseController implements IController 
             this._load(_pointer, channel, resolution, startTime);
         }
     }
-
-    public boolean strIsUrl(String str){
-        if ((str.indexOf("http") != -1) || (str.indexOf("rtmp") != -1)){
-            return true;
-        }
-        return false;
-    }
-
-    public String cutChannelFromUrl(String urlStr){
-        int parameterGap = urlStr.indexOf("?"); //对于传参的Url，channel在第一个“？”之前
-        if (parameterGap != -1){    //?存在，则只需找到？之前的“/”，截取即得到
-            urlStr = urlStr.substring(0,parameterGap);
-            int last = urlStr.lastIndexOf("/");
-            if (last != -1){
-                urlStr = urlStr.substring(last+1);
-            }
-        }else{    //？不存在，找到最后一个“/”
-            int last = urlStr.lastIndexOf("/");
-            if (last != -1){
-                urlStr = urlStr.substring(last+1);
-            }
-        }
-        //后缀存在的话并删除“.”后缀
-        int pos = urlStr.lastIndexOf(".");
-        if (pos != -1){
-            urlStr = urlStr.substring(0,pos);
-        }
-        return urlStr;
-    }
-
 
     @Override
     protected void loadDirectly(String channel, String resolution, double startTime) {
@@ -147,25 +118,9 @@ public final class LiveController extends BaseController implements IController 
     protected void onEvent(int code, String msg) {
         switch (code) {
             case Event.STARTED:
-                if (!loadQueue.isEmpty()){
-                    LoadEvent loadEvent = loadQueue.get(0);
-                    Uri uri = Uri.parse(msg);
-                    loadEvent.listener.onLoaded(uri);
-                }
-                break;
-        }
-    }
-
-    @Override
-    protected void onError(int code, String msg){
-        switch (code){
-            case Error.NO_SUCH_CHANNEL:
-                Log.i(TAG, "p2p conf failed");
-                if (originUrl != null && !loadQueue.isEmpty()){
-                    LoadEvent loadFailedEvent = loadQueue.get(0);
-                    Uri uriOrigin = Uri.parse(originUrl);
-                    loadFailedEvent.listener.onLoaded(uriOrigin);
-                }
+                LoadEvent loadEvent = loadQueue.get(0);
+                Uri uri = Uri.parse(msg);
+                loadEvent.listener.onLoaded(uri);
                 break;
         }
     }

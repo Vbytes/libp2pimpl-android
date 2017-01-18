@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Environment;
 import android.os.Message;
 import android.os.Handler;
+import android.util.Log;
 
 import java.util.List;
 
@@ -120,10 +121,11 @@ public final class VbyteP2PModule {
 
     // 持久保存SDK版本号
     private static String SDK_VERSION;
+    private static String ARCH_ABI;
     private static VbyteP2PModule instance;
 
     /**
-     * 新启动一个p2pLiveStream模块，注意四个参数绝对不能为null,在程序启动时调用
+     * 新启动一个p2p模块，注意四个参数绝对不能为null,在程序启动时调用
      * @param context 上下文
      * @param appId 应用唯一标识
      * @param appKey 应用密钥
@@ -155,6 +157,17 @@ public final class VbyteP2PModule {
     }
 
     /**
+     * 获取native应用的abi arch
+     * @return armeabi|armeabi-v7a|arm64-v8a|x86|x86_64
+     */
+    private static String getArchABI() {
+        if (ARCH_ABI == null) {
+            ARCH_ABI = VbyteP2PModule._targetArchABI();
+        }
+        return ARCH_ABI;
+    }
+
+    /**
      * 启用调试模式，该模式会输出一些调试信息，对测试版本尤其有效
      */
     public static void enableDebug() {
@@ -169,10 +182,16 @@ public final class VbyteP2PModule {
     }
 
     /**
-     * 获取P2PLiveStream模块的版本号
-     * @return P2PLiveStream模块的版本号
+     * 获取P2P模块的版本号
+     * @return P2P模块的版本号
      */
     private static native String _version();
+
+    /**
+     * 获取当前运行的ABI名称
+     * @return 当前运行的ABI名称
+     */
+    private static native String _targetArchABI();
 
     /**
      * 打开调试模式，默认是关闭调试模式的
@@ -217,7 +236,7 @@ public final class VbyteP2PModule {
         } else {
             System.load(soFilePath);
         }
-        dynamicLibManager.checkUpdate(DYNAMIC_LIB_NAME, getVersion());
+        dynamicLibManager.checkUpdate(DYNAMIC_LIB_NAME, getVersion(), getArchABI());
 
         _pointer = this._construct();
         if (_pointer == 0) {

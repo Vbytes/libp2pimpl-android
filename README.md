@@ -20,6 +20,7 @@ Android SDK托管于第三方android lib平台[jcenter][9]上，依赖部署是�
 
 ```
 android.defaultConfig.ndk {
+    // 如果需要设置想用的abi，设置以下编译选项
     abiFilters 'armeabi-v7a' //,'x86','armeabi','x86_64','arm64-v8a'
 }
 

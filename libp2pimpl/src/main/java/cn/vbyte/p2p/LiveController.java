@@ -11,7 +11,7 @@ import com.vbyte.p2p.OnLoadedListener;
  */
 public final class LiveController extends BaseController implements IController {
     private static final String TAG = "cn.vbyte.p2p.live";
-    private static String originUrl;
+    private static String originUrl = null;
 
     public static class Event {
         /**
@@ -147,9 +147,11 @@ public final class LiveController extends BaseController implements IController 
     protected void onEvent(int code, String msg) {
         switch (code) {
             case Event.STARTED:
-                LoadEvent loadEvent = loadQueue.get(0);
-                Uri uri = Uri.parse(msg);
-                loadEvent.listener.onLoaded(uri);
+                if (!loadQueue.isEmpty()){
+                    LoadEvent loadEvent = loadQueue.get(0);
+                    Uri uri = Uri.parse(msg);
+                    loadEvent.listener.onLoaded(uri);
+                }
                 break;
         }
     }
@@ -159,9 +161,11 @@ public final class LiveController extends BaseController implements IController 
         switch (code){
             case Error.NO_SUCH_CHANNEL:
                 Log.i(TAG, "p2p conf failed");
-                LoadEvent loadFailedEvent = loadQueue.get(0);
-                Uri uriOrigin = Uri.parse(originUrl);
-                loadFailedEvent.listener.onLoaded(uriOrigin);
+                if (originUrl != null && !loadQueue.isEmpty()){
+                    LoadEvent loadFailedEvent = loadQueue.get(0);
+                    Uri uriOrigin = Uri.parse(originUrl);
+                    loadFailedEvent.listener.onLoaded(uriOrigin);
+                }
                 break;
         }
     }

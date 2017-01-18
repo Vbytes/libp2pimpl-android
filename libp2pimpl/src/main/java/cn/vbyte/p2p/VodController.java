@@ -1,7 +1,7 @@
 package cn.vbyte.p2p;
 
 import android.net.Uri;
-import android.util.Log;
+import android.os.AsyncTask;
 
 import com.vbyte.p2p.IController;
 import com.vbyte.p2p.OnLoadedListener;
@@ -125,11 +125,9 @@ public final class VodController extends BaseController implements IController {
     protected void onEvent(int code, String msg) {
         switch (code) {
             case Event.STARTED:
-                if (!loadQueue.isEmpty()){
-                    LoadEvent loadEvent = loadQueue.get(0);
-                    Uri uri = Uri.parse(msg);
-                    loadEvent.listener.onLoaded(uri);
-                }
+                LoadEvent loadEvent = loadQueue.get(0);
+                Uri uri = Uri.parse(msg);
+                loadEvent.listener.onLoaded(uri);
                 break;
             case Event.RETRIEVE_URL:
                 if (urlGenerator != null) {

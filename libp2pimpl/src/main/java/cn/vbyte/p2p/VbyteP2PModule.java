@@ -10,6 +10,8 @@ import java.util.List;
 
 import com.vbyte.update.*;
 
+import static cn.vbyte.p2p.BaseController.curLoadEvent;
+
 /**
  * Created by passion on 15-11-5.
  */
@@ -277,15 +279,16 @@ public final class VbyteP2PModule {
     private void onEvent(int code, String msg) {
         List<BaseController.LoadEvent> loadQueue = BaseController.loadQueue;
         if (code == LiveController.Event.STOPPED || code == VodController.Event.STOPPED) {
-            if (!loadQueue.isEmpty()) {
-                loadQueue.remove(0);
+            if (curLoadEvent != null) {
+                curLoadEvent = null;
             }
             if (!loadQueue.isEmpty()) {
-                BaseController.LoadEvent loadEvent = loadQueue.get(0);
-                if (loadEvent.videoType == BaseController.VIDEO_LIVE) {
-                    LiveController.getInstance().loadDirectly(loadEvent.channel, loadEvent.resolution, loadEvent.startTime);
+                curLoadEvent = loadQueue.get(0);
+                loadQueue.remove(0);
+                if (curLoadEvent.videoType == BaseController.VIDEO_LIVE) {
+                    LiveController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime);
                 } else {
-                    VodController.getInstance().loadDirectly(loadEvent.channel, loadEvent.resolution, loadEvent.startTime);
+                    VodController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime);
                 }
             }
         }

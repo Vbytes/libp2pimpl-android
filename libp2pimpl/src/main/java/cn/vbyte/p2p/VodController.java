@@ -54,8 +54,6 @@ public final class VodController extends BaseController implements IController {
         public static final int FINISHED = 10020008;
         public static final int HEADER_READY = 10020009;           // 媒体数据的header解析完毕
 
-
-
     }
 
     public static class Error {
@@ -99,6 +97,14 @@ public final class VodController extends BaseController implements IController {
 
     private VodController() {
         _pointer = _construct();
+
+        // urlGenerator给出一个默认值，能够直接传url就能播放
+        urlGenerator = new UrlGenerator() {
+            @Override
+            public SecurityUrl createSecurityUrl(String originUrl) {
+                return new SecurityUrl(originUrl);
+            }
+        };
     }
 
     /**
@@ -112,12 +118,15 @@ public final class VodController extends BaseController implements IController {
     @Override
     public void load(String channel, String resolution, double startTime, OnLoadedListener listener)
             throws  Exception {
-        if (loadQueue.size() > 2) {
+        if (!loadQueue.isEmpty()) {
+            loadQueue.clear();
             throw new Exception("You must forget to unload last channel!");
         }
         LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener);
         loadQueue.add(loadEvent);
-        if (loadQueue.size() == 1) {
+        if (curLoadEvent == null) {
+            curLoadEvent = loadQueue.get(0);
+            loadQueue.remove(0);
             this._load(_pointer, channel, resolution, startTime);
         }
     }
@@ -125,9 +134,10 @@ public final class VodController extends BaseController implements IController {
     protected void onEvent(int code, String msg) {
         switch (code) {
             case Event.STARTED:
-                LoadEvent loadEvent = loadQueue.get(0);
-                Uri uri = Uri.parse(msg);
-                loadEvent.listener.onLoaded(uri);
+                if (curLoadEvent != null) {
+                    Uri uri = Uri.parse(msg);
+                    curLoadEvent.listener.onLoaded(uri);
+                }
                 break;
             case Event.RETRIEVE_URL:
                 if (urlGenerator != null) {

@@ -34,7 +34,9 @@ public abstract class BaseController implements IController {
             this.listener = listener;
         }
     }
+
     protected static List<LoadEvent> loadQueue = Collections.synchronizedList(new LinkedList<LoadEvent>());
+    protected static LoadEvent curLoadEvent = null;
 
     /**
      * 这2个工具函数能让LiveController和VodController能事先对P2P线程反应的事件进行预处理

@@ -76,7 +76,8 @@ public final class LiveController extends BaseController implements IController 
     @Override
     public void load(String channel, String resolution, double startTime, OnLoadedListener listener)
             throws Exception {
-        if (loadQueue.size() > 2) {
+        if (!loadQueue.isEmpty()) {
+            loadQueue.clear();
             throw new Exception("You must forget unload last channel!");
         }
         if (channel.startsWith("http") || channel.startsWith("rtmp")){     //针对于原始的url，截取channel并conf，失败后直接播放该Url
@@ -88,7 +89,9 @@ public final class LiveController extends BaseController implements IController 
         LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, listener);
         loadQueue.add(loadEvent);
         Log.i(TAG, "loadQueue size is " + loadQueue.size());
-        if (loadQueue.size() == 1) {
+        if (curLoadEvent == null) {
+            curLoadEvent = loadQueue.get(0);
+            loadQueue.remove(0);
             this._load(_pointer, channel, resolution, startTime);
         }
     }
@@ -118,9 +121,10 @@ public final class LiveController extends BaseController implements IController 
     protected void onEvent(int code, String msg) {
         switch (code) {
             case Event.STARTED:
-                LoadEvent loadEvent = loadQueue.get(0);
-                Uri uri = Uri.parse(msg);
-                loadEvent.listener.onLoaded(uri);
+                if (curLoadEvent != null) {
+                    Uri uri = Uri.parse(msg);
+                    curLoadEvent.listener.onLoaded(uri);
+                }
                 break;
         }
     }

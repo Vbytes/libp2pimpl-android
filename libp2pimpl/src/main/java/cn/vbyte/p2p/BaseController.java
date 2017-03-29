@@ -146,4 +146,9 @@ public abstract class BaseController implements IController {
 
     @Override
     public void resume() { return; }
+
+    @Override
+    public void unload() {
+        mUri = null;
+    }
 }

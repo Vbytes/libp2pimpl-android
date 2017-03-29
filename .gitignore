@@ -39,3 +39,4 @@ projectFilesBackup/
 
 # Keystore files
 *.jks
+.idea/

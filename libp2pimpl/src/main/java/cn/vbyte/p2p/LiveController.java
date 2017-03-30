@@ -106,6 +106,7 @@ public final class LiveController extends BaseController implements IController 
      */
     @Override
     public void unload() {
+        super.unload();
         this._unload(_pointer);
     }
 

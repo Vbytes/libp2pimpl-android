@@ -218,6 +218,11 @@ public final class VodController extends BaseController implements IController {
         this._unload(_pointer);
     }
 
+    @Override
+    public String playStreamInfo() {
+        return this._playStreamInfo(_pointer);
+    }
+
     private native long _construct();
 
     private native String _load(long pointer, String url, String resolution, double startTime);
@@ -233,4 +238,6 @@ public final class VodController extends BaseController implements IController {
     private native void _unload(long pointer);
 
     private native void _setNewUrl(long pointer, String newUrl);
+
+    private native String _playStreamInfo(long pointer);
 }

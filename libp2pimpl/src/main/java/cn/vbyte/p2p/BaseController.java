@@ -151,4 +151,9 @@ public abstract class BaseController implements IController {
     public void unload() {
         mUri = null;
     }
+
+    @Override
+    public String playStreamInfo() {
+        return "";
+    }
 }

@@ -209,7 +209,7 @@ public final class VbyteP2PModule {
     /////////////////////////////////////////////////////////////
     /*=========================================================*/
 
-    // 事件监听
+    // 事件监听gut
     private Handler eventHandler = null;
     private Handler errorHandler = null;
     private Handler vbyteHandler = new VbyteHandler();

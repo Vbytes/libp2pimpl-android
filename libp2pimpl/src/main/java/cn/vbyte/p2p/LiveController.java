@@ -80,12 +80,7 @@ public final class LiveController extends BaseController implements IController 
             loadQueue.clear();
             throw new Exception("You must forget unload last channel!");
         }
-        if (channel.startsWith("http") || channel.startsWith("rtmp")){     //针对于原始的url，截取channel并conf，失败后直接播放该Url
-            Uri uri = Uri.parse(channel);
-            String lastPathSegment = uri.getLastPathSegment();
-            String[] segments = lastPathSegment.split(".");
-            channel = segments[0];
-        }
+
         LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, listener);
         loadQueue.add(loadEvent);
         Log.i(TAG, "loadQueue size is " + loadQueue.size());

@@ -183,6 +183,11 @@ public final class VbyteP2PModule {
     	VbyteP2PModule._disableDebug();
     }
 
+    public static void setLoggerCallback(LoggerCallback logger) {
+        LoggerCallback.setLoggerCallback(logger);
+        VbyteP2PModule._setLoggerCallback();
+    }
+
     /**
      * 获取P2P模块的版本号
      * @return P2P模块的版本号
@@ -204,6 +209,11 @@ public final class VbyteP2PModule {
      * 关闭调试模式，应用上线时应关闭调试模式
      */
     private static native void _disableDebug();
+
+    /**
+     * 设置自定义logger打印回调函数
+     */
+    private static native void _setLoggerCallback();
 
 
     /////////////////////////////////////////////////////////////

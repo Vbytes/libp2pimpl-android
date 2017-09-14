@@ -101,8 +101,11 @@ public final class LiveController extends BaseController implements IController 
      */
     @Override
     public void unload() {
-        super.unload();
-        this._unload(_pointer);
+        //当前有事件的时候, 才unload, 屏蔽空unload
+        if(curLoadEvent != null) {
+            super.unload();
+            this._unload(_pointer);
+        }
     }
 
     /**

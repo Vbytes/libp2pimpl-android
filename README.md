@@ -26,7 +26,7 @@ android.defaultConfig.ndk {
 
 dependencies {
     // 加入下面依赖
-    compile 'cn.vbyte.p2p:libp2pimpl:1.3.20'
+    compile 'cn.vbyte.p2p:libp2pimpl:1.3.21'
 }
 ```
 

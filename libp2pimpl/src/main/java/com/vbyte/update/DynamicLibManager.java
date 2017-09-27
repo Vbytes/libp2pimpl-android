@@ -90,7 +90,7 @@ public class DynamicLibManager {
                             .append("&abi=").append(abi)
                             .append("&fifoVersion=").append(version)
                             .append("&token=").append(token)
-                            .append("&jniVersion=v2")
+                            .append("&jniVersion=").append(jniVersion)
                             .append("&packageName=").append(context.getPackageName());
                     URL url = new URL(sb.toString());
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();

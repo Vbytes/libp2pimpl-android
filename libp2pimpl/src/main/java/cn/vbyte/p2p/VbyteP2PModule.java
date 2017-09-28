@@ -6,6 +6,7 @@ import android.os.Message;
 import android.os.Handler;
 import android.util.Log;
 
+import java.io.File;
 import java.util.List;
 
 import com.vbyte.update.*;
@@ -246,9 +247,10 @@ public final class VbyteP2PModule {
         if(soFilePath == null) {
             System.loadLibrary("p2pmodule");
         } else {
-            System.load(soFilePath);
+            System.load(dynamicLibManager.currentLibDirPath + File.separator + soFilePath);
         }
-        dynamicLibManager.checkUpdate(DYNAMIC_LIB_NAME, getVersion(), getArchABI());
+        //check升级用false即可
+        dynamicLibManager.checkUpdateV2(false, "libp2pmodule_" + VbyteP2PModule.getVersion() + "_20170928.so");
 
         _pointer = this._construct();
         if (_pointer == 0) {

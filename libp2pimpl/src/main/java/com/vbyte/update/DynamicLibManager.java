@@ -81,7 +81,10 @@ public class DynamicLibManager {
             .append(Build.CPU_ABI);
         currentLibDirPath = tmpCurrentLibDirPath.toString();
 
-        Log.e("s22s", currentLibDirPath);
+        //检测curentLibDirPath存不存在
+        if(!(new File(currentLibDirPath)).exists()) {
+            (new File(currentLibDirPath)).mkdirs();
+        }
     }
 
     public boolean isSoReady() {

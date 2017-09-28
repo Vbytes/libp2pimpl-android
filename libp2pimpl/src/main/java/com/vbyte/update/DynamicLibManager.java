@@ -19,9 +19,11 @@ import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Date;
+import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 
 /**
@@ -47,12 +49,39 @@ public class DynamicLibManager {
     public DynamicLibManager(Context context) {
         this.context = context;
         libDirPath = this.context.getFilesDir().getAbsolutePath() + File.separator + "vlib";
+
+        StringBuilder tmpCurrentLibDirPath = new StringBuilder();
+        tmpCurrentLibDirPath.append(context.getFilesDir().getAbsolutePath())
+                .append(File.separator)
+                .append("vlib");
+        /**
+            /data/data/cn.vbyte.android.sample/files/vlib/0.4.3.5/v2/http/armeabi-v7a  能获取到Appversion的
+            data/data/cn.vbyte.android.sample/files/vlib/v2/http/armeabi-v7a           不能获取到jniVersion的
+         */
         try {
-            currentLibDirPath = this.context.getFilesDir().getAbsolutePath() + File.separator + "vlib" + File.separator +  getAppVersion() + File.separator + jniVersion + File.separator + Build.CPU_ABI;
+
+            tmpCurrentLibDirPath.append(File.separator)
+                    .append(getAppVersion());
         } catch (Exception e) {
-            currentLibDirPath = this.context.getFilesDir().getAbsolutePath() + File.separator + "vlib" + File.separator + jniVersion + File.separator + Build.CPU_ABI;
             e.printStackTrace();
         }
+
+        tmpCurrentLibDirPath.append(File.separator)
+                .append(jniVersion)
+                .append(File.separator);
+
+        //放置支持https的库的
+        if (supportHttps) {
+            tmpCurrentLibDirPath.append("https");
+        } else {
+            tmpCurrentLibDirPath.append("http");
+            //放置不支持https的
+        }
+        tmpCurrentLibDirPath.append(File.separator)
+            .append(Build.CPU_ABI);
+        currentLibDirPath = tmpCurrentLibDirPath.toString();
+
+        Log.e("s22s", currentLibDirPath);
     }
 
     public boolean isSoReady() {

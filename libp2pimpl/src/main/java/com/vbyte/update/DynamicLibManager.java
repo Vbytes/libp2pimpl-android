@@ -140,23 +140,23 @@ public class DynamicLibManager {
                                     if (soName.equals("libp2pmodule")) {
                                         //如果是libp2pmodule还检查jniVersion字段
                                         if (jsonObjTmp.has("jniVersion")
-                                                && !jsonObjTmp.getString("jniVersion").isEmpty()
+                                                && !TextUtils.isEmpty(jsonObjTmp.getString("jniVersion"))
                                                 && jsonObjTmp.has("version")
-                                                && !jsonObjTmp.getString("version").isEmpty()
+                                                && !TextUtils.isEmpty(jsonObjTmp.getString("version"))
                                                 && jsonObjTmp.has("url")
-                                                && !jsonObjTmp.getString("url").isEmpty()
+                                                && !TextUtils.isEmpty(jsonObjTmp.getString("url"))
                                                 && jsonObjTmp.has("md5token")
-                                                && !jsonObjTmp.getString("md5token").isEmpty()) {
+                                                && !TextUtils.isEmpty(jsonObjTmp.getString("md5token"))) {
                                             soJsonMap.put(soName, jsonObjTmp);
                                         }
                                     } else {
                                         //不是libp2pmodule不检查jniVersion字段
                                         if (jsonObjTmp.has("version")
-                                                && !jsonObjTmp.getString("version").isEmpty()
+                                                && !TextUtils.isEmpty(jsonObjTmp.getString("version"))
                                                 && jsonObjTmp.has("url")
-                                                && !jsonObjTmp.getString("url").isEmpty()
+                                                && !TextUtils.isEmpty(jsonObjTmp.getString("url"))
                                                 && jsonObjTmp.has("md5token")
-                                                && !jsonObjTmp.getString("md5token").isEmpty()) {
+                                                && !TextUtils.isEmpty(jsonObjTmp.getString("md5token"))) {
                                             soJsonMap.put(soName, jsonObjTmp);
                                         }
                                     }

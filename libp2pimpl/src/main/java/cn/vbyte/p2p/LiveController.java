@@ -55,6 +55,7 @@ public final class LiveController extends BaseController implements IController 
 
     /**
      * 获取直播控制器
+     *
      * @return 直播控制器的唯一接口
      */
     public static LiveController getInstance() {
@@ -67,32 +68,47 @@ public final class LiveController extends BaseController implements IController 
     private long _pointer;
 
     private LiveController() {
-        _pointer = _construct();
+        if (VbyteP2PModule.hasAllJniSo) {
+            _pointer = _construct();
+        }
     }
 
     /**
      * 加载一个直播流。针对时移，该接口只为flv使用
-     * @param channel 直播流频道ID
+     *
+     * @param channel    直播流频道ID
      * @param resolution 统一为 "UHD"
-     * @param startTime 视频的起始位置，以秒为单位，支持一天之内的视频时移回放
-     * @param listener 当成功load时的回调函数
+     * @param startTime  视频的起始位置，以秒为单位，支持一天之内的视频时移回放
+     * @param listener   当成功load时的回调函数
      * @throws Exception 当load/unload没有成对调用时，会抛出异常提示
      */
     @Override
     public void load(String channel, String resolution, double startTime, OnLoadedListener listener)
             throws Exception {
-        if (!loadQueue.isEmpty()) {
-            loadQueue.clear();
-            throw new Exception("You must forget unload last channel!");
-        }
 
-        LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, listener);
-        loadQueue.add(loadEvent);
-        Log.i(TAG, "loadQueue size is " + loadQueue.size());
-        if (curLoadEvent == null) {
-            curLoadEvent = loadQueue.get(0);
-            loadQueue.remove(0);
-            this._load(_pointer, channel, resolution, startTime);
+        Log.e("s22s  live hasAllso = ", VbyteP2PModule.hasAllJniSo + "");
+        if (VbyteP2PModule.hasAllJniSo) {
+            if (!loadQueue.isEmpty()) {
+                loadQueue.clear();
+                throw new Exception("You must forget unload last channel!");
+            }
+
+            LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, listener);
+            loadQueue.add(loadEvent);
+            Log.i(TAG, "loadQueue size is " + loadQueue.size());
+            if (curLoadEvent == null) {
+                curLoadEvent = loadQueue.get(0);
+                loadQueue.remove(0);
+
+                this._load(_pointer, channel, resolution, startTime);
+            }
+        }  else {
+
+            //仅仅测试
+            if (channel.equals("rtmp://nbrtmp2.wasu.tv/live4/ahws")) {
+                channel = "http://113.105.141.45/3954.liveplay.myqcloud.com/live/3954_322842111.flv?bizid=3954&txSecret=6951272e1c3a9c7f73180b7ce0905ad8&txTime=59d5758c";
+                listener.onLoaded(Uri.parse(channel));
+            }
         }
     }
 
@@ -106,15 +122,18 @@ public final class LiveController extends BaseController implements IController 
      */
     @Override
     public void unload() {
-        //当前有事件的时候, 才unload, 屏蔽空unload
-        if(curLoadEvent != null) {
-            super.unload();
-            this._unload(_pointer);
+        if (VbyteP2PModule.hasAllJniSo) {
+            //当前有事件的时候, 才unload, 屏蔽空unload
+            if (curLoadEvent != null) {
+                super.unload();
+                this._unload(_pointer);
+            }
         }
     }
 
     /**
      * 获取当前播放时间，仅对flv格式有效
+     *
      * @return 当前播放的时间点
      */
     public int getCurrentPlayTime() {

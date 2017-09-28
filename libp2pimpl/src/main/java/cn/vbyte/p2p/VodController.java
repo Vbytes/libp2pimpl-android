@@ -2,6 +2,7 @@ package cn.vbyte.p2p;
 
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.vbyte.p2p.IController;
 import com.vbyte.p2p.OnLoadedListener;
@@ -96,7 +97,9 @@ public final class VodController extends BaseController implements IController {
     private UrlGenerator urlGenerator;
 
     private VodController() {
-        _pointer = _construct();
+        if (VbyteP2PModule.hasAllJniSo) {
+            _pointer = _construct();
+        }
 
         // urlGenerator给出一个默认值，能够直接传url就能播放
         urlGenerator = new UrlGenerator() {
@@ -118,16 +121,22 @@ public final class VodController extends BaseController implements IController {
     @Override
     public void load(String channel, String resolution, double startTime, OnLoadedListener listener)
             throws  Exception {
-        if (!loadQueue.isEmpty()) {
-            loadQueue.clear();
-            throw new Exception("You must forget to unload last channel!");
-        }
-        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener);
-        loadQueue.add(loadEvent);
-        if (curLoadEvent == null) {
-            curLoadEvent = loadQueue.get(0);
-            loadQueue.remove(0);
-            this._load(_pointer, channel, resolution, startTime);
+        //如果所有jniVersion全部是齐全的
+        if (VbyteP2PModule.hasAllJniSo) {
+            if (!loadQueue.isEmpty()) {
+                loadQueue.clear();
+                throw new Exception("You must forget to unload last channel!");
+            }
+            LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener);
+            loadQueue.add(loadEvent);
+            if (curLoadEvent == null) {
+                curLoadEvent = loadQueue.get(0);
+                loadQueue.remove(0);
+                this._load(_pointer, channel, resolution, startTime);
+            }
+        } else {
+            //回调security url给播放器
+            listener.onLoaded(Uri.parse(VodController.getInstance().getUrlGenerator().createSecurityUrl(channel).getUrl()));
         }
     }
 
@@ -190,7 +199,9 @@ public final class VodController extends BaseController implements IController {
      */
     @Override
     public void seek(double startTime) {
-        this._seek(_pointer, startTime);
+        if (VbyteP2PModule.hasAllJniSo) {
+            this._seek(_pointer, startTime);
+        }
     }
 
     /**
@@ -198,7 +209,9 @@ public final class VodController extends BaseController implements IController {
      */
     @Override
     public void pause() {
-        this._pause(_pointer);
+        if (VbyteP2PModule.hasAllJniSo) {
+            this._pause(_pointer);
+        }
     }
 
     /**
@@ -206,7 +219,9 @@ public final class VodController extends BaseController implements IController {
      */
     @Override
     public void resume() {
-        this._resume(_pointer);
+        if (VbyteP2PModule.hasAllJniSo) {
+            this._resume(_pointer);
+        }
     }
 
     /**
@@ -214,16 +229,22 @@ public final class VodController extends BaseController implements IController {
      */
     @Override
     public void unload() {
-        //当前有事件的时候, 才unload, 屏蔽空unload
-        if(curLoadEvent != null) {
-            super.unload();
-            this._unload(_pointer);
+        if (VbyteP2PModule.hasAllJniSo) {
+            //当前有事件的时候, 才unload, 屏蔽空unload
+            if (curLoadEvent != null) {
+                super.unload();
+                this._unload(_pointer);
+            }
         }
     }
 
     @Override
     public String playStreamInfo() {
-        return this._playStreamInfo(_pointer);
+        if (VbyteP2PModule.hasAllJniSo) {
+            return this._playStreamInfo(_pointer);
+        } else {
+            return "";
+        }
     }
 
     private native long _construct();

@@ -1,4 +1,9 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+
+group = 'cn.vbyte.p2p'
+version = '1.3.21'
 
 android {
     compileSdkVersion 23
@@ -7,18 +12,96 @@ android {
     defaultConfig {
         minSdkVersion 8
         targetSdkVersion 8
-        versionCode 1
-        versionName "1.0"
     }
+
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-
 }
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+
+    configurations = ['archives']
+    pkg {
+        repo = 'maven'
+        name = project.name
+        desc = 'libp2p impl for android'
+        websiteUrl = "https://github.com/Vbytes/libp2pimpl-android"
+        issueTrackerUrl = "https://github.com/Vbytes/libp2pimpl-android/issues"
+        vcsUrl = "https://github.com/Vbytes/libp2pimpl-android.git"
+        licenses = ['Apache-2.0']
+        labels = ['aar', 'android', 'p2p']
+        publicDownloadNumbers = true
+    }
+}
+
+install {
+    repositories.mavenInstaller {
+        pom.project {
+            name = project.name
+            packaging = 'aar'
+            url = 'https://github.com/Vbytes/libp2pimpl-android'
+            licenses {
+                license {
+                    name = 'The Apache Software License, Version 2.0'
+                    url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                }
+            }
+            developers {
+                developer {
+                    id 'vbytes'
+                    name 'Vbytes tech'
+                    email 'repository@exatech.cn'
+                }
+            }
+            scm {
+                connection 'https://github.com/Vbytes/libp2pimpl-android.git'
+                developerConnection 'https://github.com/Vbytes/libp2pimpl-android.git'
+                url 'https://github.com/Vbytes/libp2pimpl-android'
+            }
+        }
+    }
+}
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    failOnError false
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+task findConventions << {
+    println project.getConvention()
+}
+
+android {
+    lintOptions {
+        abortOnError false
+    }
+}
+
+

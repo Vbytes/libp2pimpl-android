@@ -260,7 +260,6 @@ public final class VbyteP2PModule {
         } else {
             //多线程下载
             dynamicLibManager.checkUpdateV2(true, "");
-            Log.e("s22s", " checkv2 done");
         }
 
         //如果so不齐全，开始下载并且
@@ -273,7 +272,6 @@ public final class VbyteP2PModule {
         System.load(dynamicLibManager.currentLibDirPath + File.separator + "libevent.so");
         System.load(dynamicLibManager.currentLibDirPath + File.separator + libp2pmoduleFileName);
 
-        Log.e("s22s", dynamicLibManager.locate("libp2pmodule"));
         dynamicLibManager.checkUpdateV2(false, libp2pmoduleFileName);
 
         _pointer = this._construct();

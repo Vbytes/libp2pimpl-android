@@ -86,7 +86,6 @@ public final class LiveController extends BaseController implements IController 
     public void load(String channel, String resolution, double startTime, OnLoadedListener listener)
             throws Exception {
 
-        Log.e("s22s  live hasAllso = ", VbyteP2PModule.hasAllJniSo + "");
         if (VbyteP2PModule.hasAllJniSo) {
             if (!loadQueue.isEmpty()) {
                 loadQueue.clear();
@@ -102,13 +101,10 @@ public final class LiveController extends BaseController implements IController 
 
                 this._load(_pointer, channel, resolution, startTime);
             }
-        }  else {
+        } else {
 
             //仅仅测试
-            if (channel.equals("rtmp://nbrtmp2.wasu.tv/live4/ahws")) {
-                channel = "http://113.105.141.45/3954.liveplay.myqcloud.com/live/3954_322842111.flv?bizid=3954&txSecret=6951272e1c3a9c7f73180b7ce0905ad8&txTime=59d5758c";
-                listener.onLoaded(Uri.parse(channel));
-            }
+            listener.onLoaded(Uri.parse(channel));
         }
     }
 

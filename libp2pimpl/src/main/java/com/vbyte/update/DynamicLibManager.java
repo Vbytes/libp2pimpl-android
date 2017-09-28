@@ -57,8 +57,6 @@ public class DynamicLibManager {
 
     public boolean isSoReady() {
         //如果ready存在,  files/vlib/当前jniVersion/当前armeabi/ready 那么hasAllJniSo = true
-        Log.e("s22s", currentLibDirPath);
-
         File currentLibDir = new File(currentLibDirPath);
         if (!currentLibDir.exists()) {
             currentLibDir.mkdirs();
@@ -107,7 +105,6 @@ public class DynamicLibManager {
                         }
                     }
                     URL url = new URL(sb.toString());
-                    Log.e("s22s", sb.toString());
 
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     conn.setConnectTimeout(30_000);
@@ -121,12 +118,8 @@ public class DynamicLibManager {
                         while ((line = input.readLine()) != null) {
                             jsonStr += line;
                         }
-                        Log.e("s22s", sb.toString());
-                        Log.e("s22s bidy", jsonStr);
 
                         JSONObject jsonObj = new JSONObject(jsonStr);
-
-                        Log.e("s22s", jsonObj.toString());
 
                         if (jsonObj.has("downloadUrl")) {
                             String[] downloadSoArr;
@@ -192,8 +185,6 @@ public class DynamicLibManager {
 
             //存在so或者下载完成, 返回true
             private boolean updateDynamicLib(String soName, String downloadUrl, String newVersion, String md5) throws Exception {
-                Log.e("s22s", String.format("soName = %s, downloadUrl = %s, newVersion= %s, md5 = %s", soName, downloadUrl, newVersion, md5));
-
 
                 String soPathFileName;
                 String soFileName;
@@ -208,7 +199,6 @@ public class DynamicLibManager {
                 }
                 soPathFileName = currentLibDirPath + File.separator + soFileName;
 
-                Log.e("s22s", String.format("soPathFileName = %s, soFileName = %s, tmpFileName= %s", soPathFileName, soFileName, tmpFileName));
                 //上次下载未完成，存在文件，返回true
                 if (new File(soPathFileName).exists()) {
                     return true;
@@ -235,7 +225,6 @@ public class DynamicLibManager {
                 }
                 long finishedSize = tmpFile.length();
 
-                Log.e("s22s", "download " + downloadUrl);
                 URL url = new URL(downloadUrl);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setConnectTimeout(30_000);

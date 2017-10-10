@@ -35,7 +35,7 @@ public class DynamicLibManager {
     public String currentLibDirPath;
 
     //jni接口版本
-    public String jniVersion = "v2";
+    public String jniVersion = "v3";
     //非https要下载的so
     public String[] soNameArr = new String[]{"libp2pmodule", "libstun", "libevent"};
     public boolean supportHttps = false;
@@ -130,7 +130,7 @@ public class DynamicLibManager {
 
                         if (tmpArr.length == 3) {
                             sb.append("&fileId=").append("libp2pmodule")
-                                    .append("&fifoVersion").append(tmpArr[1]);
+                                    .append("&fifoVersion=").append(tmpArr[1]);
                         } else {
                             return;
                         }

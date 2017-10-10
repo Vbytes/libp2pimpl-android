@@ -29,7 +29,6 @@ public final class LiveController extends BaseController implements IController 
          * 告诉应用直播流已被停止
          */
         public static final int STOPPED = 10010003;
-
         /**
          * 告诉应用直播流播放异常，需要回源播放
          */
@@ -96,6 +95,23 @@ public final class LiveController extends BaseController implements IController 
         }
     }
 
+    public void load(String channel, byte[] data, OnLoadedListener listener)
+            throws Exception {
+        if (!loadQueue.isEmpty()) {
+            loadQueue.clear();
+            throw new Exception("You must forget unload last channel!");
+        }
+
+        LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, "UHD", 0, listener);
+        loadQueue.add(loadEvent);
+        Log.i(TAG, "loadQueue size is " + loadQueue.size());
+        if (curLoadEvent == null) {
+            curLoadEvent = loadQueue.get(0);
+            loadQueue.remove(0);
+            this._preLoad(_pointer, channel, data);
+        }
+    }
+
     @Override
     protected void loadDirectly(String channel, String resolution, double startTime) {
         this._load(_pointer, channel, resolution, startTime);
@@ -136,6 +152,8 @@ public final class LiveController extends BaseController implements IController 
     private native long _construct();
 
     private native void _load(long pointer, String channel, String resolution, double startTime);
+
+    private native void _preLoad(long pointer, String channel, byte[] data);
 
     private native void _unload(long pointer);
 

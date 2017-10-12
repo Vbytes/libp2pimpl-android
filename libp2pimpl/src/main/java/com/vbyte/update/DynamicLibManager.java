@@ -130,7 +130,7 @@ public class DynamicLibManager {
 
                         if (tmpArr.length == 3) {
                             sb.append("&fileId=").append("libp2pmodule")
-                                    .append("&fifoVersion").append(tmpArr[1]);
+                                    .append("&fifoVersion=").append(tmpArr[1]);
                         } else {
                             return;
                         }

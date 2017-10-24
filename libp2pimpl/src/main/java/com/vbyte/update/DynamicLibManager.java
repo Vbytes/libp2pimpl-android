@@ -310,7 +310,6 @@ public class DynamicLibManager {
             deleteDir(dir);
         }
 
-
         File destFile = null;
         String maxVersion = "";
         for (File file : (new File(currentLibDirPath)).listFiles(new FileFilter() {

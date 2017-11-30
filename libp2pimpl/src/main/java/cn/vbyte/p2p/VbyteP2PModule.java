@@ -244,6 +244,7 @@ public final class VbyteP2PModule {
         dynamicLibManager = new DynamicLibManager(context);
         String soFilePath = null;
         try {
+            //这里加一个check libp2pmodule文件的md5值，因为应用目录/files目录下 很可能被别的应用扫描到给破坏了就load错误了
             soFilePath = dynamicLibManager.locate(DYNAMIC_LIB_NAME);
         } catch (Exception e) {
             // 因获取不到程序版本号而导致的自动升级失败，默认使用安装时自带的

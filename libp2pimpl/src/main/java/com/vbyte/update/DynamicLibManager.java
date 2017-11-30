@@ -264,7 +264,8 @@ public class DynamicLibManager {
                     BufferedInputStream bis = new BufferedInputStream(conn.getInputStream());
                     RandomAccessFile raf = new RandomAccessFile(tmpFile, "rw");
                     try {
-                        byte[] bytes = new byte[1024];
+                        //下载buffer要在4k以上，不然安全团队找
+                        byte[] bytes = new byte[10240];
                         int count;
                         while ((count = bis.read(bytes)) != -1) {
                             raf.seek(finishedSize);
@@ -311,6 +312,8 @@ public class DynamicLibManager {
 
         File destFile = null;
         String maxVersion = "";
+        String md5 = "";
+
         for (File file : (new File(currentLibDirPath)).listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
@@ -328,9 +331,18 @@ public class DynamicLibManager {
                 }
                 maxVersion = info[info.length - 2];
                 destFile = file;
+                //获取文件名里面写的md5值
+                md5 = info[2];
+                //md5是类似 21a948385c11706669a7740309968ee1.so 的
             }
         }
-        return (destFile == null ? null : destFile.getName());
+
+        // 对比指纹是否正确
+        String md5sum = MD5Util.MD5(destFile);
+        if ((md5sum + ".so").toLowerCase(Locale.US).equals(md5.toLowerCase())) {
+            return (destFile == null ? null : destFile.getName());
+        }
+        return null;
     }
 
     private String getAppVersion () throws Exception {

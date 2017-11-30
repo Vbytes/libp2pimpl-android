@@ -47,7 +47,6 @@ public class DynamicLibManager {
     public DynamicLibManager(Context context) {
         this.context = context;
         libDirPath = this.context.getFilesDir().getAbsolutePath() + File.separator + "vlib";
-
         StringBuilder tmpCurrentLibDirPath = new StringBuilder();
         tmpCurrentLibDirPath.append(context.getFilesDir().getAbsolutePath())
                 .append(File.separator)
@@ -318,7 +317,7 @@ public class DynamicLibManager {
         for (File file : (new File(currentLibDirPath)).listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
-                return (file.getName().startsWith(fileid) && file.getName().endsWith(".so"));
+                return (file.getName().startsWith(fileid) && file.getName().endsWith(".so") && file.length() > 0);
             }
         })) {
             /**

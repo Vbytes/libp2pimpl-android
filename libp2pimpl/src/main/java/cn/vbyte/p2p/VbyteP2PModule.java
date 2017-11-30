@@ -68,6 +68,10 @@ public final class VbyteP2PModule {
          * 公共的，表明卡播恢复
          */
         public static final int DATA_UNBLOCK = 10000012;                    // 公共的，监听的上报信号
+        /**
+         * 公共的，表明接收到请求
+         */
+        public static final int RECEIVE_REQUEST = 10000014;
     }
 
     public static class Error {

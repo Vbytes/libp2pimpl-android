@@ -266,7 +266,7 @@ public final class VbyteP2PModule {
         if(VbyteP2PModule.hasAllJniSo == false) {
             return ;
         }
-
+        //增加check返回的so的md5值，因为可能被改动
         String libp2pmoduleFileName = dynamicLibManager.locate("libp2pmodule");
         System.load(dynamicLibManager.currentLibDirPath + File.separator + "libstun.so");
         System.load(dynamicLibManager.currentLibDirPath + File.separator + "libevent.so");

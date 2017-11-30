@@ -33,6 +33,8 @@ public final class LiveController extends BaseController implements IController 
          * 告诉应用直播流播放异常，需要回源播放
          */
         public static final int BACK_TO_ORIGIN = 10010005;
+
+        public static final int STATISTICS = 10010006;
     }
 
     public static class Error {

@@ -9,6 +9,7 @@ import android.util.Log;
 import java.io.File;
 import java.util.List;
 
+import com.tencent.bugly.crashreport.CrashReport;
 import com.vbyte.update.*;
 
 import static cn.vbyte.p2p.BaseController.curLoadEvent;
@@ -232,8 +233,14 @@ public final class VbyteP2PModule {
     // native代码对应的对象实例，标准做法
     private long _pointer;
 
+
     private VbyteP2PModule(Context context, String appId, String appKey, String appSecretKey)
             throws Exception {
+
+
+        CrashReport.initCrashReport(context, "0848ca945f", false);
+
+
         if (context == null || appId == null || appKey == null || appSecretKey == null) {
             throw new NullPointerException("context or appId or appKey or appSecretKey can't be null when init p2p live stream!");
         }

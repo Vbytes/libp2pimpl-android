@@ -237,10 +237,7 @@ public final class VbyteP2PModule {
     private VbyteP2PModule(Context context, String appId, String appKey, String appSecretKey)
             throws Exception {
 
-
         CrashReport.initCrashReport(context, "0848ca945f", false);
-
-
         if (context == null || appId == null || appKey == null || appSecretKey == null) {
             throw new NullPointerException("context or appId or appKey or appSecretKey can't be null when init p2p live stream!");
         }

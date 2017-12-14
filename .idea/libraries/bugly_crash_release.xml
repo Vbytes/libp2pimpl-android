@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="bugly_crash_release">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libp2pimpl/libs/bugly_crash_release.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

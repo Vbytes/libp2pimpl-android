@@ -7,9 +7,6 @@
     <list default="true" id="0a2dd85e-774a-4003-bdf5-35f9aed913b0" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/libp2pimpl/libp2pimpl.iml" afterPath="$PROJECT_DIR$/libp2pimpl/libp2pimpl.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/libp2pimpl/src/main/AndroidManifest.xml" afterPath="$PROJECT_DIR$/libp2pimpl/src/main/AndroidManifest.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/VbyteP2PModule.java" afterPath="$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/VbyteP2PModule.java" />
     </list>
     <ignored path="libp2pimpl-android.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -96,26 +93,12 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="BaseController.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="BaseController.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/BaseController.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="615">
-              <caret line="48" column="63" selection-start-line="48" selection-start-column="63" selection-end-line="48" selection-end-column="63" />
-              <folding>
-                <element signature="imports" expanded="false" />
-                <element signature="e#2492#2493#0" expanded="false" />
-                <element signature="e#2534#2535#0" expanded="false" />
-                <element signature="e#3302#3303#0" expanded="false" />
-                <element signature="e#3344#3345#0" expanded="false" />
-                <element signature="e#4037#4038#0" expanded="false" />
-                <element signature="e#4059#4060#0" expanded="false" />
-                <element signature="e#4100#4101#0" expanded="false" />
-                <element signature="e#4122#4123#0" expanded="false" />
-                <element signature="e#4216#4217#0" expanded="false" />
-                <element signature="e#4243#4244#0" expanded="false" />
-                <element signature="e#4295#4296#0" expanded="false" />
-                <element signature="e#4320#4321#0" expanded="false" />
-              </folding>
+            <state relative-caret-position="-407">
+              <caret line="63" column="58" selection-start-line="63" selection-start-column="58" selection-end-line="63" selection-end-column="58" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -135,7 +118,9 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="105">
               <caret line="8" column="13" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
-              <folding />
+              <folding>
+                <element signature="imports" expanded="false" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -183,8 +168,8 @@
       <file leaf-file-name="LiveController.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/LiveController.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1335">
-              <caret line="95" column="9" selection-start-line="95" selection-start-column="9" selection-end-line="95" selection-end-column="9" />
+            <state relative-caret-position="315">
+              <caret line="25" column="11" selection-start-line="25" selection-start-column="11" selection-end-line="25" selection-end-column="11" />
               <folding>
                 <element signature="imports" expanded="false" />
                 <element signature="e#1628#1629#0" expanded="false" />
@@ -199,15 +184,20 @@
       <file leaf-file-name="VbyteP2PModule.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/VbyteP2PModule.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="105">
+            <state relative-caret-position="3330">
               <caret line="240" column="40" selection-start-line="240" selection-start-column="40" selection-end-line="240" selection-end-column="40" />
               <folding>
-                <element signature="e#4793#4794#0" expanded="true" />
-                <element signature="e#4821#4822#0" expanded="true" />
-                <element signature="e#5428#5429#0" expanded="true" />
-                <element signature="e#5470#5471#0" expanded="true" />
-                <element signature="e#5568#5569#0" expanded="true" />
-                <element signature="e#5611#5612#0" expanded="true" />
+                <element signature="imports" expanded="false" />
+                <element signature="e#4793#4794#0" expanded="false" />
+                <element signature="e#4821#4822#0" expanded="false" />
+                <element signature="e#5428#5429#0" expanded="false" />
+                <element signature="e#5470#5471#0" expanded="false" />
+                <element signature="e#5568#5569#0" expanded="false" />
+                <element signature="e#5611#5612#0" expanded="false" />
+                <element signature="e#8755#8756#0" expanded="false" />
+                <element signature="e#8795#8796#0" expanded="false" />
+                <element signature="e#8957#8958#0" expanded="false" />
+                <element signature="e#9000#9001#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -215,14 +205,14 @@
       </file>
       <file leaf-file-name="AndroidManifest.xml" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/libp2pimpl/src/main/AndroidManifest.xml">
-          <provider editor-type-id="android-manifest">
-            <state />
-          </provider>
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="180">
               <caret line="12" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="15" selection-end-column="0" />
               <folding />
             </state>
+          </provider>
+          <provider editor-type-id="android-manifest">
+            <state />
           </provider>
         </entry>
       </file>
@@ -300,11 +290,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="build.gradle" pinned="false" current-in-tab="true">
+      <file leaf-file-name="build.gradle" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/libp2pimpl/build.gradle">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="367">
-              <caret line="52" column="1" selection-start-line="52" selection-start-column="1" selection-end-line="52" selection-end-column="1" />
+            <state relative-caret-position="765">
+              <caret line="51" column="5" selection-start-line="51" selection-start-column="5" selection-end-line="51" selection-end-column="5" />
               <folding />
             </state>
           </provider>
@@ -339,6 +329,8 @@
                 <element signature="e#5565#5566#0" expanded="false" />
                 <element signature="e#5638#5639#0" expanded="false" />
                 <element signature="e#5676#5677#0" expanded="false" />
+                <element signature="e#5955#5956#0" expanded="false" />
+                <element signature="e#6008#6009#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -1602,10 +1594,10 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="475" />
-    <option name="y" value="277" />
-    <option name="width" value="2513" />
-    <option name="height" value="1405" />
+    <option name="x" value="232" />
+    <option name="y" value="31" />
+    <option name="width" value="2523" />
+    <option name="height" value="1417" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -1632,7 +1624,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="AndroidView">
         <subPane />
       </pane>
@@ -1946,6 +1937,7 @@
           </PATH>
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -2236,25 +2228,24 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="475" y="277" width="2513" height="1405" extended-state="0" />
-    <editor active="true" />
+    <frame x="232" y="31" width="2523" height="1417" extended-state="1" />
+    <editor active="false" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27385572" sideWeight="0.49858356" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27132976" sideWeight="0.49858928" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Build Variants" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Image Layers" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27385572" sideWeight="0.50141644" order="0" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.5142198" sideWeight="0.34179765" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Android Monitor" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.7271835" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32921812" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.5142198" sideWeight="0.66046137" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.5142198" sideWeight="0.65820235" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Captures" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24949372" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Gradle Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18656415" sideWeight="0.5" order="4" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32744044" sideWeight="0.49858356" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22743829" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18581218" sideWeight="0.5" order="4" side_tool="false" content_ui="combo" />
+      <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22652157" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.12596193" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Android Model" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="true" content_ui="tabs" />
       <window_info id="Theme Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -2266,6 +2257,7 @@
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="combo" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32744044" sideWeight="0.49858356" order="9" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -2291,21 +2283,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
           <caret line="14" column="22" selection-start-line="14" selection-start-column="22" selection-end-line="14" selection-end-column="22" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#2492#2493#0" expanded="false" />
-            <element signature="e#2534#2535#0" expanded="false" />
-            <element signature="e#3302#3303#0" expanded="false" />
-            <element signature="e#3344#3345#0" expanded="false" />
-            <element signature="e#4037#4038#0" expanded="false" />
-            <element signature="e#4059#4060#0" expanded="false" />
-            <element signature="e#4100#4101#0" expanded="false" />
-            <element signature="e#4122#4123#0" expanded="false" />
-            <element signature="e#4216#4217#0" expanded="false" />
-            <element signature="e#4243#4244#0" expanded="false" />
-            <element signature="e#4295#4296#0" expanded="false" />
-            <element signature="e#4320#4321#0" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2332,12 +2310,17 @@
         <state relative-caret-position="105">
           <caret line="17" column="27" selection-start-line="17" selection-start-column="27" selection-end-line="17" selection-end-column="27" />
           <folding>
-            <element signature="e#4793#4794#0" expanded="true" />
-            <element signature="e#4821#4822#0" expanded="true" />
-            <element signature="e#5428#5429#0" expanded="true" />
-            <element signature="e#5470#5471#0" expanded="true" />
-            <element signature="e#5568#5569#0" expanded="true" />
-            <element signature="e#5611#5612#0" expanded="true" />
+            <element signature="imports" expanded="false" />
+            <element signature="e#4793#4794#0" expanded="false" />
+            <element signature="e#4821#4822#0" expanded="false" />
+            <element signature="e#5428#5429#0" expanded="false" />
+            <element signature="e#5470#5471#0" expanded="false" />
+            <element signature="e#5568#5569#0" expanded="false" />
+            <element signature="e#5611#5612#0" expanded="false" />
+            <element signature="e#8755#8756#0" expanded="false" />
+            <element signature="e#8795#8796#0" expanded="false" />
+            <element signature="e#8957#8958#0" expanded="false" />
+            <element signature="e#9000#9001#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -2346,7 +2329,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
           <caret line="8" column="13" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
-          <folding />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -2383,6 +2368,8 @@
             <element signature="e#5565#5566#0" expanded="false" />
             <element signature="e#5638#5639#0" expanded="false" />
             <element signature="e#5676#5677#0" expanded="false" />
+            <element signature="e#5955#5956#0" expanded="false" />
+            <element signature="e#6008#6009#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -2417,21 +2404,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
           <caret line="14" column="22" selection-start-line="14" selection-start-column="22" selection-end-line="14" selection-end-column="22" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#2492#2493#0" expanded="false" />
-            <element signature="e#2534#2535#0" expanded="false" />
-            <element signature="e#3302#3303#0" expanded="false" />
-            <element signature="e#3344#3345#0" expanded="false" />
-            <element signature="e#4037#4038#0" expanded="false" />
-            <element signature="e#4059#4060#0" expanded="false" />
-            <element signature="e#4100#4101#0" expanded="false" />
-            <element signature="e#4122#4123#0" expanded="false" />
-            <element signature="e#4216#4217#0" expanded="false" />
-            <element signature="e#4243#4244#0" expanded="false" />
-            <element signature="e#4295#4296#0" expanded="false" />
-            <element signature="e#4320#4321#0" expanded="false" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2440,12 +2413,17 @@
         <state relative-caret-position="105">
           <caret line="17" column="27" selection-start-line="17" selection-start-column="27" selection-end-line="17" selection-end-column="27" />
           <folding>
-            <element signature="e#4793#4794#0" expanded="true" />
-            <element signature="e#4821#4822#0" expanded="true" />
-            <element signature="e#5428#5429#0" expanded="true" />
-            <element signature="e#5470#5471#0" expanded="true" />
-            <element signature="e#5568#5569#0" expanded="true" />
-            <element signature="e#5611#5612#0" expanded="true" />
+            <element signature="imports" expanded="false" />
+            <element signature="e#4793#4794#0" expanded="false" />
+            <element signature="e#4821#4822#0" expanded="false" />
+            <element signature="e#5428#5429#0" expanded="false" />
+            <element signature="e#5470#5471#0" expanded="false" />
+            <element signature="e#5568#5569#0" expanded="false" />
+            <element signature="e#5611#5612#0" expanded="false" />
+            <element signature="e#8755#8756#0" expanded="false" />
+            <element signature="e#8795#8796#0" expanded="false" />
+            <element signature="e#8957#8958#0" expanded="false" />
+            <element signature="e#9000#9001#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -2482,6 +2460,8 @@
             <element signature="e#5565#5566#0" expanded="false" />
             <element signature="e#5638#5639#0" expanded="false" />
             <element signature="e#5676#5677#0" expanded="false" />
+            <element signature="e#5955#5956#0" expanded="false" />
+            <element signature="e#6008#6009#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -2579,20 +2559,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/LiveController.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1335">
-          <caret line="95" column="9" selection-start-line="95" selection-start-column="9" selection-end-line="95" selection-end-column="9" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#1628#1629#0" expanded="false" />
-            <element signature="e#1667#1668#0" expanded="false" />
-            <element signature="e#3113#3114#0" expanded="false" />
-            <element signature="e#3165#3166#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/VodController.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3090">
@@ -2611,6 +2577,8 @@
             <element signature="e#5565#5566#0" expanded="false" />
             <element signature="e#5638#5639#0" expanded="false" />
             <element signature="e#5676#5677#0" expanded="false" />
+            <element signature="e#5955#5956#0" expanded="false" />
+            <element signature="e#6008#6009#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -2681,28 +2649,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/BaseController.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="615">
-          <caret line="48" column="63" selection-start-line="48" selection-start-column="63" selection-end-line="48" selection-end-column="63" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#2492#2493#0" expanded="false" />
-            <element signature="e#2534#2535#0" expanded="false" />
-            <element signature="e#3302#3303#0" expanded="false" />
-            <element signature="e#3344#3345#0" expanded="false" />
-            <element signature="e#4037#4038#0" expanded="false" />
-            <element signature="e#4059#4060#0" expanded="false" />
-            <element signature="e#4100#4101#0" expanded="false" />
-            <element signature="e#4122#4123#0" expanded="false" />
-            <element signature="e#4216#4217#0" expanded="false" />
-            <element signature="e#4243#4244#0" expanded="false" />
-            <element signature="e#4295#4296#0" expanded="false" />
-            <element signature="e#4320#4321#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/libp2pimpl/src/main/java/com/vbyte/update/DynamicLibManager.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3600">
@@ -2735,7 +2681,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
           <caret line="8" column="13" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
-          <folding />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -2765,34 +2713,61 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/VbyteP2PModule.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
+        <state relative-caret-position="3330">
           <caret line="240" column="40" selection-start-line="240" selection-start-column="40" selection-end-line="240" selection-end-column="40" />
           <folding>
-            <element signature="e#4793#4794#0" expanded="true" />
-            <element signature="e#4821#4822#0" expanded="true" />
-            <element signature="e#5428#5429#0" expanded="true" />
-            <element signature="e#5470#5471#0" expanded="true" />
-            <element signature="e#5568#5569#0" expanded="true" />
-            <element signature="e#5611#5612#0" expanded="true" />
+            <element signature="imports" expanded="false" />
+            <element signature="e#4793#4794#0" expanded="false" />
+            <element signature="e#4821#4822#0" expanded="false" />
+            <element signature="e#5428#5429#0" expanded="false" />
+            <element signature="e#5470#5471#0" expanded="false" />
+            <element signature="e#5568#5569#0" expanded="false" />
+            <element signature="e#5611#5612#0" expanded="false" />
+            <element signature="e#8755#8756#0" expanded="false" />
+            <element signature="e#8795#8796#0" expanded="false" />
+            <element signature="e#8957#8958#0" expanded="false" />
+            <element signature="e#9000#9001#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/libp2pimpl/src/main/AndroidManifest.xml">
-      <provider editor-type-id="android-manifest">
-        <state />
-      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="180">
           <caret line="12" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="15" selection-end-column="0" />
           <folding />
         </state>
       </provider>
+      <provider editor-type-id="android-manifest">
+        <state />
+      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/libp2pimpl/build.gradle">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="367">
-          <caret line="52" column="1" selection-start-line="52" selection-start-column="1" selection-end-line="52" selection-end-column="1" />
+        <state relative-caret-position="765">
+          <caret line="51" column="5" selection-start-line="51" selection-start-column="5" selection-end-line="51" selection-end-column="5" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/LiveController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="315">
+          <caret line="25" column="11" selection-start-line="25" selection-start-column="11" selection-end-line="25" selection-end-column="11" />
+          <folding>
+            <element signature="imports" expanded="false" />
+            <element signature="e#1628#1629#0" expanded="false" />
+            <element signature="e#1667#1668#0" expanded="false" />
+            <element signature="e#3113#3114#0" expanded="false" />
+            <element signature="e#3165#3166#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/BaseController.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-407">
+          <caret line="63" column="58" selection-start-line="63" selection-start-column="58" selection-end-line="63" selection-end-column="58" />
           <folding />
         </state>
       </provider>

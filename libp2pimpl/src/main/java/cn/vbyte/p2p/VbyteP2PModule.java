@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Environment;
 import android.os.Message;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.util.Log;
 
 import java.io.File;
@@ -221,7 +222,6 @@ public final class VbyteP2PModule {
      */
     private static native void _setLoggerCallback();
 
-
     /////////////////////////////////////////////////////////////
     /*=========================================================*/
 
@@ -237,7 +237,6 @@ public final class VbyteP2PModule {
     private VbyteP2PModule(Context context, String appId, String appKey, String appSecretKey)
             throws Exception {
 
-        CrashReport.initCrashReport(context, "0848ca945f", false);
         if (context == null || appId == null || appKey == null || appSecretKey == null) {
             throw new NullPointerException("context or appId or appKey or appSecretKey can't be null when init p2p live stream!");
         }
@@ -246,6 +245,18 @@ public final class VbyteP2PModule {
         System.loadLibrary("event");
 
         dynamicLibManager = new DynamicLibManager(context);
+
+        String buglyPath = dynamicLibManager.locate2("Bugly");
+        if(buglyPath != null && !buglyPath.isEmpty()) {
+            CrashReport.initCrashReport(context, "0848ca945f", false);
+        }
+        String stunPath = dynamicLibManager.locate2("stun");
+        if(stunPath != null && !stunPath.isEmpty()) {
+            System.load(stunPath);
+        } else {
+            System.loadLibrary("stun");
+        }
+
         String soFilePath = null;
         try {
             //这里加一个check libp2pmodule文件的md5值，因为应用目录/files目录下 很可能被别的应用扫描到给破坏了就load错误了

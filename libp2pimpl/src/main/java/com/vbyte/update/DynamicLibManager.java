@@ -37,11 +37,44 @@ public class DynamicLibManager {
     //jni接口版本
     public String jniVersion = "v2";
     //非https要下载的so
-    public String[] soNameArr = new String[]{"libp2pmodule", "libstun", "libevent"};
+//    public String[] soNameArr = new String[]{"libp2pmodule", "libstun", "libevent"};
+    public String[] soNameArr = new String[]{"libp2pmodule", "libstun", "libevent", "libBugly"};
     public boolean supportHttps = false;
     //https情况下要下载的so
     public String[] soNameArrSupportHttps = new String[]{"libp2pmodule", "libstun", "libevent", "libevent_openssl", "libcrypto", "libssl"};
 
+    public static final String md5sumLibp2pmodule = "";
+    public static final String md5sumLibstun = "";
+    public static final String md5sumLibevent = "";
+    public static final String md5sumLibBugly = "";
+
+
+
+    public static final Map<String, String> libMd5sumMap = new HashMap<>(){{
+        put("libp2pmodule_armeabi", "b7917deb58c4acab8ba931784c6f31b3");
+        put("libp2pmodule_armeabi-v7a", "755ca2c8ae178366f319c32c0be0b872");
+        put("libp2pmodule_arm64-v8a", "98cf8393fcc85dcc08961889c16bb585");
+        put("libp2pmodule_x86", "46bb5ba7026adff3bea7243e4d095163");
+        put("libp2pmodule_x86_64", "0c2b0131f2a982ca5dd0b981d6357b24");
+
+        put("libp2pmodule_armeabi", "487b53a61291438fe06bb123bc3f8a13");
+        put("libp2pmodule_armeabi-v7a", "bd7c26dd247e1aa1b6d153fe4a37fa1d");
+        put("libp2pmodule_arm64-v8a", "a0be68a336cc35f4ea4a6871a4f07c0e");
+        put("libp2pmodule_x86", "83dc33d66cd4eef8fc91d33885877d6b");
+        put("libp2pmodule_x86_64", "06a978710f493c3cc6d0659bdc64cb20");
+
+        put("libp2pmodule_armeabi", "2c3a2c33a8e95226fc74e0beddff9a5c");
+        put("libp2pmodule_armeabi-v7a", "4d624c8a11da0c8c1e287649bf02632b");
+        put("libp2pmodule_arm64-v8a", "46901913552815a6238a35e586ce4d5c");
+        put("libp2pmodule_x86", "91fa6d9c3a709b893c68797ea9347797");
+        put("libp2pmodule_x86_64", "b42ef4296c4966fe4da5804e0f5ab604");
+
+        put("libp2pmodule_armeabi", "4219e61457f0a0d3192472d39307423f");
+        put("libp2pmodule_armeabi-v7a", "1c70f8fafd4617a603b00eac5233dd3c");
+        put("libp2pmodule_arm64-v8a", "da24fcdd5b3753ed4f98eea0f041a221");
+        put("libp2pmodule_x86", "9f59d6aa9c8a164c3a10522f34262889");
+        put("libp2pmodule_x86_64", "62a82acec7b89ade8a0dbac1927672b6");
+    }};
 
 
     public DynamicLibManager(Context context) {
@@ -289,6 +322,19 @@ public class DynamicLibManager {
                 return false;
             }
         }).start();
+    }
+
+    //用来定位非libp2pmodule的so的
+    public String locate2(final String fileid) {
+        File file = new File(currentLibDirPath + File.separator + "lib" + fileid + ".so");
+        if(file.exists()) {
+            // 对比指纹是否正确
+            String md5sum = MD5Util.MD5(file);
+            if ((md5sum).toLowerCase(Locale.US).equals((libMd5sumMap.get(fileid + "_" + Build.CPU_ABI)).toLowerCase())) {
+                return (file == null ? null : file.getName());
+            }
+        }
+        return null;
     }
 
     public String locate(final String fileid) throws Exception {

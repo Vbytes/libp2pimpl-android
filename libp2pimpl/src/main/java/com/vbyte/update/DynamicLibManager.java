@@ -7,8 +7,9 @@ import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
-
+import org.json.JSONArray;
 import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,10 +19,11 @@ import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Date;
+import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
+import java.util.concurrent.ExecutionException;
 
 
 /**
@@ -37,49 +39,17 @@ public class DynamicLibManager {
     //jni接口版本
     public String jniVersion = "v2";
     //非https要下载的so
-//    public String[] soNameArr = new String[]{"libp2pmodule", "libstun", "libevent"};
-    public String[] soNameArr = new String[]{"libp2pmodule", "libstun", "libevent", "libBugly"};
+    public String[] soNameArr = new String[]{"libp2pmodule", "libstun", "libevent"};
     public boolean supportHttps = false;
     //https情况下要下载的so
     public String[] soNameArrSupportHttps = new String[]{"libp2pmodule", "libstun", "libevent", "libevent_openssl", "libcrypto", "libssl"};
 
-    public static final String md5sumLibp2pmodule = "";
-    public static final String md5sumLibstun = "";
-    public static final String md5sumLibevent = "";
-    public static final String md5sumLibBugly = "";
-
-
-
-    public static final Map<String, String> libMd5sumMap = new HashMap<>(){{
-        put("libp2pmodule_armeabi", "b7917deb58c4acab8ba931784c6f31b3");
-        put("libp2pmodule_armeabi-v7a", "755ca2c8ae178366f319c32c0be0b872");
-        put("libp2pmodule_arm64-v8a", "98cf8393fcc85dcc08961889c16bb585");
-        put("libp2pmodule_x86", "46bb5ba7026adff3bea7243e4d095163");
-        put("libp2pmodule_x86_64", "0c2b0131f2a982ca5dd0b981d6357b24");
-
-        put("libp2pmodule_armeabi", "487b53a61291438fe06bb123bc3f8a13");
-        put("libp2pmodule_armeabi-v7a", "bd7c26dd247e1aa1b6d153fe4a37fa1d");
-        put("libp2pmodule_arm64-v8a", "a0be68a336cc35f4ea4a6871a4f07c0e");
-        put("libp2pmodule_x86", "83dc33d66cd4eef8fc91d33885877d6b");
-        put("libp2pmodule_x86_64", "06a978710f493c3cc6d0659bdc64cb20");
-
-        put("libp2pmodule_armeabi", "2c3a2c33a8e95226fc74e0beddff9a5c");
-        put("libp2pmodule_armeabi-v7a", "4d624c8a11da0c8c1e287649bf02632b");
-        put("libp2pmodule_arm64-v8a", "46901913552815a6238a35e586ce4d5c");
-        put("libp2pmodule_x86", "91fa6d9c3a709b893c68797ea9347797");
-        put("libp2pmodule_x86_64", "b42ef4296c4966fe4da5804e0f5ab604");
-
-        put("libp2pmodule_armeabi", "4219e61457f0a0d3192472d39307423f");
-        put("libp2pmodule_armeabi-v7a", "1c70f8fafd4617a603b00eac5233dd3c");
-        put("libp2pmodule_arm64-v8a", "da24fcdd5b3753ed4f98eea0f041a221");
-        put("libp2pmodule_x86", "9f59d6aa9c8a164c3a10522f34262889");
-        put("libp2pmodule_x86_64", "62a82acec7b89ade8a0dbac1927672b6");
-    }};
 
 
     public DynamicLibManager(Context context) {
         this.context = context;
         libDirPath = this.context.getFilesDir().getAbsolutePath() + File.separator + "vlib";
+
         StringBuilder tmpCurrentLibDirPath = new StringBuilder();
         tmpCurrentLibDirPath.append(context.getFilesDir().getAbsolutePath())
                 .append(File.separator)
@@ -140,7 +110,6 @@ public class DynamicLibManager {
                     //获取10位unix时间戳
                     String timeStamp = Long.toString((new Date().getTime()) / 1000);
                     String token = MD5Util.MD5((timeStamp + "qvb2017tencent" + packageName).getBytes());
-
 
                     StringBuffer sb = new StringBuffer();
                     sb.append("http://update.qvb.qcloud.com/checkupdate").append("/v2")
@@ -248,6 +217,7 @@ public class DynamicLibManager {
 
             //存在so或者下载完成, 返回true
             private boolean updateDynamicLib(String soName, String downloadUrl, String newVersion, String md5) throws Exception {
+
                 String soPathFileName;
                 String soFileName;
                 String tmpFileName;
@@ -297,7 +267,7 @@ public class DynamicLibManager {
                     BufferedInputStream bis = new BufferedInputStream(conn.getInputStream());
                     RandomAccessFile raf = new RandomAccessFile(tmpFile, "rw");
                     try {
-                        //下载buffer要在4k以上，不然安全团队找
+                        //下载buffer要为4k以上，不然安全团队找
                         byte[] bytes = new byte[10240];
                         int count;
                         while ((count = bis.read(bytes)) != -1) {
@@ -324,26 +294,12 @@ public class DynamicLibManager {
         }).start();
     }
 
-    //用来定位非libp2pmodule的so的
-    public String locate2(final String fileid) {
-        File file = new File(currentLibDirPath + File.separator + "lib" + fileid + ".so");
-        if(file.exists()) {
-            // 对比指纹是否正确
-            String md5sum = MD5Util.MD5(file);
-            if ((md5sum).toLowerCase(Locale.US).equals((libMd5sumMap.get(fileid + "_" + Build.CPU_ABI)).toLowerCase())) {
-                return (file == null ? null : file.getName());
-            }
-        }
-        return null;
-    }
-
     public String locate(final String fileid) throws Exception {
         //删除旧的版本号的version是为了极端情况下，升级失败，用户升级app就好了
         File libDir = new File(libDirPath);
         if (!libDir.exists()) {
             libDir.mkdirs();
         }
-
         final String appVersion = getAppVersion();
         File[] dirs = libDir.listFiles(new FileFilter() {
             @Override
@@ -355,15 +311,15 @@ public class DynamicLibManager {
             deleteDir(dir);
         }
 
-
         File destFile = null;
         String maxVersion = "";
-        String md5 = "";
 
+        //校验md5值
+        String md5 = "";
         for (File file : (new File(currentLibDirPath)).listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
-                return (file.getName().startsWith(fileid) && file.getName().endsWith(".so") && file.length() > 0);
+                return (file.getName().startsWith(fileid) && file.getName().endsWith(".so"));
             }
         })) {
             /**

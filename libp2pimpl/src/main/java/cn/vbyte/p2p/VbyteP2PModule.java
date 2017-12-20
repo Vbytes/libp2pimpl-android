@@ -1,16 +1,16 @@
 package cn.vbyte.p2p;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Message;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.util.Log;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
-import com.tencent.bugly.crashreport.CrashReport;
 import com.vbyte.update.*;
 
 import static cn.vbyte.p2p.BaseController.curLoadEvent;
@@ -65,7 +65,7 @@ public final class VbyteP2PModule {
          * 公共的，表明一次上报统计事件
          */
         public static final int REPORTED = 10000011;                    // 公共的，监听的上报信号
-        
+
         /**
          * 公共的，表明卡播恢复
          */
@@ -130,7 +130,7 @@ public final class VbyteP2PModule {
 
     // 持久保存SDK版本号
     private static String SDK_VERSION;
-    private static String ARCH_ABI;
+    public static String ARCH_ABI = null;
     private static VbyteP2PModule instance;
 
     /**
@@ -151,7 +151,7 @@ public final class VbyteP2PModule {
     }
 
     public static VbyteP2PModule getInstance() {
-    	return instance;
+        return instance;
     }
 
     /**
@@ -165,29 +165,57 @@ public final class VbyteP2PModule {
         return SDK_VERSION;
     }
 
+    //判断是不是这五种唯一支持的arch
+    private static boolean isArchValid(String arch) {
+        //所有合理的arch
+        String[] allValidArch = {"armeabi", "armeabi-v7a", "arm64-v8a", "x86", "x86_64"};
+        return Arrays.asList(allValidArch).contains(arch);
+    }
+
     /**
      * 获取native应用的abi arch
      * @return armeabi|armeabi-v7a|arm64-v8a|x86|x86_64
+     * 返回5种架构中的一个获取null
      */
     private static String getArchABI() {
         if (ARCH_ABI == null) {
-            ARCH_ABI = VbyteP2PModule._targetArchABI();
+            return isArchValid(VbyteP2PModule._targetArchABI()) ? VbyteP2PModule._targetArchABI() : null;
+        } else {
+            return isArchValid(ARCH_ABI) ? ARCH_ABI : null;
         }
-        return ARCH_ABI;
+    }
+
+    /**
+     *
+     * 安卓20以下可以用Build.CPU_ABI获取abi, >=21要用SUPPORTED_ABIS
+     * 参考
+     * https://developer.android.com/reference/android/os/Build.html
+     * 返回5种架构中的一个获取null
+     */
+    public static String getArchABIBySystem() {
+        if(Build.VERSION.SDK_INT <= 20) {
+            return isArchValid(Build.CPU_ABI) ? Build.CPU_ABI : null;
+        } else {
+            //判断SUPPORTED_ABIS数组长度大于0
+            if(Build.SUPPORTED_ABIS.length > 0) {
+                return isArchValid(Build.SUPPORTED_ABIS[0]) ? Build.SUPPORTED_ABIS[0] : null;
+            }
+            return null;
+        }
     }
 
     /**
      * 启用调试模式，该模式会输出一些调试信息，对测试版本尤其有效
      */
     public static void enableDebug() {
-    	VbyteP2PModule._enableDebug();
+        VbyteP2PModule._enableDebug();
     }
 
     /**
      * 关闭调试模式。默认调试功能是关闭的，发布应用时也应该关闭调试模式。
      */
     public static void disableDebug() {
-    	VbyteP2PModule._disableDebug();
+        VbyteP2PModule._disableDebug();
     }
 
     public static void setLoggerCallback(LoggerCallback logger) {
@@ -222,6 +250,7 @@ public final class VbyteP2PModule {
      */
     private static native void _setLoggerCallback();
 
+
     /////////////////////////////////////////////////////////////
     /*=========================================================*/
 
@@ -230,13 +259,14 @@ public final class VbyteP2PModule {
     private Handler errorHandler = null;
     private Handler vbyteHandler = new VbyteHandler();
     private DynamicLibManager dynamicLibManager;
+
+    //是否得到合理的arch
+    private static boolean hasValidArch = false;
     // native代码对应的对象实例，标准做法
     private long _pointer;
 
-
     private VbyteP2PModule(Context context, String appId, String appKey, String appSecretKey)
             throws Exception {
-
         if (context == null || appId == null || appKey == null || appSecretKey == null) {
             throw new NullPointerException("context or appId or appKey or appSecretKey can't be null when init p2p live stream!");
         }
@@ -244,33 +274,40 @@ public final class VbyteP2PModule {
         System.loadLibrary("stun");
         System.loadLibrary("event");
 
-        dynamicLibManager = new DynamicLibManager(context);
+        //确保下面的逻辑需要能获取到系统的arch, 获取不到就不能调用dynamicLibManager里面的功能， 因为new dynamicLibManager的时候，需要设置文件夹的，就需要系统的arch
+        if(!getArchABIBySystem().isEmpty()) {
+            String soFilePath = null;
+            dynamicLibManager = new DynamicLibManager(context);
 
-        String buglyPath = dynamicLibManager.locate2("Bugly");
-        if(buglyPath != null && !buglyPath.isEmpty()) {
-            CrashReport.initCrashReport(context, "0848ca945f", false);
-        }
-        String stunPath = dynamicLibManager.locate2("stun");
-        if(stunPath != null && !stunPath.isEmpty()) {
-            System.load(stunPath);
+            try {
+                //这里加一个check libp2pmodule文件的md5值，因为应用目录/files目录下 很可能被别的应用扫描到给破坏了就load错误了
+                soFilePath = dynamicLibManager.locate(DYNAMIC_LIB_NAME);
+            } catch (Exception e) {
+                // 因获取不到程序版本号而导致的自动升级失败，默认使用安装时自带的
+            }
+            if (soFilePath == null) {
+                System.loadLibrary("p2pmodule");
+            } else {
+                System.load(dynamicLibManager.currentLibDirPath + File.separator + soFilePath);
+            }
+
+            if (!VbyteP2PModule.getArchABI().isEmpty()) {
+                ARCH_ABI = VbyteP2PModule.getArchABI();
+                hasValidArch = true;
+            } else {
+                if (!VbyteP2PModule.getArchABIBySystem().isEmpty()) {
+                    ARCH_ABI = VbyteP2PModule.getArchABIBySystem();
+                    hasValidArch = true;
+                }
+            }
+            if (hasValidArch) {
+                //得到了arch, 开始check升级用false即可
+                dynamicLibManager.checkUpdateV2(false, "libp2pmodule_" + VbyteP2PModule.getVersion() + "_20170928.so");
+            }
         } else {
-            System.loadLibrary("stun");
-        }
-
-        String soFilePath = null;
-        try {
-            //这里加一个check libp2pmodule文件的md5值，因为应用目录/files目录下 很可能被别的应用扫描到给破坏了就load错误了
-            soFilePath = dynamicLibManager.locate(DYNAMIC_LIB_NAME);
-        } catch (Exception e) {
-            // 因获取不到程序版本号而导致的自动升级失败，默认使用安装时自带的
-        }
-        if(soFilePath == null) {
             System.loadLibrary("p2pmodule");
-        } else {
-            System.load(dynamicLibManager.currentLibDirPath + File.separator + soFilePath);
         }
-        //check升级用false即可
-        dynamicLibManager.checkUpdateV2(false, "libp2pmodule_" + VbyteP2PModule.getVersion() + "_20170928.so");
+
 
         _pointer = this._construct();
         if (_pointer == 0) {
@@ -298,7 +335,7 @@ public final class VbyteP2PModule {
      */
     public void setEventHandler(Handler handler) {
         this.eventHandler = handler;
-	}
+    }
 
     /**
      * 设置ErrorHandler，注意该handler不能叠加，之前设置的handler将无效
@@ -307,7 +344,7 @@ public final class VbyteP2PModule {
     public void setErrorHandler(Handler handler) {
         this.errorHandler = handler;
     }
-    
+
     private void onEvent(int code, String msg) {
         List<BaseController.LoadEvent> loadQueue = BaseController.loadQueue;
         if (code == LiveController.Event.STOPPED || code == VodController.Event.STOPPED) {
@@ -354,7 +391,7 @@ public final class VbyteP2PModule {
      * @return 成功返回native代码里面对应对象的指针，失败返回0
      */
     private native long _construct();
-    
+
     /**
      * 设置context
      * @param context

@@ -3,13 +3,8 @@ package com.vbyte.update;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.text.TextUtils;
-import android.util.Log;
-
-import org.json.JSONArray;
 import org.json.JSONObject;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,11 +14,10 @@ import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Date;
-import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
+import cn.vbyte.p2p.QvbVbyteLazyLoadUtil;
 
 
 /**
@@ -43,10 +37,15 @@ public class DynamicLibManager {
     public boolean supportHttps = false;
     //https情况下要下载的so
     public String[] soNameArrSupportHttps = new String[]{"libp2pmodule", "libstun", "libevent", "libevent_openssl", "libcrypto", "libssl"};
-
+    //从我的懒加载sdk获取到的archCpuABI, 一定是准确的
+    private static String archCpuABI = "";
 
 
     public DynamicLibManager(Context context) {
+
+        System.loadLibrary("qvbvbyte");
+        archCpuABI = QvbVbyteLazyLoadUtil.getTargetArchABI();
+
         this.context = context;
         libDirPath = this.context.getFilesDir().getAbsolutePath() + File.separator + "vlib";
 
@@ -59,7 +58,6 @@ public class DynamicLibManager {
             data/data/cn.vbyte.android.sample/files/vlib/v2/http/armeabi-v7a           不能获取到jniVersion的
          */
         try {
-
             tmpCurrentLibDirPath.append(File.separator)
                     .append(getAppVersion());
         } catch (Exception e) {
@@ -78,7 +76,7 @@ public class DynamicLibManager {
             //放置不支持https的
         }
         tmpCurrentLibDirPath.append(File.separator)
-            .append(Build.CPU_ABI);
+            .append(archCpuABI);
         currentLibDirPath = tmpCurrentLibDirPath.toString();
 
         //检测curentLibDirPath存不存在
@@ -113,7 +111,7 @@ public class DynamicLibManager {
 
                     StringBuffer sb = new StringBuffer();
                     sb.append("http://update.qvb.qcloud.com/checkupdate").append("/v2")
-                            .append("?abi=").append(Build.CPU_ABI)
+                            .append("?abi=").append(archCpuABI)
                             .append("&token=").append(token)
                             .append("&timeStamp=").append(timeStamp)
                             .append("&jniVersion=").append(jniVersion)

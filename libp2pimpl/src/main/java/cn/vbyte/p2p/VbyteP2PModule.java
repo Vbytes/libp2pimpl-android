@@ -1,17 +1,12 @@
 package cn.vbyte.p2p;
 
 import android.content.Context;
-import android.os.Build;
 import android.os.Environment;
 import android.os.Message;
 import android.os.Handler;
-import android.util.Log;
-
 import java.io.File;
 import java.util.List;
-
 import com.vbyte.update.*;
-
 import static cn.vbyte.p2p.BaseController.curLoadEvent;
 
 /**

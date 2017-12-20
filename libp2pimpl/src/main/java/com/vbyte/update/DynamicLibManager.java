@@ -3,13 +3,9 @@ package com.vbyte.update;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.text.TextUtils;
-import android.util.Log;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,12 +14,11 @@ import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Date;
-import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 
 /**
@@ -34,18 +29,22 @@ public class DynamicLibManager {
 
     private Context context;
     private String libDirPath;
-    public String currentLibDirPath;
+    private String currentLibDirPath;
 
     //jni接口版本
-    public String jniVersion = "v2";
+    private String jniVersion = "v2";
     //非https要下载的so
-    public String[] soNameArr = new String[]{"libp2pmodule", "libstun", "libevent"};
-    public boolean supportHttps = false;
+    private String[] soNameArr = new String[]{"libp2pmodule", "libstun", "libevent"};
+    private boolean supportHttps = false;
     //https情况下要下载的so
-    public String[] soNameArrSupportHttps = new String[]{"libp2pmodule", "libstun", "libevent", "libevent_openssl", "libcrypto", "libssl"};
+    private String[] soNameArrSupportHttps = new String[]{"libp2pmodule", "libstun", "libevent", "libevent_openssl", "libcrypto", "libssl"};
+    private static String archCpuAbi = "";
 
-
-
+    /**
+     * cpuArch为传进来的，让这个类可以不依赖外面的类，cpuArch为 armeabi、armeabi-v7a、armeabi-v8a、x86、x86_64中的一个
+     * @param context
+     * @param
+     */
     public DynamicLibManager(Context context) {
         this.context = context;
         libDirPath = this.context.getFilesDir().getAbsolutePath() + File.separator + "vlib";
@@ -59,7 +58,6 @@ public class DynamicLibManager {
          data/data/cn.vbyte.android.sample/files/vlib/v2/http/armeabi-v7a           不能获取到jniVersion的
          */
         try {
-
             tmpCurrentLibDirPath.append(File.separator)
                     .append(getAppVersion());
         } catch (Exception e) {
@@ -77,13 +75,50 @@ public class DynamicLibManager {
             tmpCurrentLibDirPath.append("http");
             //放置不支持https的
         }
-        tmpCurrentLibDirPath.append(File.separator)
-                .append(Build.CPU_ABI);
-        currentLibDirPath = tmpCurrentLibDirPath.toString();
 
-        //检测curentLibDirPath存不存在
-        if(!(new File(currentLibDirPath)).exists()) {
-            (new File(currentLibDirPath)).mkdirs();
+        File tmpHttpOrHttpsDir = new File(tmpCurrentLibDirPath.toString());
+        if(!tmpHttpOrHttpsDir.exists()) {
+            tmpHttpOrHttpsDir.mkdirs();
+        }
+
+        currentLibDirPath = tmpCurrentLibDirPath.toString();
+        int archCpuAbiNum = 0;
+        String tmpArchAbi = "";
+        for (File file : tmpHttpOrHttpsDir.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                if(file.isDirectory()) {
+                    return true;
+                }
+                return false;
+            }
+        })) {
+            final String[] cpuAbisArr = {"armeabi", "armeabi-v7a", "arm64-v8a", "x86", "x86_64"};
+            archCpuAbiNum += 1;
+
+            if(Arrays.asList(cpuAbisArr).contains(file.getName())) {
+                tmpArchAbi = file.getName();
+            }
+        }
+
+        //如果扫描到一个文件夹获取到arch, 就可以加载了, archCpuAbi不为"" 可以使用locate不然不能用locate
+        if(archCpuAbiNum == 1 && !tmpArchAbi.isEmpty()) {
+            archCpuAbi = tmpArchAbi;
+
+            tmpCurrentLibDirPath.append(File.separator)
+                    .append(archCpuAbi);
+            currentLibDirPath = tmpCurrentLibDirPath.toString();
+
+            //检测curentLibDirPath存不存在
+            if(!(new File(currentLibDirPath)).exists()) {
+                (new File(currentLibDirPath)).mkdirs();
+            }
+        } else {
+            /**
+             * /data/data/cn.vbyte.android.sample/files/vlib/0.4.3.5/v2/http/ 下面有armeabii armeabi-v7a等2种以上的出现，就删除
+             * 一般是不会走到这个分支的
+             */
+            deleteDir(tmpHttpOrHttpsDir);
         }
     }
 
@@ -101,7 +136,22 @@ public class DynamicLibManager {
     }
 
     //第一次升级， true "", 第二次只检查libp2pmodule的升级
-    public void checkUpdateV2(final boolean firstDownload, final String soName) {
+    public void checkUpdateV2(final boolean firstDownload, final String soName, final String arch) {
+        /**
+         * 只有第一次下载的情况下，currentPath没有 endWith /armeabi-v7a
+         * 此时currentLibDirPath为
+         * /data/data/cn.vbyte.android.sample/files/vlib/0.4.3.5/v2/http
+         * 根据传进来的arch，创建文件夹
+         * /data/data/cn.vbyte.android.sample/files/vlib/0.4.3.5/v2/http/armeabi-v7a 这样的
+         */
+        if(!currentLibDirPath.endsWith(File.separator + arch)) {
+            currentLibDirPath = currentLibDirPath + File.separator + arch;
+            File tmpDir = new File(currentLibDirPath);
+            if(!tmpDir.exists()) {
+                tmpDir.mkdirs();
+            }
+        }
+        //使用传进来的arch
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -113,12 +163,11 @@ public class DynamicLibManager {
 
                     StringBuffer sb = new StringBuffer();
                     sb.append("http://update.qvb.qcloud.com/checkupdate").append("/v2")
-                            .append("?abi=").append(Build.CPU_ABI)
+                            .append("?abi=").append(arch)
                             .append("&token=").append(token)
                             .append("&timeStamp=").append(timeStamp)
                             .append("&jniVersion=").append(jniVersion)
                             .append("&packageName=").append(context.getPackageName());
-
 
                     if (supportHttps) {
                         sb.append("&supportHttps=true");
@@ -150,7 +199,6 @@ public class DynamicLibManager {
                         while ((line = input.readLine()) != null) {
                             jsonStr += line;
                         }
-
                         JSONObject jsonObj = new JSONObject(jsonStr);
 
                         if (jsonObj.has("downloadUrl")) {
@@ -295,6 +343,13 @@ public class DynamicLibManager {
     }
 
     public String locate(final String fileid) throws Exception {
+        /**
+         * 只有在 /data/data/cn.vbyte.android.sample/files/vlib/0.4.3.5/v2/http/ 下面，找不到armeabi-v7a这样的唯一arch, 此时加载系统库
+         */
+        if(archCpuAbi.isEmpty()) {
+            return null;
+        }
+
         //删除旧的版本号的version是为了极端情况下，升级失败，用户升级app就好了
         File libDir = new File(libDirPath);
         if (!libDir.exists()) {
@@ -342,7 +397,7 @@ public class DynamicLibManager {
         // 对比指纹是否正确
         String md5sum = MD5Util.MD5(destFile);
         if ((md5sum + ".so").toLowerCase(Locale.US).equals(md5.toLowerCase())) {
-            return (destFile == null ? null : destFile.getName());
+            return (destFile == null ? null : (currentLibDirPath + File.separator + destFile.getName()));
         }
         return null;
     }

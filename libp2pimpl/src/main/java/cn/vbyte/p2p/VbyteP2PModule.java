@@ -16,7 +16,11 @@ import static cn.vbyte.p2p.BaseController.curLoadEvent;
  */
 public final class VbyteP2PModule {
     //是否下载完全所有so
-    public static boolean hasAllJniSo = false;
+    private static boolean hasAllJniSo = false;
+
+    public synchronized static boolean hasAllLoadOk() {
+        return hasAllJniSo;
+    }
 
     public static class Event {
         /**
@@ -252,6 +256,17 @@ public final class VbyteP2PModule {
         dynamicLibManager = new DynamicLibManager(context);
         //存在下载好的文件标志
         if (dynamicLibManager.isSoReady()) {
+            if (dynamicLibManager.canNotSoLoad()) {
+                //不加载、不检验升级
+                return;
+            }
+            //canSoLoad文件标志没出现，canNot也没出现 开新线程校验逻辑，写canLoad canNotLoad标志
+            if(!dynamicLibManager.canSoLoad()) {
+                //如果so不能load, 那么
+                dynamicLibManager.checkLoadLibrary();
+                //这次不加载返回
+                return;
+            }
             try {
                 //增加check返回的so的md5值，因为可能被改动
                 String libp2pmoduleFileName = dynamicLibManager.locate("libp2pmodule");
@@ -315,6 +330,10 @@ public final class VbyteP2PModule {
     }
 
     private void onEvent(int code, String msg) {
+        if (code == VbyteP2PModule.Event.INITED) {
+            android.util.Log.e("s22s", "收到了intent");
+            VbyteP2PModule.hasAllJniSo = true;
+        }
         List<BaseController.LoadEvent> loadQueue = BaseController.loadQueue;
         if (code == LiveController.Event.STOPPED || code == VodController.Event.STOPPED) {
             if (curLoadEvent != null) {

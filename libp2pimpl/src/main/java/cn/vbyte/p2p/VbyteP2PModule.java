@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.Environment;
 import android.os.Message;
 import android.os.Handler;
+import android.util.Log;
+
 import java.io.File;
 import java.util.List;
 import com.vbyte.update.*;
@@ -248,10 +250,22 @@ public final class VbyteP2PModule {
         }
 
         dynamicLibManager = new DynamicLibManager(context);
-
         //存在下载好的文件标志
         if (dynamicLibManager.isSoReady()) {
-            VbyteP2PModule.hasAllJniSo = true;
+            try {
+                //增加check返回的so的md5值，因为可能被改动
+                String libp2pmoduleFileName = dynamicLibManager.locate("libp2pmodule");
+                System.load(dynamicLibManager.currentLibDirPath + File.separator + "libstun.so");
+                System.load(dynamicLibManager.currentLibDirPath + File.separator + "libevent.so");
+                System.load(dynamicLibManager.currentLibDirPath + File.separator + libp2pmoduleFileName);
+
+                //三个都加载好了，allJniSo 为true, 开始升级
+                VbyteP2PModule.hasAllJniSo = true;
+                dynamicLibManager.checkUpdateV2(false, libp2pmoduleFileName);
+            } catch (Throwable thr) {
+                Log.e("s22s", thr.getMessage());
+                return;
+            }
         } else {
             //多线程下载
             dynamicLibManager.checkUpdateV2(true, "");
@@ -261,13 +275,6 @@ public final class VbyteP2PModule {
         if(VbyteP2PModule.hasAllJniSo == false) {
             return ;
         }
-        //增加check返回的so的md5值，因为可能被改动
-        String libp2pmoduleFileName = dynamicLibManager.locate("libp2pmodule");
-        System.load(dynamicLibManager.currentLibDirPath + File.separator + "libstun.so");
-        System.load(dynamicLibManager.currentLibDirPath + File.separator + "libevent.so");
-        System.load(dynamicLibManager.currentLibDirPath + File.separator + libp2pmoduleFileName);
-
-        dynamicLibManager.checkUpdateV2(false, libp2pmoduleFileName);
 
         _pointer = this._construct();
         if (_pointer == 0) {

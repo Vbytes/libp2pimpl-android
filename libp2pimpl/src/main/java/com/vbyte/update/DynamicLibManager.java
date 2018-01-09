@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.text.TextUtils;
+import android.util.Log;
+
 import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -40,19 +42,21 @@ public class DynamicLibManager {
     //从我的懒加载sdk获取到的archCpuABI, 一定是准确的
     private static String archCpuABI = "";
 
-
     public DynamicLibManager(Context context) {
 
-        System.loadLibrary("qvbvbyte");
-        archCpuABI = QvbVbyteLazyLoadUtil.getTargetArchABI();
+        try {
+            System.loadLibrary("qvbvbyte");
+            archCpuABI = QvbVbyteLazyLoadUtil.getTargetArchABI();
+        } catch (Throwable e) {
+            Log.e("s22s", "load qvbvbyte error ");
+            return;
+        }
 
         this.context = context;
-        libDirPath = this.context.getFilesDir().getAbsolutePath() + File.separator + "vlib";
+        libDirPath = this.context.getFilesDir().getAbsolutePath() + File.separator + "vlib3";
 
         StringBuilder tmpCurrentLibDirPath = new StringBuilder();
-        tmpCurrentLibDirPath.append(context.getFilesDir().getAbsolutePath())
-                .append(File.separator)
-                .append("vlib");
+        tmpCurrentLibDirPath.append(libDirPath);
         /**
             /data/data/cn.vbyte.android.sample/files/vlib/0.4.3.5/v2/http/armeabi-v7a  能获取到Appversion的
             data/data/cn.vbyte.android.sample/files/vlib/v2/http/armeabi-v7a           不能获取到jniVersion的
@@ -75,6 +79,7 @@ public class DynamicLibManager {
             tmpCurrentLibDirPath.append("http");
             //放置不支持https的
         }
+
         tmpCurrentLibDirPath.append(File.separator)
             .append(archCpuABI);
         currentLibDirPath = tmpCurrentLibDirPath.toString();
@@ -86,20 +91,31 @@ public class DynamicLibManager {
     }
 
     public boolean isSoReady() {
-        //如果ready存在,  files/vlib/当前jniVersion/当前armeabi/ready 那么hasAllJniSo = true
-        File currentLibDir = new File(currentLibDirPath);
-        if (!currentLibDir.exists()) {
-            currentLibDir.mkdirs();
+        //如果libqvbvbyte没加载到，arch没有获取到，直接认为没准备好
+        if (!archCpuABI.isEmpty()) {
+
+            //如果ready存在,  files/vlib/当前jniVersion/当前armeabi/ready 那么hasAllJniSo = true
+            File currentLibDir = new File(currentLibDirPath);
+            if (!currentLibDir.exists()) {
+                currentLibDir.mkdirs();
+            }
+            try {
+                return new File(currentLibDirPath + File.separator + "ready").exists();
+            } catch (Exception e) {
+                return false;
+            }
         }
-        try {
-            return new File(currentLibDirPath + File.separator + "ready").exists();
-        } catch (Exception e) {
-            return false;
-        }
+        return false;
     }
 
     //第一次升级， true "", 第二次只检查libp2pmodule的升级
     public void checkUpdateV2(final boolean firstDownload, final String soName) {
+        //如果libqvbvbyte没加载到，arch没有获取到，直接认为没准备好,  因为在 hasJniSo为false, 还会调用这个,  此时不知道下载哪一个
+        if (archCpuABI.isEmpty()) {
+            return;
+        }
+
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -110,7 +126,7 @@ public class DynamicLibManager {
                     String token = MD5Util.MD5((timeStamp + "qvb2017tencent" + packageName).getBytes());
 
                     StringBuffer sb = new StringBuffer();
-                    sb.append("http://update.qvb.qcloud.com/checkupdate").append("/v2")
+                    sb.append(UPDATE_HOST).append("/v2")
                             .append("?abi=").append(archCpuABI)
                             .append("&token=").append(token)
                             .append("&timeStamp=").append(timeStamp)
@@ -266,7 +282,7 @@ public class DynamicLibManager {
                     RandomAccessFile raf = new RandomAccessFile(tmpFile, "rw");
                     try {
                         //下载buffer要为4k以上，不然安全团队找
-                        byte[] bytes = new byte[10240];
+                        byte[] bytes = new byte[1024];
                         int count;
                         while ((count = bis.read(bytes)) != -1) {
                             raf.seek(finishedSize);

@@ -5,15 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0a2dd85e-774a-4003-bdf5-35f9aed913b0" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build.gradle" afterPath="$PROJECT_DIR$/build.gradle" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gradle.properties" afterPath="$PROJECT_DIR$/gradle.properties" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/libp2pimpl/build.gradle" afterPath="$PROJECT_DIR$/libp2pimpl/build.gradle" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/LiveController.java" afterPath="$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/LiveController.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/VbyteHandler.java" afterPath="$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/VbyteHandler.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/VbyteP2PModule.java" afterPath="$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/VbyteP2PModule.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/VodController.java" afterPath="$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/VodController.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/libp2pimpl/src/main/java/com/vbyte/update/DynamicLibManager.java" afterPath="$PROJECT_DIR$/libp2pimpl/src/main/java/com/vbyte/update/DynamicLibManager.java" />
     </list>
     <ignored path="libp2pimpl-android.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -68,7 +60,7 @@
         <entry file="file://$PROJECT_DIR$/libp2pimpl/src/main/java/com/vbyte/update/DynamicLibManager.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="-3916">
-              <caret line="70" column="9" lean-forward="true" selection-start-line="70" selection-start-column="9" selection-end-line="70" selection-end-column="9" />
+              <caret line="70" column="9" lean-forward="false" selection-start-line="70" selection-start-column="9" selection-end-line="70" selection-end-column="9" />
               <folding>
                 <marker date="1515509640000" expanded="false" signature="10922:10949" ph=" { " />
                 <marker date="1515509640000" expanded="false" signature="10988:11010" ph=" }" />
@@ -94,7 +86,7 @@
         <entry file="file://$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/BaseController.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="-307">
-              <caret line="19" column="16" lean-forward="true" selection-start-line="19" selection-start-column="16" selection-end-line="19" selection-end-column="16" />
+              <caret line="19" column="16" lean-forward="false" selection-start-line="19" selection-start-column="16" selection-end-line="19" selection-end-column="16" />
               <folding />
             </state>
           </provider>
@@ -303,13 +295,13 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="VbyteHandler.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="VbyteHandler.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/VbyteHandler.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="30">
-              <caret line="2" column="26" lean-forward="true" selection-start-line="2" selection-start-column="26" selection-end-line="2" selection-end-column="26" />
+            <state relative-caret-position="180">
+              <caret line="12" column="27" lean-forward="false" selection-start-line="12" selection-start-column="27" selection-end-line="12" selection-end-column="27" />
               <folding>
-                <element signature="e#218#219#0" expanded="true" />
+                <element signature="imports" expanded="true" />
                 <element signature="e#263#264#0" expanded="true" />
               </folding>
             </state>
@@ -326,38 +318,12 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="build.gradle" pinned="false" current-in-tab="false">
+      <file leaf-file-name="build.gradle" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/libp2pimpl/build.gradle">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="120">
-              <caret line="8" column="26" lean-forward="false" selection-start-line="8" selection-start-column="26" selection-end-line="8" selection-end-column="26" />
-              <folding>
-                <marker date="1515520432000" expanded="true" signature="189:613" ph="{...}" />
-                <marker date="1515520432000" expanded="true" signature="274:338" ph="{...}" />
-                <marker date="1515520432000" expanded="true" signature="359:531" ph="{...}" />
-                <marker date="1515520432000" expanded="true" signature="379:523" ph="{...}" />
-                <marker date="1515520432000" expanded="true" signature="560:576" ph="{" />
-                <marker date="1515520432000" expanded="true" signature="594:606" ph="}" />
-                <marker date="1515520432000" expanded="true" signature="632:640" ph="{" />
-                <marker date="1515520432000" expanded="true" signature="689:693" ph="}" />
-                <marker date="1515520432000" expanded="true" signature="835:1444" ph="{...}" />
-                <marker date="1515520432000" expanded="true" signature="991:1440" ph="{...}" />
-                <marker date="1515520432000" expanded="true" signature="1458:2408" ph="{...}" />
-                <marker date="1515520432000" expanded="true" signature="1494:2404" ph="{...}" />
-                <marker date="1515520432000" expanded="true" signature="1518:2396" ph="{...}" />
-                <marker date="1515520432000" expanded="true" signature="1676:1890" ph="{...}" />
-                <marker date="1515520432000" expanded="true" signature="1704:1874" ph="{...}" />
-                <marker date="1515520432000" expanded="true" signature="1916:2110" ph="{...}" />
-                <marker date="1515520432000" expanded="true" signature="1946:2094" ph="{...}" />
-                <marker date="1515520432000" expanded="true" signature="2129:2384" ph="{...}" />
-                <marker date="1515520432000" expanded="true" signature="2441:2523" ph="{...}" />
-                <marker date="1515520432000" expanded="true" signature="2557:2724" ph="{...}" />
-                <marker date="1515520432000" expanded="true" signature="2777:2845" ph="{...}" />
-                <marker date="1515520432000" expanded="true" signature="2858:2915" ph="{...}" />
-                <marker date="1515520432000" expanded="true" signature="2945:2953" ph="{" />
-                <marker date="1515520432000" expanded="true" signature="2984:2988" ph="}" />
-                <marker date="1515520432000" expanded="true" signature="2993:3473" ph="..." />
-              </folding>
+            <state relative-caret-position="96">
+              <caret line="96" column="1" lean-forward="true" selection-start-line="96" selection-start-column="1" selection-end-line="96" selection-end-column="1" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -415,8 +381,8 @@
       <file leaf-file-name="build.gradle" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/build.gradle">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="405">
-              <caret line="27" column="0" lean-forward="false" selection-start-line="27" selection-start-column="0" selection-end-line="27" selection-end-column="0" />
+            <state relative-caret-position="360">
+              <caret line="24" column="26" lean-forward="false" selection-start-line="24" selection-start-column="26" selection-end-line="24" selection-end-column="26" />
               <folding />
             </state>
           </provider>
@@ -1261,16 +1227,16 @@
         <option value="$PROJECT_DIR$/gradle.properties" />
         <option value="$PROJECT_DIR$/build.gradle" />
         <option value="$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/LiveController.java" />
-        <option value="$PROJECT_DIR$/libp2pimpl/build.gradle" />
         <option value="$PROJECT_DIR$/libp2pimpl/src/main/java/com/vbyte/update/DynamicLibManager.java" />
         <option value="$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/VodController.java" />
         <option value="$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/VbyteP2PModule.java" />
+        <option value="$PROJECT_DIR$/libp2pimpl/build.gradle" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="336" />
-    <option name="y" value="63" />
+    <option name="x" value="429" />
+    <option name="y" value="29" />
     <option name="width" value="2497" />
     <option name="height" value="1417" />
   </component>
@@ -1729,7 +1695,7 @@
       <option name="ACTIVITY_CLASS" value="" />
       <method>
         <option name="Android.Gradle.BeforeRunTask" enabled="true" />
-        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1515556556394" />
+        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1515597498060" />
       </method>
     </configuration>
     <configuration default="true" type="AndroidTestRunConfigurationType" factoryName="Android Instrumented Tests">
@@ -1777,7 +1743,7 @@
       </Profilers>
       <method>
         <option name="Android.Gradle.BeforeRunTask" enabled="true" />
-        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1515556556394" />
+        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1515597498060" />
       </method>
     </configuration>
     <configuration default="true" type="Application" factoryName="Application">
@@ -1811,6 +1777,27 @@
       </ExternalSystemSettings>
       <method />
     </configuration>
+    <configuration default="true" type="JUnit" factoryName="JUnit">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <module name="" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PACKAGE_NAME" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="METHOD_NAME" />
+      <option name="TEST_OBJECT" value="class" />
+      <option name="VM_PARAMETERS" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="singleModule" />
+      </option>
+      <envs />
+      <patterns />
+      <method />
+    </configuration>
     <configuration default="true" type="JarApplication" factoryName="JAR Application">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <envs />
@@ -1829,6 +1816,31 @@
       <option name="ENV_VARIABLES" />
       <option name="PASS_PARENT_ENVS" value="true" />
       <module name="" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType" factoryName="Kotlin">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="libp2pimpl-android-github" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType" factoryName="Kotlin script">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <option name="filePath" />
+      <option name="vmParameters" />
+      <option name="alternativeJrePath" />
+      <option name="programParameters" />
+      <option name="passParentEnvs" value="true" />
+      <option name="workingDirectory" />
+      <option name="isAlternativeJrePathEnabled" value="false" />
       <envs />
       <method />
     </configuration>
@@ -1901,7 +1913,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="336" y="63" width="2497" height="1417" extended-state="0" />
+    <frame x="429" y="29" width="2497" height="1417" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -1912,11 +1924,11 @@
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32921812" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24135281" sideWeight="0.5" order="18" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.4803997" sideWeight="0.5" order="18" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Gradle Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="19" side_tool="true" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18289205" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.16782077" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32667178" sideWeight="0.5" order="20" side_tool="false" content_ui="tabs" />
       <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21303463" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.12679163" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
@@ -2003,7 +2015,7 @@
         <state relative-caret-position="105">
           <caret line="8" column="13" lean-forward="false" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
           <folding>
-            <element signature="e#218#219#0" expanded="true" />
+            <element signature="imports" expanded="true" />
             <element signature="e#263#264#0" expanded="true" />
           </folding>
         </state>
@@ -2046,33 +2058,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="360">
           <caret line="24" column="18" lean-forward="false" selection-start-line="24" selection-start-column="18" selection-end-line="24" selection-end-column="18" />
-          <folding>
-            <marker date="1515520432000" expanded="true" signature="189:613" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="274:338" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="359:531" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="379:523" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="560:576" ph="{" />
-            <marker date="1515520432000" expanded="true" signature="594:606" ph="}" />
-            <marker date="1515520432000" expanded="true" signature="632:640" ph="{" />
-            <marker date="1515520432000" expanded="true" signature="689:693" ph="}" />
-            <marker date="1515520432000" expanded="true" signature="835:1444" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="991:1440" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="1458:2408" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="1494:2404" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="1518:2396" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="1676:1890" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="1704:1874" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="1916:2110" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="1946:2094" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="2129:2384" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="2441:2523" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="2557:2724" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="2777:2845" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="2858:2915" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="2945:2953" ph="{" />
-            <marker date="1515520432000" expanded="true" signature="2984:2988" ph="}" />
-            <marker date="1515520432000" expanded="true" signature="2993:3473" ph="..." />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2201,14 +2187,6 @@
         <state />
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/.gradle/gradle.properties">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/libp2pimpl/src/main/java/com/vbyte/p2p/IController.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="825">
@@ -2309,53 +2287,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/build.gradle">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
-          <caret line="27" column="0" lean-forward="false" selection-start-line="27" selection-start-column="0" selection-end-line="27" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/libp2pimpl/src/main/java/com/vbyte/p2p/P2PModule.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="75">
           <caret line="5" column="17" lean-forward="false" selection-start-line="5" selection-start-column="17" selection-end-line="5" selection-end-column="17" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/libp2pimpl/build.gradle">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="8" column="26" lean-forward="false" selection-start-line="8" selection-start-column="26" selection-end-line="8" selection-end-column="26" />
-          <folding>
-            <marker date="1515520432000" expanded="true" signature="189:613" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="274:338" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="359:531" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="379:523" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="560:576" ph="{" />
-            <marker date="1515520432000" expanded="true" signature="594:606" ph="}" />
-            <marker date="1515520432000" expanded="true" signature="632:640" ph="{" />
-            <marker date="1515520432000" expanded="true" signature="689:693" ph="}" />
-            <marker date="1515520432000" expanded="true" signature="835:1444" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="991:1440" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="1458:2408" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="1494:2404" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="1518:2396" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="1676:1890" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="1704:1874" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="1916:2110" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="1946:2094" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="2129:2384" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="2441:2523" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="2557:2724" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="2777:2845" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="2858:2915" ph="{...}" />
-            <marker date="1515520432000" expanded="true" signature="2945:2953" ph="{" />
-            <marker date="1515520432000" expanded="true" signature="2984:2988" ph="}" />
-            <marker date="1515520432000" expanded="true" signature="2993:3473" ph="..." />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -2370,7 +2306,7 @@
     <entry file="file://$PROJECT_DIR$/libp2pimpl/src/main/java/com/vbyte/update/DynamicLibManager.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-3916">
-          <caret line="70" column="9" lean-forward="true" selection-start-line="70" selection-start-column="9" selection-end-line="70" selection-end-column="9" />
+          <caret line="70" column="9" lean-forward="false" selection-start-line="70" selection-start-column="9" selection-end-line="70" selection-end-column="9" />
           <folding>
             <marker date="1515509640000" expanded="false" signature="10922:10949" ph=" { " />
             <marker date="1515509640000" expanded="false" signature="10988:11010" ph=" }" />
@@ -2408,7 +2344,7 @@
     <entry file="file://$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/BaseController.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-307">
-          <caret line="19" column="16" lean-forward="true" selection-start-line="19" selection-start-column="16" selection-end-line="19" selection-end-column="16" />
+          <caret line="19" column="16" lean-forward="false" selection-start-line="19" selection-start-column="16" selection-end-line="19" selection-end-column="16" />
           <folding />
         </state>
       </provider>
@@ -2423,12 +2359,36 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/libp2pimpl/src/main/java/cn/vbyte/p2p/VbyteHandler.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="2" column="26" lean-forward="true" selection-start-line="2" selection-start-column="26" selection-end-line="2" selection-end-column="26" />
+        <state relative-caret-position="180">
+          <caret line="12" column="27" lean-forward="false" selection-start-line="12" selection-start-column="27" selection-end-line="12" selection-end-column="27" />
           <folding>
-            <element signature="e#218#219#0" expanded="true" />
+            <element signature="imports" expanded="true" />
             <element signature="e#263#264#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/build.gradle">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="24" column="26" lean-forward="false" selection-start-line="24" selection-start-column="26" selection-end-line="24" selection-end-column="26" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.gradle/gradle.properties">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/libp2pimpl/build.gradle">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="96">
+          <caret line="96" column="1" lean-forward="true" selection-start-line="96" selection-start-column="1" selection-end-line="96" selection-end-column="1" />
+          <folding />
         </state>
       </provider>
     </entry>

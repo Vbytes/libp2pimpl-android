@@ -68,7 +68,7 @@ public final class LiveController extends BaseController implements IController 
     private long _pointer;
 
     private LiveController() {
-        if (VbyteP2PModule.hasAllJniSo) {
+        if (VbyteP2PModule.isAllLoadOk()) {
             _pointer = _construct();
         }
     }
@@ -86,7 +86,7 @@ public final class LiveController extends BaseController implements IController 
     public void load(String channel, String resolution, double startTime, OnLoadedListener listener)
             throws Exception {
 
-        if (VbyteP2PModule.hasAllJniSo) {
+        if (VbyteP2PModule.isAllLoadOk()) {
             if (!loadQueue.isEmpty()) {
                 loadQueue.clear();
                 throw new Exception("You must forget unload last channel!");
@@ -118,7 +118,7 @@ public final class LiveController extends BaseController implements IController 
      */
     @Override
     public void unload() {
-        if (VbyteP2PModule.hasAllJniSo) {
+        if (VbyteP2PModule.isAllLoadOk()) {
             //当前有事件的时候, 才unload, 屏蔽空unload
             if (curLoadEvent != null) {
                 super.unload();

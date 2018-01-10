@@ -2,11 +2,17 @@ package cn.vbyte.p2p;
 
 import android.os.Handler;
 import android.os.Message;
+import android.os.Looper;
 
 /**
  * Created by passion on 16-8-23.
  */
 public class VbyteHandler extends Handler {
+
+
+    public VbyteHandler() {
+        super(Looper.getMainLooper());
+    }
 
     @Override
     public void handleMessage(Message msg) {

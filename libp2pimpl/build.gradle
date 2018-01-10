@@ -103,10 +103,10 @@
 //task findConventions << {
 //    println project.getConvention()
 //}
-//
-//
-//
-//
+
+
+
+
 apply plugin: 'com.android.library'
 
 android {

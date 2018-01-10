@@ -97,7 +97,7 @@ public final class VodController extends BaseController implements IController {
     private UrlGenerator urlGenerator;
 
     private VodController() {
-        if (VbyteP2PModule.hasAllJniSo) {
+        if (VbyteP2PModule.isAllLoadOk()) {
             _pointer = _construct();
         }
 
@@ -122,7 +122,7 @@ public final class VodController extends BaseController implements IController {
     public void load(String channel, String resolution, double startTime, OnLoadedListener listener)
             throws  Exception {
         //如果所有jniVersion全部是齐全的
-        if (VbyteP2PModule.hasAllJniSo) {
+        if (VbyteP2PModule.isAllLoadOk()) {
             if (!loadQueue.isEmpty()) {
                 loadQueue.clear();
                 throw new Exception("You must forget to unload last channel!");
@@ -167,14 +167,19 @@ public final class VodController extends BaseController implements IController {
 
     @Override
     protected void loadDirectly(String url, String resolution, double startTime) {
-        this._load(_pointer, url, resolution, startTime);
+        if (VbyteP2PModule.isAllLoadOk()) {
+            this._load(_pointer, url, resolution, startTime);
+        }
     }
 
     /**
      * 获取点播视频的总时长
      */
     public int getDuration() {
-        return this._getDuration(_pointer);
+        if (VbyteP2PModule.isAllLoadOk()) {
+            return this._getDuration(_pointer);
+        }
+        return 0;
     }
 
     /**
@@ -199,7 +204,7 @@ public final class VodController extends BaseController implements IController {
      */
     @Override
     public void seek(double startTime) {
-        if (VbyteP2PModule.hasAllJniSo) {
+        if (VbyteP2PModule.isAllLoadOk()) {
             this._seek(_pointer, startTime);
         }
     }
@@ -209,7 +214,7 @@ public final class VodController extends BaseController implements IController {
      */
     @Override
     public void pause() {
-        if (VbyteP2PModule.hasAllJniSo) {
+        if (VbyteP2PModule.isAllLoadOk()) {
             this._pause(_pointer);
         }
     }
@@ -219,7 +224,7 @@ public final class VodController extends BaseController implements IController {
      */
     @Override
     public void resume() {
-        if (VbyteP2PModule.hasAllJniSo) {
+        if (VbyteP2PModule.isAllLoadOk()) {
             this._resume(_pointer);
         }
     }
@@ -229,7 +234,7 @@ public final class VodController extends BaseController implements IController {
      */
     @Override
     public void unload() {
-        if (VbyteP2PModule.hasAllJniSo) {
+        if (VbyteP2PModule.isAllLoadOk()) {
             //当前有事件的时候, 才unload, 屏蔽空unload
             if (curLoadEvent != null) {
                 super.unload();
@@ -240,7 +245,7 @@ public final class VodController extends BaseController implements IController {
 
     @Override
     public String playStreamInfo() {
-        if (VbyteP2PModule.hasAllJniSo) {
+        if (VbyteP2PModule.isAllLoadOk()) {
             return this._playStreamInfo(_pointer);
         } else {
             return "";

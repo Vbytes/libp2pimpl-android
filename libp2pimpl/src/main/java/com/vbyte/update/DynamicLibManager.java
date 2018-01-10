@@ -44,7 +44,7 @@ public class DynamicLibManager {
 
     public DynamicLibManager(Context context) {
 
-        libDirPath = this.context.getFilesDir().getAbsolutePath() + File.separator + "vlib3";
+        libDirPath = context.getFilesDir().getAbsolutePath() + File.separator + "vlib3";
         if(!(new File(libDirPath)).exists()) {
             (new File(libDirPath)).mkdirs();
         }
@@ -53,10 +53,8 @@ public class DynamicLibManager {
             System.loadLibrary("qvbvbyte");
             archCpuABI = QvbVbyteLazyLoadUtil.getTargetArchABI();
         } catch (Throwable e) {
-            Log.e("s22s", "load qvbvbyte error ");
             return;
         }
-
 
         this.context = context;
         StringBuilder tmpCurrentLibDirPath = new StringBuilder();
@@ -112,54 +110,12 @@ public class DynamicLibManager {
         return false;
     }
 
-    //检测有没有文件标志位加载so的
-    public boolean canSoLoad() {
-        //目录为 /data/data/cn.vbyte.android.sample/files/vlib/soCanLoad, 存在就可以加载so
-        return new File(libDirPath + File.separator + "soCanLoad").exists();
-    }
-
-    //检测有没有文件标志位加载so的,
-    public boolean canNotSoLoad() {
-        //目录为 /data/data/cn.vbyte.android.sample/files/vlib/soCanNotLoad, 存在就可以禁止加载so
-        return new File(libDirPath + File.separator + "soCanNotLoad").exists();
-    }
-
-
-
-    public void checkLoadLibrary() {
-
-        final String libp2pmoduleFileName = locate("libp2pmodule");
-        final String stun_path = currentLibDirPath + File.separator + "libstun.so";
-        final String event_path = currentLibDirPath + File.separator + "libevent.so";
-        final String p2pmodule_path = currentLibDirPath + File.separator + libp2pmoduleFileName;
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    long startTime = System.currentTimeMillis();
-                    System.load(stun_path);
-                    System.load(event_path);
-                    System.load(p2pmodule_path);
-                    long costTime = System.currentTimeMillis() - startTime;
-                    if(costTime < 1000) {
-                        new
-                    }
-                } catch (Throwable thr) {
-
-                }
-            }
-        }).start();
-    }
-
     //第一次升级， true "", 第二次只检查libp2pmodule的升级
     public void checkUpdateV2(final boolean firstDownload, final String soName) {
         //如果libqvbvbyte没加载到，arch没有获取到，直接认为没准备好,  因为在 hasJniSo为false, 还会调用这个,  此时不知道下载哪一个
         if (archCpuABI.isEmpty()) {
             return;
         }
-
-
         new Thread(new Runnable() {
             @Override
             public void run() {

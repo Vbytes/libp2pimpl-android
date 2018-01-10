@@ -5,7 +5,7 @@ import android.os.Environment;
 import android.os.Message;
 import android.os.Handler;
 import android.util.Log;
-
+import android.os.Looper;
 import java.io.File;
 import java.util.List;
 import com.vbyte.update.*;
@@ -15,11 +15,16 @@ import static cn.vbyte.p2p.BaseController.curLoadEvent;
  * Created by passion on 15-11-5.
  */
 public final class VbyteP2PModule {
-    //是否下载完全所有so
-    private static boolean hasAllJniSo = false;
 
-    public synchronized static boolean hasAllLoadOk() {
-        return hasAllJniSo;
+    //是否加载成功
+    private static boolean allLoadOk = false;
+
+    public synchronized static boolean isAllLoadOk() {
+        return allLoadOk;
+    }
+
+    public synchronized static void setAllLoadOk(boolean allLoadOk) {
+        VbyteP2PModule.allLoadOk = allLoadOk;
     }
 
     public static class Event {
@@ -128,9 +133,7 @@ public final class VbyteP2PModule {
     // 持久保存SDK版本号
     private static String SDK_VERSION;
     private static String ARCH_ABI;
-    private static VbyteP2PModule instance;
-
-
+    private volatile static boolean vbytep2pModuleLoading = false;
 
     /**
      * 新启动一个p2p模块，注意四个参数绝对不能为null,在程序启动时调用
@@ -142,16 +145,29 @@ public final class VbyteP2PModule {
      * @return P2PModule的唯一实例
      * @throws Exception 当参数为null或者p2p模块加载不成功时抛出异常
      */
-    public static VbyteP2PModule create(Context context, String appId, String appKey, String appSecretKey)
+    public static VbyteP2PModule create(Context context1, String appId1, String appKey1, String appSecretKey1)
             throws Exception {
-        if (instance == null) {
-            instance = new VbyteP2PModule(context, appId, appKey, appSecretKey);
-        }
-        return instance;
-    }
+        final Context context = context1;
+        final String appId = appId1;
+        final String appKey = appKey1;
+        final String appSecretKey = appSecretKey1;
+        //如果不在加载中那么
+        if(!vbytep2pModuleLoading) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
 
-    public static VbyteP2PModule getInstance() {
-        return instance;
+                    Looper.prepare();
+                    vbytep2pModuleLoading = true;
+                    try {
+                        VbyteP2PModule vbyteP2PModule = new VbyteP2PModule(context, appId, appKey, appSecretKey);
+                    } catch (Exception e) {
+                        //错误
+                    }
+                }
+            }).start();
+        }
+        return null;
     }
 
     /**
@@ -160,7 +176,7 @@ public final class VbyteP2PModule {
      * @return P2PModule SDK的版本号
      */
     public static String getVersion() {
-        if(VbyteP2PModule.hasAllJniSo == true) {
+        if(VbyteP2PModule.isAllLoadOk() == true) {
             if (SDK_VERSION == null) {
                 SDK_VERSION = VbyteP2PModule._version();
             }
@@ -175,7 +191,7 @@ public final class VbyteP2PModule {
      * @return armeabi|armeabi-v7a|arm64-v8a|x86|x86_64
      */
     private static String getArchABI() {
-        if(VbyteP2PModule.hasAllJniSo == true) {
+        if(VbyteP2PModule.isAllLoadOk() == true) {
             if (ARCH_ABI == null) {
                 ARCH_ABI = VbyteP2PModule._targetArchABI();
             }
@@ -189,7 +205,7 @@ public final class VbyteP2PModule {
      */
     public static void enableDebug() {
         //如果hasAllJniSo, 那么enable debug
-        if(VbyteP2PModule.hasAllJniSo) {
+        if(VbyteP2PModule.isAllLoadOk()) {
             VbyteP2PModule._enableDebug();
         }
     }
@@ -242,31 +258,24 @@ public final class VbyteP2PModule {
     // 事件监听gut
     private Handler eventHandler = null;
     private Handler errorHandler = null;
-    private Handler vbyteHandler = new VbyteHandler();
+    private Handler vbyteHandler;
     private DynamicLibManager dynamicLibManager;
     // native代码对应的对象实例，标准做法
     private long _pointer;
 
-    private VbyteP2PModule(Context context, String appId, String appKey, String appSecretKey)
+    public VbyteP2PModule(Context context, String appId, String appKey, String appSecretKey)
             throws Exception {
         if (context == null || appId == null || appKey == null || appSecretKey == null) {
             throw new NullPointerException("context or appId or appKey or appSecretKey can't be null when init p2p live stream!");
         }
 
         dynamicLibManager = new DynamicLibManager(context);
-        //存在下载好的文件标志
+        vbyteHandler = new VbyteHandler();
+        /**
+         * 走到这里就是so 可以加载
+         * 存在下载好的文件标志
+         */
         if (dynamicLibManager.isSoReady()) {
-            if (dynamicLibManager.canNotSoLoad()) {
-                //不加载、不检验升级
-                return;
-            }
-            //canSoLoad文件标志没出现，canNot也没出现 开新线程校验逻辑，写canLoad canNotLoad标志
-            if(!dynamicLibManager.canSoLoad()) {
-                //如果so不能load, 那么
-                dynamicLibManager.checkLoadLibrary();
-                //这次不加载返回
-                return;
-            }
             try {
                 //增加check返回的so的md5值，因为可能被改动
                 String libp2pmoduleFileName = dynamicLibManager.locate("libp2pmodule");
@@ -275,40 +284,35 @@ public final class VbyteP2PModule {
                 System.load(dynamicLibManager.currentLibDirPath + File.separator + libp2pmoduleFileName);
 
                 //三个都加载好了，allJniSo 为true, 开始升级
-                VbyteP2PModule.hasAllJniSo = true;
                 dynamicLibManager.checkUpdateV2(false, libp2pmoduleFileName);
             } catch (Throwable thr) {
                 Log.e("s22s", thr.getMessage());
                 return;
             }
+
+            _pointer = this._construct();
+            if (_pointer == 0) {
+                throw new RuntimeException("Can not init P2P");
+            }
+
+            // TODO: 获取包名、cacheDir、diskDir等信息传入instance
+            this._setContext(_pointer, context);
+            String cacheDir = context.getCacheDir().getAbsolutePath();
+            try {
+                String diskDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+                this._setDiskDir(_pointer, diskDir);
+            } catch (Exception e) {
+                this._setDiskDir(_pointer, cacheDir);
+            }
+            this._setCacheDir(_pointer, cacheDir);
+            this._setAppId(_pointer, appId);
+            this._setAppKey(_pointer, appKey);
+            this._setAppSecretKey(_pointer, appSecretKey);
         } else {
             //多线程下载
             dynamicLibManager.checkUpdateV2(true, "");
+            return;
         }
-
-        //如果so不齐全，开始下载并且
-        if(VbyteP2PModule.hasAllJniSo == false) {
-            return ;
-        }
-
-        _pointer = this._construct();
-        if (_pointer == 0) {
-            throw new RuntimeException("Can not init P2P");
-        }
-
-        // TODO: 获取包名、cacheDir、diskDir等信息传入instance
-        this._setContext(_pointer, context);
-        String cacheDir = context.getCacheDir().getAbsolutePath();
-        try {
-            String diskDir = Environment.getExternalStorageDirectory().getAbsolutePath();
-            this._setDiskDir(_pointer, diskDir);
-        } catch (Exception e) {
-            this._setDiskDir(_pointer, cacheDir);
-        }
-        this._setCacheDir(_pointer, cacheDir);
-        this._setAppId(_pointer, appId);
-        this._setAppKey(_pointer, appKey);
-        this._setAppSecretKey(_pointer, appSecretKey);
     }
 
     /**
@@ -332,7 +336,9 @@ public final class VbyteP2PModule {
     private void onEvent(int code, String msg) {
         if (code == VbyteP2PModule.Event.INITED) {
             android.util.Log.e("s22s", "收到了intent");
-            VbyteP2PModule.hasAllJniSo = true;
+
+            VbyteP2PModule.setAllLoadOk(true);
+            return;
         }
         List<BaseController.LoadEvent> loadQueue = BaseController.loadQueue;
         if (code == LiveController.Event.STOPPED || code == VodController.Event.STOPPED) {

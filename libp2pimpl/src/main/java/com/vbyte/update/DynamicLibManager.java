@@ -342,6 +342,11 @@ public class DynamicLibManager {
         }).start();
     }
 
+    //兼容星空的 老版本jar 调用的
+    public void checkUpdate(final String fileId, final String version, final String abi) {
+
+    }
+
     public String locate(final String fileid) throws Exception {
         /**
          * 只有在 /data/data/cn.vbyte.android.sample/files/vlib/0.4.3.5/v2/http/ 下面，找不到armeabi-v7a这样的唯一arch, 此时加载系统库

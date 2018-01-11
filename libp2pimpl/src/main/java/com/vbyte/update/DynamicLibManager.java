@@ -42,7 +42,18 @@ public class DynamicLibManager {
     //从我的懒加载sdk获取到的archCpuABI, 一定是准确的
     private static String archCpuABI = "";
 
-    public DynamicLibManager(Context context) {
+
+    private static DynamicLibManager instance;
+    private DynamicLibManager (){}
+    public static synchronized DynamicLibManager getInstance(Context context) {
+        if (instance == null) {
+            instance = new DynamicLibManager(context);
+        }
+        return instance;
+    }
+
+
+    private DynamicLibManager(Context context) {
 
         libDirPath = context.getFilesDir().getAbsolutePath() + File.separator + "vlib3";
         if(!(new File(libDirPath)).exists()) {
@@ -89,6 +100,55 @@ public class DynamicLibManager {
         //检测curentLibDirPath存不存在
         if(!(new File(currentLibDirPath)).exists()) {
             (new File(currentLibDirPath)).mkdirs();
+        }
+    }
+
+    /**
+     * 分别对应
+     */
+    public enum ForbidLoadLibrary {
+        NoFirst, OnlyFist, FisrtAndLoadSuccess;
+    }
+    /*
+     *                   qvbFirstLoad
+     *                   qvbLoadSuccess
+     *
+     */
+    public ForbidLoadLibrary forbidLoadLibrary() {
+        try {
+            File qvbFirstLoad = new File(libDirPath + File.separator + "qvbFirstLoad");
+            if (qvbFirstLoad.exists()) {
+                File qvbLoadSuccess = new File(libDirPath + File.separator + "qvbLoadSuccess");
+                if(qvbLoadSuccess.exists()) {
+                    return ForbidLoadLibrary.FisrtAndLoadSuccess;
+                } else {
+                    //存在qvbFirstLoad、不存在qvbLoadSuccess，禁止加载
+                    return ForbidLoadLibrary.OnlyFist;
+                }
+            } else {
+                return ForbidLoadLibrary.NoFirst;
+            }
+        } catch (Exception e) {
+            //如果读写文件出现异常先暂时本次不加载把
+            return ForbidLoadLibrary.OnlyFist;
+        }
+    }
+
+    public void createQvbLoadSuccess() {
+        try {
+            File qvbLoadSuccess = new File(libDirPath + File.separator + "qvbLoadSuccess");
+            qvbLoadSuccess.createNewFile();
+        } catch (Exception e) {
+            //没创建成功不处理
+        }
+    }
+
+    public void createQvbFirstLoad() {
+        try {
+            File qvbFirstLoad = new File(libDirPath + File.separator + "qvbFirstLoad");
+            qvbFirstLoad.createNewFile();
+        } catch (Exception e) {
+            //没创建成功不处理
         }
     }
 

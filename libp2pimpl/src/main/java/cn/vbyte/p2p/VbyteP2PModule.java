@@ -6,9 +6,17 @@ import android.os.Message;
 import android.os.Handler;
 import android.util.Log;
 import android.os.Looper;
+
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
 import com.vbyte.update.*;
+
 import static cn.vbyte.p2p.BaseController.curLoadEvent;
 
 /**
@@ -134,6 +142,8 @@ public final class VbyteP2PModule {
     private static String SDK_VERSION;
     private static String ARCH_ABI;
     private volatile static boolean vbytep2pModuleLoading = false;
+    private static DynamicLibManager.ForbidLoadLibrary forbidLoadLibraryRet;
+    private static Context originContext;
 
     /**
      * 新启动一个p2p模块，注意四个参数绝对不能为null,在程序启动时调用
@@ -144,28 +154,61 @@ public final class VbyteP2PModule {
      * @param appSecretKey 应用加密混淆字段，可选
      * @return P2PModule的唯一实例
      * @throws Exception 当参数为null或者p2p模块加载不成功时抛出异常
+     *                   <p>
+     *                   这里检测可以加载，且文件存在，就不在线程里面了，2个线程的同步很慢。导致某些没加载进去
+     *
+     *
+     *
+     *                   qvbFirstLoad
+     *                   qvbLoadSuccess
      */
     public static VbyteP2PModule create(Context context1, String appId1, String appKey1, String appSecretKey1)
             throws Exception {
+        originContext = context1;
         final Context context = context1;
         final String appId = appId1;
         final String appKey = appKey1;
         final String appSecretKey = appSecretKey1;
-        //如果不在加载中那么
-        if(!vbytep2pModuleLoading) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
 
-                    Looper.prepare();
-                    vbytep2pModuleLoading = true;
-                    try {
-                        VbyteP2PModule vbyteP2PModule = new VbyteP2PModule(context, appId, appKey, appSecretKey);
-                    } catch (Exception e) {
-                        //错误
+        DynamicLibManager dynamicLibManager = DynamicLibManager.getInstance(context);
+        forbidLoadLibraryRet = dynamicLibManager.forbidLoadLibrary();
+        if(forbidLoadLibraryRet == DynamicLibManager.ForbidLoadLibrary.OnlyFist) {
+            return null;
+        } else if (forbidLoadLibraryRet == DynamicLibManager.ForbidLoadLibrary.NoFirst) {
+            if (!vbytep2pModuleLoading) {
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+                Future<String> future = executor.submit(new Callable<String>() {
+                    @Override
+                    public String call() throws Exception {
+                        Looper.prepare();
+                        vbytep2pModuleLoading = true;
+                        try {
+                            VbyteP2PModule vbyteP2PModule = new VbyteP2PModule(context, appId, appKey, appSecretKey);
+                        } catch (Exception e) {
+                            //错误
+                        }
+                        return "";
                     }
+                });
+
+                try {
+                    future.get(3000, TimeUnit.MILLISECONDS);
+                } catch (Exception e) {
+                    android.util.Log.e("s22s", "超时");
+                    android.util.Log.e("s22s", "线程被kill");
+                    executor.shutdownNow();
+                    //杀死进程之后，设置为vbytep2pModuleLoading false
+                    vbytep2pModuleLoading = false;
+                    android.util.Log.e("s22s", "线程被kill  after");
                 }
-            }).start();
+            }
+        } else if (forbidLoadLibraryRet == DynamicLibManager.ForbidLoadLibrary.FisrtAndLoadSuccess) {
+            android.util.Log.e("s22s", "同步加载");
+            try {
+                VbyteP2PModule vbyteP2PModule = new VbyteP2PModule(context, appId, appKey, appSecretKey);
+            } catch (Exception e) {
+                //错误
+            }
         }
         return null;
     }
@@ -176,7 +219,7 @@ public final class VbyteP2PModule {
      * @return P2PModule SDK的版本号
      */
     public static String getVersion() {
-        if(VbyteP2PModule.isAllLoadOk() == true) {
+        if (VbyteP2PModule.isAllLoadOk() == true) {
             if (SDK_VERSION == null) {
                 SDK_VERSION = VbyteP2PModule._version();
             }
@@ -191,7 +234,7 @@ public final class VbyteP2PModule {
      * @return armeabi|armeabi-v7a|arm64-v8a|x86|x86_64
      */
     private static String getArchABI() {
-        if(VbyteP2PModule.isAllLoadOk() == true) {
+        if (VbyteP2PModule.isAllLoadOk() == true) {
             if (ARCH_ABI == null) {
                 ARCH_ABI = VbyteP2PModule._targetArchABI();
             }
@@ -205,7 +248,7 @@ public final class VbyteP2PModule {
      */
     public static void enableDebug() {
         //如果hasAllJniSo, 那么enable debug
-        if(VbyteP2PModule.isAllLoadOk()) {
+        if (VbyteP2PModule.isAllLoadOk()) {
             VbyteP2PModule._enableDebug();
         }
     }
@@ -218,8 +261,11 @@ public final class VbyteP2PModule {
     }
 
     public static void setLoggerCallback(LoggerCallback logger) {
-        LoggerCallback.setLoggerCallback(logger);
-        VbyteP2PModule._setLoggerCallback();
+        //如果hasAllJniSo, 那么enable debug
+        if (VbyteP2PModule.isAllLoadOk()) {
+            LoggerCallback.setLoggerCallback(logger);
+            VbyteP2PModule._setLoggerCallback();
+        }
     }
 
     /**
@@ -269,14 +315,19 @@ public final class VbyteP2PModule {
             throw new NullPointerException("context or appId or appKey or appSecretKey can't be null when init p2p live stream!");
         }
 
-        dynamicLibManager = new DynamicLibManager(context);
+        dynamicLibManager = DynamicLibManager.getInstance(context);
         vbyteHandler = new VbyteHandler();
         /**
          * 走到这里就是so 可以加载
          * 存在下载好的文件标志
          */
         if (dynamicLibManager.isSoReady()) {
+            android.util.Log.e("s22s", "开始进入线程开始load了");
             try {
+                //第一次不存在而且开始load的时候创建
+                if (forbidLoadLibraryRet == DynamicLibManager.ForbidLoadLibrary.NoFirst) {
+                    dynamicLibManager.createQvbFirstLoad();
+                }
                 //增加check返回的so的md5值，因为可能被改动
                 String libp2pmoduleFileName = dynamicLibManager.locate("libp2pmodule");
                 System.load(dynamicLibManager.currentLibDirPath + File.separator + "libstun.so");
@@ -337,6 +388,9 @@ public final class VbyteP2PModule {
         if (code == VbyteP2PModule.Event.INITED) {
             android.util.Log.e("s22s", "收到了intent");
 
+            if(forbidLoadLibraryRet == DynamicLibManager.ForbidLoadLibrary.NoFirst) {
+                DynamicLibManager.getInstance(originContext).createQvbLoadSuccess();
+            }
             VbyteP2PModule.setAllLoadOk(true);
             return;
         }

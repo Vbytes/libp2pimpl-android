@@ -123,6 +123,20 @@ public final class LiveController extends BaseController implements IController 
         return _getCurrentPlayTime(_pointer);
     }
 
+    /*
+     *获取统计数据接口
+     */
+    public long getStatistic(int type) {
+        return this._getStatistic(_pointer, type);
+    }
+
+    /*
+
+     */
+    public void resetStatistic(int type) {
+        this._resetStatistic(_pointer, type);
+    }
+
     @Override
     protected void onEvent(int code, String msg) {
         switch (code) {
@@ -142,4 +156,7 @@ public final class LiveController extends BaseController implements IController 
     private native void _unload(long pointer);
 
     private native int _getCurrentPlayTime(long pointer);
+
+    private native long _getStatistic(long pointer, int type);
+    private native void _resetStatistic(long pointer, int type);
 }

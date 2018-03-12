@@ -12,6 +12,12 @@ import com.vbyte.p2p.OnLoadedListener;
 public final class LiveController extends BaseController implements IController {
     private static final String TAG = "cn.vbyte.p2p.live";
 
+    public enum StatisticType {
+
+        LIVE_CDN_VALUE, LIVE_P2P_VALUE, LIVE_BOTH_VALUE
+
+    }
+
     public static class Event {
         /**
          * 启动一个直播流

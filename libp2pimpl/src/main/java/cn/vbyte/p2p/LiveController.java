@@ -49,7 +49,11 @@ public final class LiveController extends BaseController implements IController 
         /**
          * 此错误表明传入的分辨率不对
          */
-        public static final int RESOLUTION_INVALID = 10011001;
+        public static final int RESOLUTION_INVALID = 10011002;
+
+        public static final int LIVE_FORMAT_INVALID = 10011003;
+
+        public static final int LIVE_SOURCE_DATA_ERROR = 10011004;
     }
 
     private static LiveController instance;

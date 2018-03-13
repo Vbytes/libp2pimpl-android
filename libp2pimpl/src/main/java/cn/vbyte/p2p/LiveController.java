@@ -34,6 +34,8 @@ public final class LiveController extends BaseController implements IController 
          * 告诉应用直播流播放异常，需要回源播放
          */
         public static final int BACK_TO_ORIGIN = 10010005;
+        public static final int STATISTICS = 10010006;
+
     }
 
     public static class Error {
@@ -48,7 +50,11 @@ public final class LiveController extends BaseController implements IController 
         /**
          * 此错误表明传入的分辨率不对
          */
-        public static final int RESOLUTION_INVALID = 10011001;
+        public static final int RESOLUTION_INVALID = 10011002;
+
+        public static final int LIVE_FORMAT_INVALID = 10011003;
+
+        public static final int LIVE_SOURCE_DATA_ERROR = 10011004;
     }
 
     private static LiveController instance;

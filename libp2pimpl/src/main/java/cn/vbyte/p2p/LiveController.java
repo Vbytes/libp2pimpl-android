@@ -88,7 +88,7 @@ public final class LiveController extends BaseController implements IController 
             throws Exception {
         if (!loadQueue.isEmpty()) {
             loadQueue.clear();
-            throw new Exception("You must forget unload last channel!");
+//            throw new Exception("You must forget unload last channel!");
         }
 
         LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, listener);
@@ -149,7 +149,10 @@ public final class LiveController extends BaseController implements IController 
             case Event.STARTED:
                 if (curLoadEvent != null) {
                     Uri uri = Uri.parse(msg);
-                    curLoadEvent.listener.onLoaded(uri);
+                    if (curLoadEvent.listener != null) {
+                        curLoadEvent.listener.onLoaded(uri);
+                        curLoadEvent.listener = null;
+                    }
                 }
                 break;
         }

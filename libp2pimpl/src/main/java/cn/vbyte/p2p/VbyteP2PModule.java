@@ -290,6 +290,7 @@ public final class VbyteP2PModule {
         this._setAppId(_pointer, appId);
         this._setAppKey(_pointer, appKey);
         this._setAppSecretKey(_pointer, appSecretKey);
+//        LiveController.getInstance();//首屏优化需要放开
     }
 
     /**
@@ -318,7 +319,8 @@ public final class VbyteP2PModule {
                 curLoadEvent = loadQueue.get(0);
                 loadQueue.remove(0);
                 if (curLoadEvent.videoType == BaseController.VIDEO_LIVE) {
-                    LiveController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime);
+                    LiveController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime, curLoadEvent.netState);
+//                    LiveController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime);
                 } else {
                     VodController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime);
                 }

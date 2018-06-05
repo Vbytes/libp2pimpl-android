@@ -17,6 +17,9 @@ public abstract class BaseController implements IController {
     // load => unload => load 操作的异步转同步
     public static final int VIDEO_LIVE = 0;
     public static final int VIDEO_VOD = 1;
+
+    public static final int NETSTATE_MOBILE = 0;
+    public static final int NETSTATE_WIFI = 1;
     //同步总的次数是50次
     public static final int syncRetryCount = 50;
     //同步等待时间为100ms
@@ -27,6 +30,7 @@ public abstract class BaseController implements IController {
         public String channel;
         public String resolution;
         public double startTime;
+        public int netState;
         public OnLoadedListener listener;
 
         public LoadEvent(int videoType, String channel, String resolution, OnLoadedListener listener) {
@@ -37,6 +41,16 @@ public abstract class BaseController implements IController {
             this.videoType = videoType;
             this.channel = channel;
             this.resolution = resolution;
+            this.startTime = startTime;
+            this.netState = NETSTATE_WIFI;
+            this.listener = listener;
+        }
+
+        public LoadEvent(int videoType, String channel, String resolution, double startTime, int netState, OnLoadedListener listener) {
+            this.videoType = videoType;
+            this.channel = channel;
+            this.resolution = resolution;
+            this.netState = netState;
             this.startTime = startTime;
             this.listener = listener;
         }
@@ -63,6 +77,11 @@ public abstract class BaseController implements IController {
     @Override
     public void load(String channel, String resolution, OnLoadedListener listener) throws Exception {
         load(channel, resolution, 0, listener);
+    }
+
+    @Override
+    public void load(String channel, int netState, OnLoadedListener listener) throws Exception {
+        load(channel, "UHD", 0, netState, listener);
     }
 
 
@@ -129,6 +148,15 @@ public abstract class BaseController implements IController {
      * @param startTime 起始时间，直播是时移，点播即开始时间偏移
      */
     protected void loadDirectly(String channel, String resolution, double startTime) {}
+
+    /**
+     * 直接调用native层的load
+     * @param channel 对直播是频道ID，对点播是资源链接
+     * @param resolution 统一为 "UHD"
+     * @param netState 网络状态
+     * @param startTime 起始时间，直播是时移，点播即开始时间偏移
+     */
+    protected void loadDirectly(String channel, String resolution, double startTime, int netState) {}
 
     /**
      * 对直播而言，seek函数并无意义

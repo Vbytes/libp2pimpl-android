@@ -131,6 +131,31 @@ public final class VodController extends BaseController implements IController {
         }
     }
 
+    /**
+     * 从随机的某时间点加载播放点播视频
+     * @param channel 资源链接，主要为点播调用
+     * @param resolution 资源的清晰度，现在统一为"UHD"
+     * @param startTime 视频的起始位置，以秒为单位
+     * @param netState 网络状态
+     * @param listener 当成功load时的回调函数
+     * @throws Exception 当load/unload没有成对调用时，会抛出异常提示
+     */
+    @Override
+    public void load(String channel, String resolution, double startTime, int netState, OnLoadedListener listener)
+            throws  Exception {
+        if (!loadQueue.isEmpty()) {
+            loadQueue.clear();
+            throw new Exception("You must forget to unload last channel!");
+        }
+        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener);
+        loadQueue.add(loadEvent);
+        if (curLoadEvent == null) {
+            curLoadEvent = loadQueue.get(0);
+            loadQueue.remove(0);
+            this._load(_pointer, channel, resolution, startTime);
+        }
+    }
+
     protected void onEvent(int code, String msg) {
         switch (code) {
             case Event.STARTED:
@@ -158,6 +183,11 @@ public final class VodController extends BaseController implements IController {
 
     @Override
     protected void loadDirectly(String url, String resolution, double startTime) {
+        this._load(_pointer, url, resolution, startTime);
+    }
+
+    @Override
+    protected void loadDirectly(String url, String resolution, double startTime, int netState) {
         this._load(_pointer, url, resolution, startTime);
     }
 

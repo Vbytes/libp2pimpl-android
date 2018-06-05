@@ -43,7 +43,6 @@ public class DynamicLibManager {
     /**
      * cpuArch为传进来的，让这个类可以不依赖外面的类，cpuArch为 armeabi、armeabi-v7a、armeabi-v8a、x86、x86_64中的一个
      * @param context
-     * @param
      */
     public DynamicLibManager(Context context) {
         this.context = context;
@@ -340,6 +339,11 @@ public class DynamicLibManager {
                 return false;
             }
         }).start();
+    }
+
+    //兼容星空的 老版本jar 调用的
+    public void checkUpdate(final String fileId, final String version, final String abi) {
+
     }
 
     public String locate(final String fileid) throws Exception {

@@ -12,6 +12,18 @@ import com.vbyte.p2p.OnLoadedListener;
 public final class LiveController extends BaseController implements IController {
     private static final String TAG = "cn.vbyte.p2p.live";
 
+    public enum StatisticType {
+
+        LIVE_CDN_VALUE, LIVE_P2P_VALUE, LIVE_BOTH_VALUE
+
+    }
+
+    public enum VPNetState {
+
+        VPNetStateMobile, VPNetStateWIFI
+
+    }
+
     public static class Event {
         /**
          * 启动一个直播流
@@ -101,6 +113,7 @@ public final class LiveController extends BaseController implements IController 
         }
     }
 
+
     public void load(String channel, byte[] data, OnLoadedListener listener)
             throws Exception {
         if (!loadQueue.isEmpty()) {
@@ -117,10 +130,42 @@ public final class LiveController extends BaseController implements IController 
             this._preLoad(_pointer, channel, data);
         }
     }
+    /**
+     * 加载一个直播流。针对时移，该接口只为flv使用
+     * @param channel 直播流频道ID
+     * @param resolution 统一为 "UHD"
+     * @param startTime 视频的起始位置，以秒为单位，支持一天之内的视频时移回放
+     * @param netState 网络状态
+     * @param listener 当成功load时的回调函数
+     * @throws Exception 当load/unload没有成对调用时，会抛出异常提示
+     */
+    @Override
+    public void load(String channel, String resolution, double startTime, int netState, OnLoadedListener listener)
+            throws Exception {
+        if (!loadQueue.isEmpty()) {
+            loadQueue.clear();
+//            throw new Exception("You must forget unload last channel!");
+        }
+
+        LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, netState, listener);
+        loadQueue.add(loadEvent);
+        Log.i(TAG, "loadQueue@1 size is " + loadQueue.size());
+        if (curLoadEvent == null) {
+            curLoadEvent = loadQueue.get(0);
+            loadQueue.remove(0);
+            this._load(_pointer, channel, resolution, startTime, netState);
+
+        }
+    }
 
     @Override
     protected void loadDirectly(String channel, String resolution, double startTime) {
         this._load(_pointer, channel, resolution, startTime);
+    }
+
+    @Override
+    protected void loadDirectly(String channel, String resolution, double startTime, int netState) {
+        this._load(_pointer, channel, resolution, startTime, netState);
     }
 
     /**
@@ -143,6 +188,20 @@ public final class LiveController extends BaseController implements IController 
         return _getCurrentPlayTime(_pointer);
     }
 
+    /*
+     *获取统计数据接口
+     */
+    public long getStatistic(int type) {
+        return this._getStatistic(_pointer, type);
+    }
+
+    /*
+
+     */
+    public void resetStatistic(int type) {
+        this._resetStatistic(_pointer, type);
+    }
+
     @Override
     protected void onEvent(int code, String msg) {
         switch (code) {
@@ -162,9 +221,16 @@ public final class LiveController extends BaseController implements IController 
 
     private native void _load(long pointer, String channel, String resolution, double startTime);
 
+
     private native void _preLoad(long pointer, String channel, byte[] data);
+
+    private native void _load(long pointer, String channel, String resolution, double startTime, int netState);
+
 
     private native void _unload(long pointer);
 
     private native int _getCurrentPlayTime(long pointer);
+
+    private native long _getStatistic(long pointer, int type);
+    private native void _resetStatistic(long pointer, int type);
 }

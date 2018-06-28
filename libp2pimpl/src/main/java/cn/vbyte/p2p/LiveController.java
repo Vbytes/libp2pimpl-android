@@ -98,36 +98,41 @@ public final class LiveController extends BaseController implements IController 
     @Override
     public void load(String channel, String resolution, double startTime, OnLoadedListener listener)
             throws Exception {
-        if (!loadQueue.isEmpty()) {
-            loadQueue.clear();
-//            throw new Exception("You must forget unload last channel!");
-        }
+        synchronized(LiveController.class) {
+            if (!loadQueue.isEmpty()) {
+                loadQueue.clear();
+    //            throw new Exception("You must forget unload last channel!");
+            }
 
-        LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, listener);
-        loadQueue.add(loadEvent);
-        Log.i(TAG, "loadQueue size is " + loadQueue.size());
-        if (curLoadEvent == null) {
-            curLoadEvent = loadQueue.get(0);
-            loadQueue.remove(0);
-            this._load(_pointer, channel, resolution, startTime);
+            LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, listener);
+
+            loadQueue.add(loadEvent);
+            Log.i(TAG, "loadQueue size is " + loadQueue.size());
+            if (curLoadEvent == null) {
+                curLoadEvent = loadQueue.get(0);
+                loadQueue.remove(0);
+                this._load(_pointer, channel, resolution, startTime);
+            }
         }
     }
 
 
     public void load(String channel, byte[] data, OnLoadedListener listener)
             throws Exception {
-        if (!loadQueue.isEmpty()) {
-            loadQueue.clear();
-            throw new Exception("You must forget unload last channel!");
-        }
+        synchronized(LiveController.class) {
+            if (!loadQueue.isEmpty()) {
+                loadQueue.clear();
+//            throw new Exception("You must forget unload last channel!");
+            }
 
-        LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, "UHD", 0, listener);
-        loadQueue.add(loadEvent);
-        Log.i(TAG, "loadQueue size is " + loadQueue.size());
-        if (curLoadEvent == null) {
-            curLoadEvent = loadQueue.get(0);
-            loadQueue.remove(0);
-            this._preLoad(_pointer, channel, data);
+            LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, "UHD", 0, listener);
+            loadQueue.add(loadEvent);
+            Log.i(TAG, "loadQueue size is " + loadQueue.size());
+            if (curLoadEvent == null) {
+                curLoadEvent = loadQueue.get(0);
+                loadQueue.remove(0);
+                this._preLoad(_pointer, channel, data);
+            }
         }
     }
     /**
@@ -142,19 +147,21 @@ public final class LiveController extends BaseController implements IController 
     @Override
     public void load(String channel, String resolution, double startTime, int netState, OnLoadedListener listener)
             throws Exception {
-        if (!loadQueue.isEmpty()) {
-            loadQueue.clear();
+        synchronized(LiveController.class) {
+            if (!loadQueue.isEmpty()) {
+                loadQueue.clear();
 //            throw new Exception("You must forget unload last channel!");
-        }
+            }
 
-        LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, netState, listener);
-        loadQueue.add(loadEvent);
-        Log.i(TAG, "loadQueue@1 size is " + loadQueue.size());
-        if (curLoadEvent == null) {
-            curLoadEvent = loadQueue.get(0);
-            loadQueue.remove(0);
-            this._load(_pointer, channel, resolution, startTime, netState);
+            LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, netState, listener);
+            loadQueue.add(loadEvent);
+            Log.i(TAG, "loadQueue@1 size is " + loadQueue.size());
+            if (curLoadEvent == null) {
+                curLoadEvent = loadQueue.get(0);
+                loadQueue.remove(0);
+                this._load(_pointer, channel, resolution, startTime, netState);
 
+            }
         }
     }
 
@@ -206,11 +213,13 @@ public final class LiveController extends BaseController implements IController 
     protected void onEvent(int code, String msg) {
         switch (code) {
             case Event.STARTED:
-                if (curLoadEvent != null) {
-                    Uri uri = Uri.parse(msg);
-                    if (curLoadEvent.listener != null) {
-                        curLoadEvent.listener.onLoaded(uri);
-                        curLoadEvent.listener = null;
+                synchronized(LiveController.class) {
+                    if (curLoadEvent != null) {
+                        Uri uri = Uri.parse(msg);
+                        if (curLoadEvent.listener != null) {
+                            curLoadEvent.listener.onLoaded(uri);
+                            curLoadEvent.listener = null;
+                        }
                     }
                 }
                 break;

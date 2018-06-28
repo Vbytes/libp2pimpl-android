@@ -312,17 +312,19 @@ public final class VbyteP2PModule {
     private void onEvent(int code, String msg) {
         List<BaseController.LoadEvent> loadQueue = BaseController.loadQueue;
         if (code == LiveController.Event.STOPPED || code == VodController.Event.STOPPED) {
-            if (curLoadEvent != null) {
-                curLoadEvent = null;
-            }
-            if (!loadQueue.isEmpty()) {
-                curLoadEvent = loadQueue.get(0);
-                loadQueue.remove(0);
-                if (curLoadEvent.videoType == BaseController.VIDEO_LIVE) {
-                    LiveController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime, curLoadEvent.netState);
+            synchronized(LiveController.class) {
+                if (curLoadEvent != null) {
+                    curLoadEvent = null;
+                }
+                if (!loadQueue.isEmpty()) {
+                    curLoadEvent = loadQueue.get(0);
+                    loadQueue.remove(0);
+                    if (curLoadEvent.videoType == BaseController.VIDEO_LIVE) {
+                        LiveController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime, curLoadEvent.netState);
 //                    LiveController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime);
-                } else {
-                    VodController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime);
+                    } else {
+                        VodController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime);
+                    }
                 }
             }
         }

@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.vbyte.update.*;
-import static cn.vbyte.p2p.BaseController.curLoadEvent;
 
 /**
  * Created by passion on 15-11-5.
@@ -229,10 +228,7 @@ public final class VbyteP2PModule {
     /////////////////////////////////////////////////////////////
     /*=========================================================*/
 
-    // 事件监听gut
-    private Handler eventHandler = null;
-    private Handler errorHandler = null;
-    private Handler vbyteHandler = new VbyteHandler();
+
     private DynamicLibManager dynamicLibManager;
     // native代码对应的对象实例，标准做法
     private long _pointer;
@@ -290,67 +286,7 @@ public final class VbyteP2PModule {
         this._setAppId(_pointer, appId);
         this._setAppKey(_pointer, appKey);
         this._setAppSecretKey(_pointer, appSecretKey);
-        LiveController.getInstance();//首屏优化需要放开
-    }
-
-    /**
-     * 设置EventHandler，注意该handler不能叠加，之前设置的handler将无效
-     * @param handler 要设置的EventHandler实例
-     */
-    public void setEventHandler(Handler handler) {
-        this.eventHandler = handler;
-    }
-
-    /**
-     * 设置ErrorHandler，注意该handler不能叠加，之前设置的handler将无效
-     * @param handler 要设置的ErrorHandler实例
-     */
-    public void setErrorHandler(Handler handler) {
-        this.errorHandler = handler;
-    }
-
-    private void onEvent(int code, String msg) {
-        List<BaseController.LoadEvent> loadQueue = BaseController.loadQueue;
-        if (code == LiveController.Event.STOPPED || code == VodController.Event.STOPPED) {
-            synchronized(LiveController.class) {
-                if (curLoadEvent != null) {
-                    curLoadEvent = null;
-                }
-                if (!loadQueue.isEmpty()) {
-                    curLoadEvent = loadQueue.get(0);
-                    loadQueue.remove(0);
-                    if (curLoadEvent.videoType == BaseController.VIDEO_LIVE) {
-                        LiveController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime, curLoadEvent.netState);
-//                    LiveController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime);
-                    } else {
-                        VodController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime);
-                    }
-                }
-            }
-        }
-        Message message = vbyteHandler.obtainMessage();
-        message.what = code;
-        message.obj = msg;
-        vbyteHandler.sendMessage(message);
-        if (eventHandler != null) {
-            message = eventHandler.obtainMessage();
-            message.what = code;
-            message.obj = msg;
-            eventHandler.sendMessage(Message.obtain(message));
-        }
-    }
-
-    private void onError(int code, String msg) {
-        Message message = vbyteHandler.obtainMessage();
-        message.what = code;
-        message.obj = msg;
-        vbyteHandler.sendMessage(message);
-        if (errorHandler != null) {
-            message = errorHandler.obtainMessage();
-            message.what = code;
-            message.obj = msg;
-            errorHandler.sendMessage(Message.obtain(message));
-        }
+//        LiveController.getInstance();//首屏优化需要放开
     }
 
     /**

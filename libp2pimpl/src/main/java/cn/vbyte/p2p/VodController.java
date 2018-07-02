@@ -118,17 +118,18 @@ public final class VodController extends BaseController implements IController {
     @Override
     public void load(String channel, String resolution, double startTime, OnLoadedListener listener)
             throws  Exception {
-        if (!loadQueue.isEmpty()) {
-            loadQueue.clear();
-            throw new Exception("You must forget to unload last channel!");
-        }
-        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener);
-        loadQueue.add(loadEvent);
-        if (curLoadEvent == null) {
-            curLoadEvent = loadQueue.get(0);
-            loadQueue.remove(0);
-            this._load(_pointer, channel, resolution, startTime);
-        }
+//        if (!loadQueue.isEmpty()) {
+//            loadQueue.clear();
+//            throw new Exception("You must forget to unload last channel!");
+//        }
+//        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener);
+//        loadQueue.add(loadEvent);
+//        if (curLoadEvent == null) {
+//            curLoadEvent = loadQueue.get(0);
+//            loadQueue.remove(0);
+//            this._load(_pointer, channel, resolution, startTime);
+//        }
+        this._load(_pointer, channel, resolution, startTime);
     }
 
     /**
@@ -143,26 +144,28 @@ public final class VodController extends BaseController implements IController {
     @Override
     public void load(String channel, String resolution, double startTime, int netState, OnLoadedListener listener)
             throws  Exception {
-        if (!loadQueue.isEmpty()) {
-            loadQueue.clear();
-            throw new Exception("You must forget to unload last channel!");
-        }
-        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener);
-        loadQueue.add(loadEvent);
-        if (curLoadEvent == null) {
-            curLoadEvent = loadQueue.get(0);
-            loadQueue.remove(0);
-            this._load(_pointer, channel, resolution, startTime);
-        }
+//        if (!loadQueue.isEmpty()) {
+//            loadQueue.clear();
+//            throw new Exception("You must forget to unload last channel!");
+//        }
+//        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener);
+//        loadQueue.add(loadEvent);
+//        if (curLoadEvent == null) {
+//            curLoadEvent = loadQueue.get(0);
+//            loadQueue.remove(0);
+//            this._load(_pointer, channel, resolution, startTime);
+//        }
+        this._load(_pointer, channel, resolution, startTime);
     }
 
-    protected void onEvent(int code, String msg) {
+    protected void onLocalEvent(int code, String msg) {
         switch (code) {
             case Event.STARTED:
-                if (curLoadEvent != null) {
-                    Uri uri = Uri.parse(msg);
-                    curLoadEvent.listener.onLoaded(uri);
-                }
+                //TODO
+//                if (curLoadEvent != null) {
+//                    Uri uri = Uri.parse(msg);
+//                    curLoadEvent.listener.onLoaded(uri);
+//                }
                 break;
             case Event.RETRIEVE_URL:
                 if (urlGenerator != null) {
@@ -245,10 +248,10 @@ public final class VodController extends BaseController implements IController {
     @Override
     public void unload() {
         //当前有事件的时候, 才unload, 屏蔽空unload
-        if(curLoadEvent != null) {
+//        if(curLoadEvent != null) {
             super.unload();
             this._unload(_pointer);
-        }
+//        }
     }
 
     @Override

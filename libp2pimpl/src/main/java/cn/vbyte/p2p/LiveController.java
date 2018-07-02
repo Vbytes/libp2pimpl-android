@@ -69,7 +69,9 @@ public final class LiveController extends BaseController implements IController 
         public static final int LIVE_SOURCE_DATA_ERROR = 10011004;
     }
 
-    private static LiveController instance;
+    private static LiveController instance;//TODO：对象池
+
+    private static OnLoadedListener currentListener;
 
     /**
      * 获取直播控制器
@@ -84,7 +86,7 @@ public final class LiveController extends BaseController implements IController 
 
     private long _pointer;
 
-    private LiveController() {
+    public LiveController() {
         _pointer = _construct();
     }
 
@@ -99,20 +101,22 @@ public final class LiveController extends BaseController implements IController 
     @Override
     public void load(String channel, String resolution, double startTime, OnLoadedListener listener)
             throws Exception {
-        synchronized(LiveController.class) {
-            if (!loadQueue.isEmpty()) {
-                loadQueue.clear();
-//            throw new Exception("You must forget unload last channel!");
-            }
-
-            LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, listener);
-            loadQueue.add(loadEvent);
-            Log.i(TAG, "loadQueue size is " + loadQueue.size());
-            if (curLoadEvent == null) {
-                curLoadEvent = loadQueue.get(0);
-                loadQueue.remove(0);
-                this._load(_pointer, channel, resolution, startTime);
-            }
+        synchronized(this) {
+//            if (!loadQueue.isEmpty()) {
+//                loadQueue.clear();
+////            throw new Exception("You must forget unload last channel!");
+//            }
+//
+//            LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, listener);
+//            loadQueue.add(loadEvent);
+//            Log.i(TAG, "loadQueue size is " + loadQueue.size());
+//            if (curLoadEvent == null) {
+//                curLoadEvent = loadQueue.get(0);
+//                loadQueue.remove(0);
+//                this._load(_pointer, channel, resolution, startTime);
+//            }
+            currentListener = listener;
+            this._load(_pointer, channel, resolution, startTime);
         }
     }
 
@@ -128,20 +132,22 @@ public final class LiveController extends BaseController implements IController 
     @Override
     public void load(String channel, String resolution, double startTime, int netState, OnLoadedListener listener)
             throws Exception {
-        synchronized(LiveController.class) {
-            if (!loadQueue.isEmpty()) {
-                loadQueue.clear();
-//            throw new Exception("You must forget unload last channel!");
-            }
-
-            LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, netState, listener);
-            loadQueue.add(loadEvent);
-            Log.i(TAG, "loadQueue@1 size is " + loadQueue.size());
-            if (curLoadEvent == null) {
-                curLoadEvent = loadQueue.get(0);
-                loadQueue.remove(0);
-                this._load(_pointer, channel, resolution, startTime, netState);
-            }
+        synchronized(this) {
+//            if (!loadQueue.isEmpty()) {
+//                loadQueue.clear();
+////            throw new Exception("You must forget unload last channel!");
+//            }
+//
+//            LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, netState, listener);
+//            loadQueue.add(loadEvent);
+//            Log.i(TAG, "loadQueue@1 size is " + loadQueue.size());
+//            if (curLoadEvent == null) {
+//                curLoadEvent = loadQueue.get(0);
+//                loadQueue.remove(0);
+//                this._load(_pointer, channel, resolution, startTime, netState);
+//            }
+            currentListener = listener;
+            this._load(_pointer, channel, resolution, startTime, netState);
         }
     }
 
@@ -161,9 +167,11 @@ public final class LiveController extends BaseController implements IController 
     @Override
     public void unload() {
         //当前有事件的时候, 才unload, 屏蔽空unload
-        if(curLoadEvent != null) {
-            super.unload();
-            this._unload(_pointer);
+        synchronized(this) {
+            if (currentListener == null) {
+                super.unload();
+                this._unload(_pointer);
+            }
         }
     }
 
@@ -190,16 +198,14 @@ public final class LiveController extends BaseController implements IController 
     }
 
     @Override
-    protected void onEvent(int code, String msg) {
+    protected void onLocalEvent(int code, String msg) {
         switch (code) {
             case Event.STARTED:
                 synchronized(this) {
-                    if (curLoadEvent != null) {
+                    if (currentListener != null) {
                         Uri uri = Uri.parse(msg);
-                        if (curLoadEvent.listener != null) {
-                            curLoadEvent.listener.onLoaded(uri);
-                            curLoadEvent.listener = null;
-                        }
+                        currentListener.onLoaded(uri);
+                        currentListener = null;
                     }
                 }
                 break;

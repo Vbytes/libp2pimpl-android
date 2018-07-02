@@ -15,16 +15,16 @@ public class VbyteHandler extends Handler {
         String description = (String) msg.obj;
         switch (prefixOfCode) {
             case 10010:
-                LiveController.getInstance().onEvent(code, description);
+                LiveController.getInstance().onLocalEvent(code, description);
                 break;
             case 10011:
-                LiveController.getInstance().onError(code, description);
+                LiveController.getInstance().onLocalError(code, description);
                 break;
             case 10020:
-                VodController.getInstance().onEvent(code, description);
+                VodController.getInstance().onLocalEvent(code, description);
                 break;
             case 10021:
-                VodController.getInstance().onError(code, description);
+                VodController.getInstance().onLocalError(code, description);
                 break;
         }
     }

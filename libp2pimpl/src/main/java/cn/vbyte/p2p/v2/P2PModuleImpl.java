@@ -132,8 +132,8 @@ public class P2PModuleImpl implements P2PModule {
             }
         });
         if (proxy != null) {
-            proxy.setEventHandler(aHandler);
-            proxy.setErrorHandler(aHandler);
+//            proxy.setEventHandler(aHandler);
+//            proxy.setErrorHandler(aHandler);
         }
     }
 }

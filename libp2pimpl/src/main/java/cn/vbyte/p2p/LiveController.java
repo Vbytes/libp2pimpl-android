@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.vbyte.p2p.IController;
 import com.vbyte.p2p.OnLoadedListener;
+import static cn.vbyte.p2p.VbyteP2PModule.contrlMap;
 
 /**
  * Created by passion on 16-1-14.
@@ -117,6 +118,7 @@ public final class LiveController extends BaseController implements IController 
 //            }
             currentListener = listener;
             this._load(_pointer, channel, resolution, startTime);
+            contrlMap.put(this.getID(), this);
         }
     }
 
@@ -148,6 +150,7 @@ public final class LiveController extends BaseController implements IController 
 //            }
             currentListener = listener;
             this._load(_pointer, channel, resolution, startTime, netState);
+            contrlMap.put(this.getID(), this);
         }
     }
 
@@ -168,9 +171,11 @@ public final class LiveController extends BaseController implements IController 
     public void unload() {
         //当前有事件的时候, 才unload, 屏蔽空unload
         synchronized(this) {
-            if (currentListener == null) {
-                super.unload();
-                this._unload(_pointer);
+            int id = this.getID();
+            super.unload();
+            this._unload(_pointer);
+            if (contrlMap.containsKey(id)) {
+                contrlMap.remove(id);
             }
         }
     }
@@ -181,6 +186,13 @@ public final class LiveController extends BaseController implements IController 
      */
     public int getCurrentPlayTime() {
         return _getCurrentPlayTime(_pointer);
+    }
+    /**
+     * 获取特征ID
+     * @return 特征ID
+     */
+    public int getID() {
+        return _getID(_pointer);
     }
 
     /*
@@ -221,6 +233,7 @@ public final class LiveController extends BaseController implements IController 
     private native void _unload(long pointer);
 
     private native int _getCurrentPlayTime(long pointer);
+    private native int _getID(long pointer);
 
     private native long _getStatistic(long pointer, int type);
     private native void _resetStatistic(long pointer, int type);

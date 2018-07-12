@@ -2,10 +2,17 @@ package cn.vbyte.p2p;
 
 import android.content.Context;
 import android.os.Environment;
+import android.os.Looper;
 import android.os.Message;
 import android.os.Handler;
+import android.util.Log;
+
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import com.vbyte.update.*;
 
@@ -126,6 +133,7 @@ public final class VbyteP2PModule {
     private static String SDK_VERSION;
     private static VbyteP2PModule instance;
     private static String archCpuAbi = "";
+    public static final ConcurrentMap<Integer, BaseController> contrlMap = new ConcurrentHashMap<>();
 
     /**
      * 新启动一个p2p模块，注意四个参数绝对不能为null,在程序启动时调用
@@ -228,7 +236,10 @@ public final class VbyteP2PModule {
     /////////////////////////////////////////////////////////////
     /*=========================================================*/
 
-
+    // 事件监听gut
+    private Handler eventHandler = null;
+    private Handler errorHandler = null;
+    private Handler vbyteHandler = new VbyteHandler();
     private DynamicLibManager dynamicLibManager;
     // native代码对应的对象实例，标准做法
     private long _pointer;
@@ -287,6 +298,63 @@ public final class VbyteP2PModule {
         this._setAppKey(_pointer, appKey);
         this._setAppSecretKey(_pointer, appSecretKey);
 //        LiveController.getInstance();//首屏优化需要放开
+    }
+
+    /**
+     * 设置EventHandler，注意该handler不能叠加，之前设置的handler将无效
+     * @param handler 要设置的EventHandler实例
+     */
+    public void setEventHandler(Handler handler) {
+        this.eventHandler = handler;
+    }
+
+    /**
+     * 设置ErrorHandler，注意该handler不能叠加，之前设置的handler将无效
+     * @param handler 要设置的ErrorHandler实例
+     */
+    public void setErrorHandler(Handler handler) {
+        this.errorHandler = handler;
+    }
+
+    public void onEvent(int code, String msg, int id) {
+
+        BaseController contrl =  contrlMap.get(id);
+        if (contrl == null) {
+            return;
+        }
+        contrl.onLocalEvent(code, msg);
+        if (eventHandler != null) {
+            Looper.getMainLooper();
+            Message message = eventHandler.obtainMessage();
+            message.what = code;
+            message.obj = msg;
+            message.arg1 = id;
+            eventHandler.sendMessage(Message.obtain(message));
+        }
+    }
+
+    public void onError(int code, String msg, int id) {
+
+        BaseController contrl =  contrlMap.get(id);
+        if (contrl == null) {
+            return;
+        }
+        contrl.onLocalEvent(code, msg);
+        if (errorHandler != null) {
+            Looper.getMainLooper();
+            Message message = errorHandler.obtainMessage();
+            message.what = code;
+            message.obj = msg;
+            message.arg1 = id;
+            errorHandler.sendMessage(Message.obtain(message));
+        }
+    }
+
+    /**
+     * @return 成功返回@param id 对应的controller对象，没有返回null
+     */
+    public BaseController getContrlByID(int id) {
+        return contrlMap.get(id);
     }
 
     /**

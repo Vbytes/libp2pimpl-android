@@ -30,49 +30,6 @@ public abstract class BaseController implements IController {
     public static final long syncWaitTime = 100;
 
 
-    // 事件监听gut
-    private Handler eventHandler = null;
-    private Handler errorHandler = null;
-
-    /**
-     * 设置EventHandler，注意该handler不能叠加，之前设置的handler将无效
-     * @param handler 要设置的EventHandler实例
-     */
-    public void setEventHandler(Handler handler) {
-        this.eventHandler = handler;
-    }
-
-    /**
-     * 设置ErrorHandler，注意该handler不能叠加，之前设置的handler将无效
-     * @param handler 要设置的ErrorHandler实例
-     */
-    public void setErrorHandler(Handler handler) {
-        this.errorHandler = handler;
-    }
-
-    public void onEvent(int code, String msg) {
-
-        onLocalEvent(code, msg);
-        if (eventHandler != null) {
-            Looper.getMainLooper();
-            Message message = eventHandler.obtainMessage();
-            message.what = code;
-            message.obj = msg;
-            eventHandler.sendMessage(Message.obtain(message));
-        }
-    }
-
-    public void onError(int code, String msg) {
-
-        onLocalError(code, msg);
-        if (errorHandler != null) {
-            Looper.getMainLooper();
-            Message message = errorHandler.obtainMessage();
-            message.what = code;
-            message.obj = msg;
-            errorHandler.sendMessage(Message.obtain(message));
-        }
-    }
 
     /**
      * 这2个工具函数能让LiveController和VodController能事先对P2P线程反应的事件进行预处理

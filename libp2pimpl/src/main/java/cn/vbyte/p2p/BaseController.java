@@ -1,6 +1,10 @@
 package cn.vbyte.p2p;
 
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.util.Log;
 
 import com.vbyte.p2p.IController;
 import com.vbyte.p2p.OnLoadedListener;
@@ -25,47 +29,15 @@ public abstract class BaseController implements IController {
     //同步等待时间为100ms
     public static final long syncWaitTime = 100;
 
-    public static class LoadEvent {
-        public int videoType;
-        public String channel;
-        public String resolution;
-        public double startTime;
-        public int netState;
-        public OnLoadedListener listener;
 
-        public LoadEvent(int videoType, String channel, String resolution, OnLoadedListener listener) {
-            this(videoType, channel, resolution, 0, listener);
-        }
-
-        public LoadEvent(int videoType, String channel, String resolution, double startTime, OnLoadedListener listener) {
-            this.videoType = videoType;
-            this.channel = channel;
-            this.resolution = resolution;
-            this.startTime = startTime;
-            this.netState = NETSTATE_WIFI;
-            this.listener = listener;
-        }
-
-        public LoadEvent(int videoType, String channel, String resolution, double startTime, int netState, OnLoadedListener listener) {
-            this.videoType = videoType;
-            this.channel = channel;
-            this.resolution = resolution;
-            this.netState = netState;
-            this.startTime = startTime;
-            this.listener = listener;
-        }
-    }
-
-    protected static List<LoadEvent> loadQueue = Collections.synchronizedList(new LinkedList<LoadEvent>());
-    protected static LoadEvent curLoadEvent = null;
 
     /**
      * 这2个工具函数能让LiveController和VodController能事先对P2P线程反应的事件进行预处理
      * @param code 事件码
      * @param msg 事件说明
      */
-    protected void onEvent(int code, String msg) {}
-    protected void onError(int code, String msg) {}
+    protected void onLocalEvent(int code, String msg) {}
+    protected void onLocalError(int code, String msg) {}
 
     /**
      * 为方便子类实现

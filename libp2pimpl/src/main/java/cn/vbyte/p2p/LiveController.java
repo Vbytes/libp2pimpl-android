@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.vbyte.p2p.IController;
 import com.vbyte.p2p.OnLoadedListener;
+import static cn.vbyte.p2p.VbyteP2PModule.contrlMap;
 
 /**
  * Created by passion on 16-1-14.
@@ -68,7 +69,9 @@ public final class LiveController extends BaseController implements IController 
         public static final int LIVE_SOURCE_DATA_ERROR = 10011004;
     }
 
-    private static LiveController instance;
+    private static LiveController instance;//TODO：对象池
+
+    private static OnLoadedListener currentListener;
 
     /**
      * 获取直播控制器
@@ -83,7 +86,7 @@ public final class LiveController extends BaseController implements IController 
 
     private long _pointer;
 
-    private LiveController() {
+    public LiveController() {
         _pointer = _construct();
     }
 
@@ -98,41 +101,21 @@ public final class LiveController extends BaseController implements IController 
     @Override
     public void load(String channel, String resolution, double startTime, OnLoadedListener listener)
             throws Exception {
-        synchronized(LiveController.class) {
-            if (!loadQueue.isEmpty()) {
-                loadQueue.clear();
-    //            throw new Exception("You must forget unload last channel!");
-            }
-
-            LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, listener);
-
-            loadQueue.add(loadEvent);
-            Log.i(TAG, "loadQueue size is " + loadQueue.size());
-            if (curLoadEvent == null) {
-                curLoadEvent = loadQueue.get(0);
-                loadQueue.remove(0);
-                this._load(_pointer, channel, resolution, startTime);
-            }
+        synchronized (this) {
+            currentListener = listener;
+            this._load(_pointer, channel, resolution, startTime);
+            contrlMap.put(this.getID(), this);
         }
     }
 
 
     public void load(String channel, byte[] data, OnLoadedListener listener)
             throws Exception {
-        synchronized(LiveController.class) {
-            if (!loadQueue.isEmpty()) {
-                loadQueue.clear();
-//            throw new Exception("You must forget unload last channel!");
-            }
 
-            LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, "UHD", 0, listener);
-            loadQueue.add(loadEvent);
-            Log.i(TAG, "loadQueue size is " + loadQueue.size());
-            if (curLoadEvent == null) {
-                curLoadEvent = loadQueue.get(0);
-                loadQueue.remove(0);
-                this._preLoad(_pointer, channel, data);
-            }
+        synchronized(this) {
+            currentListener = listener;
+            this._preLoad(_pointer, channel, data);
+            contrlMap.put(this.getID(), this);
         }
     }
     /**
@@ -147,21 +130,12 @@ public final class LiveController extends BaseController implements IController 
     @Override
     public void load(String channel, String resolution, double startTime, int netState, OnLoadedListener listener)
             throws Exception {
-        synchronized(LiveController.class) {
-            if (!loadQueue.isEmpty()) {
-                loadQueue.clear();
-//            throw new Exception("You must forget unload last channel!");
-            }
 
-            LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, netState, listener);
-            loadQueue.add(loadEvent);
-            Log.i(TAG, "loadQueue@1 size is " + loadQueue.size());
-            if (curLoadEvent == null) {
-                curLoadEvent = loadQueue.get(0);
-                loadQueue.remove(0);
-                this._load(_pointer, channel, resolution, startTime, netState);
+        synchronized(this) {
 
-            }
+            currentListener = listener;
+            this._load(_pointer, channel, resolution, startTime, netState);
+            contrlMap.put(this.getID(), this);
         }
     }
 
@@ -181,9 +155,13 @@ public final class LiveController extends BaseController implements IController 
     @Override
     public void unload() {
         //当前有事件的时候, 才unload, 屏蔽空unload
-        if(curLoadEvent != null) {
+        synchronized(this) {
+            int id = this.getID();
             super.unload();
             this._unload(_pointer);
+            if (contrlMap.containsKey(id)) {
+                contrlMap.remove(id);
+            }
         }
     }
 
@@ -193,6 +171,13 @@ public final class LiveController extends BaseController implements IController 
      */
     public int getCurrentPlayTime() {
         return _getCurrentPlayTime(_pointer);
+    }
+    /**
+     * 获取特征ID
+     * @return 特征ID
+     */
+    public int getID() {
+        return _getID(_pointer);
     }
 
     /*
@@ -210,16 +195,14 @@ public final class LiveController extends BaseController implements IController 
     }
 
     @Override
-    protected void onEvent(int code, String msg) {
+    protected void onLocalEvent(int code, String msg) {
         switch (code) {
             case Event.STARTED:
-                synchronized(LiveController.class) {
-                    if (curLoadEvent != null) {
+                synchronized(this) {
+                    if (currentListener != null) {
                         Uri uri = Uri.parse(msg);
-                        if (curLoadEvent.listener != null) {
-                            curLoadEvent.listener.onLoaded(uri);
-                            curLoadEvent.listener = null;
-                        }
+                        currentListener.onLoaded(uri);
+                        currentListener = null;
                     }
                 }
                 break;
@@ -239,6 +222,7 @@ public final class LiveController extends BaseController implements IController 
     private native void _unload(long pointer);
 
     private native int _getCurrentPlayTime(long pointer);
+    private native int _getID(long pointer);
 
     private native long _getStatistic(long pointer, int type);
     private native void _resetStatistic(long pointer, int type);

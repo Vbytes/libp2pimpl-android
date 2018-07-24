@@ -239,7 +239,7 @@ public final class VbyteP2PModule {
     // 事件监听gut
     private Handler eventHandler = null;
     private Handler errorHandler = null;
-    private Handler vbyteHandler = new VbyteHandler();
+//    private Handler vbyteHandler = new VbyteHandler();
     private DynamicLibManager dynamicLibManager;
     // native代码对应的对象实例，标准做法
     private long _pointer;

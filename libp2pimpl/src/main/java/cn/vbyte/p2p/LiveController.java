@@ -70,7 +70,7 @@ public final class LiveController extends BaseController implements IController 
     }
 
 
-    private static OnLoadedListener currentListener;
+    private  OnLoadedListener currentListener;
 
     /**
      * 获取直播控制器

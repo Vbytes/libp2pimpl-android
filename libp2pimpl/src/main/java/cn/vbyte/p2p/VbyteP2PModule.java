@@ -318,33 +318,39 @@ public final class VbyteP2PModule {
 
     public void onEvent(int code, String msg, int id) {
 
-        BaseController contrl =  contrlMap.get(id);
-        if (contrl == null) {
-            return;
-        }
-        contrl.onLocalEvent(code, msg);
-        if (eventHandler != null) {
-            Message message = eventHandler.obtainMessage();
-            message.what = code;
-            message.obj = msg;
-            message.arg1 = id;
-            eventHandler.sendMessage(Message.obtain(message));
+        synchronized (this) {
+            BaseController contrl = contrlMap.get(id);
+            if (contrl == null) {
+                return;
+            }
+            contrl.onLocalEvent(code, msg);
+            if (eventHandler != null) {
+                Looper.getMainLooper();
+                Message message = eventHandler.obtainMessage();
+                message.what = code;
+                message.obj = msg;
+                message.arg1 = id;
+                eventHandler.sendMessage(Message.obtain(message));
+            }
         }
     }
 
     public void onError(int code, String msg, int id) {
 
-        BaseController contrl =  contrlMap.get(id);
-        if (contrl == null) {
-            return;
-        }
-        contrl.onLocalEvent(code, msg);
-        if (errorHandler != null) {
-            Message message = errorHandler.obtainMessage();
-            message.what = code;
-            message.obj = msg;
-            message.arg1 = id;
-            errorHandler.sendMessage(Message.obtain(message));
+        synchronized (this) {
+            BaseController contrl = contrlMap.get(id);
+            if (contrl == null) {
+                return;
+            }
+            contrl.onLocalEvent(code, msg);
+            if (errorHandler != null) {
+                Looper.getMainLooper();
+                Message message = errorHandler.obtainMessage();
+                message.what = code;
+                message.obj = msg;
+                message.arg1 = id;
+                errorHandler.sendMessage(Message.obtain(message));
+            }
         }
     }
 

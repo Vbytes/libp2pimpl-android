@@ -5,6 +5,7 @@ import android.os.Environment;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Handler;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import java.util.Arrays;
@@ -297,6 +298,10 @@ public final class VbyteP2PModule {
         this._setAppId(_pointer, appId);
         this._setAppKey(_pointer, appKey);
         this._setAppSecretKey(_pointer, appSecretKey);
+        String imei = getDeviceid(context);
+        if (imei != null) {
+            this._setImei(_pointer, imei);
+        }
 //        LiveController.getInstance();//首屏优化需要放开
     }
 
@@ -351,6 +356,23 @@ public final class VbyteP2PModule {
                 errorHandler.sendMessage(Message.obtain(message));
             }
         }
+    }
+
+    private String getDeviceid(Context context) {
+        String imei = null;
+        try {
+
+            TelephonyManager telephonemanager = ((TelephonyManager) context
+                    .getSystemService(Context.TELEPHONY_SERVICE));
+
+            if (telephonemanager != null) {
+                imei = telephonemanager.getDeviceId();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return imei;
     }
 
     /**
@@ -408,4 +430,10 @@ public final class VbyteP2PModule {
      * @param pointer native层对应对象的指针
      */
     private native void _setAppSecretKey(long pointer, String appSecretKey);
+    /**
+     * 设置imei
+     * @param imei 应用混淆密钥
+     * @param pointer native层对应对象的指针
+     */
+    private native void _setImei(long pointer, String imei);
 }

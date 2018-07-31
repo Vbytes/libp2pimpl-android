@@ -86,6 +86,7 @@ public final class LiveController extends BaseController implements IController 
     }
 
     private long _pointer;
+    private int id;
 
     public LiveController() {
         _pointer = _construct();
@@ -119,6 +120,7 @@ public final class LiveController extends BaseController implements IController 
             currentListener = listener;
             this._load(_pointer, channel, resolution, startTime);
             contrlMap.put(this.getID(), this);
+            id = this.getID();
         }
     }
 
@@ -151,6 +153,7 @@ public final class LiveController extends BaseController implements IController 
             currentListener = listener;
             this._load(_pointer, channel, resolution, startTime, netState);
             contrlMap.put(this.getID(), this);
+            id = this.getID();
         }
     }
 
@@ -171,11 +174,11 @@ public final class LiveController extends BaseController implements IController 
     public void unload() {
         //当前有事件的时候, 才unload, 屏蔽空unload
         synchronized(this) {
-            int id = this.getID();
-            super.unload();
-            this._unload(_pointer);
+
             if (contrlMap.containsKey(id)) {
                 contrlMap.remove(id);
+                super.unload();
+                this._unload(_pointer);
             }
         }
     }

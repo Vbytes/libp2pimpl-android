@@ -240,7 +240,7 @@ public final class VbyteP2PModule {
     // 事件监听gut
     private Handler eventHandler = null;
     private Handler errorHandler = null;
-//    private Handler vbyteHandler = new VbyteHandler();
+    private Handler vbyteHandler = new VbyteHandler();
     private DynamicLibManager dynamicLibManager;
     // native代码对应的对象实例，标准做法
     private long _pointer;
@@ -324,14 +324,14 @@ public final class VbyteP2PModule {
     public void onEvent(int code, String msg, int id) {
 
         synchronized (this) {
-            BaseController contrl = contrlMap.get(id);
-            if (contrl == null) {
-                return;
-            }
-            contrl.onLocalEvent(code, msg);
+            Message message = vbyteHandler.obtainMessage();
+            message.what = code;
+            message.obj = msg;
+            message.arg1 = id;
+            vbyteHandler.sendMessage(message);
             if (eventHandler != null) {
                 Looper.getMainLooper();
-                Message message = eventHandler.obtainMessage();
+                message = eventHandler.obtainMessage();
                 message.what = code;
                 message.obj = msg;
                 message.arg1 = id;
@@ -343,14 +343,14 @@ public final class VbyteP2PModule {
     public void onError(int code, String msg, int id) {
 
         synchronized (this) {
-            BaseController contrl = contrlMap.get(id);
-            if (contrl == null) {
-                return;
-            }
-            contrl.onLocalEvent(code, msg);
+            Message message = vbyteHandler.obtainMessage();
+            message.what = code;
+            message.obj = msg;
+            message.arg1 = id;
+            vbyteHandler.sendMessage(message);
             if (errorHandler != null) {
                 Looper.getMainLooper();
-                Message message = errorHandler.obtainMessage();
+                message = errorHandler.obtainMessage();
                 message.what = code;
                 message.obj = msg;
                 message.arg1 = id;

@@ -71,6 +71,7 @@ public final class LiveController extends BaseController implements IController 
     }
 
     private static LiveController instance;//TODO：对象池
+    private boolean isUnload = false;
 
     private  OnLoadedListener currentListener;
 
@@ -104,19 +105,7 @@ public final class LiveController extends BaseController implements IController 
     public void load(String channel, String resolution, double startTime, OnLoadedListener listener)
             throws Exception {
         synchronized(this) {
-//            if (!loadQueue.isEmpty()) {
-//                loadQueue.clear();
-////            throw new Exception("You must forget unload last channel!");
-//            }
-//
-//            LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, listener);
-//            loadQueue.add(loadEvent);
-//            Log.i(TAG, "loadQueue size is " + loadQueue.size());
-//            if (curLoadEvent == null) {
-//                curLoadEvent = loadQueue.get(0);
-//                loadQueue.remove(0);
-//                this._load(_pointer, channel, resolution, startTime);
-//            }
+
             currentListener = listener;
             this._load(_pointer, channel, resolution, startTime);
             contrlMap.put(this.getID(), this);
@@ -174,12 +163,35 @@ public final class LiveController extends BaseController implements IController 
     public void unload() {
         //当前有事件的时候, 才unload, 屏蔽空unload
         synchronized(this) {
-
-            if (contrlMap.containsKey(id)) {
-                contrlMap.remove(id);
-                super.unload();
-                this._unload(_pointer);
+            if (!isUnload) {
+                if (contrlMap.containsKey(id)) {
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                LiveController contrl = (LiveController)contrlMap.get(id);
+                                if (contrl != null) {
+                                    contrl.delayUnload();
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
+                }
+                isUnload = true;
             }
+        }
+    }
+
+    /**
+     * 卸载当前直播流频道
+     */
+    private void delayUnload() {
+        if (contrlMap.containsKey(id)) {
+            contrlMap.remove(id);
+            super.unload();
+            this._unload(_pointer);
         }
     }
 

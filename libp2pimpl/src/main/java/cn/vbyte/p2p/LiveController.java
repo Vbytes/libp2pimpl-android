@@ -48,6 +48,7 @@ public final class LiveController extends BaseController implements IController 
         public static final int BACK_TO_ORIGIN = 10010005;
 
         public static final int STATISTICS = 10010006;
+        public static final int WANT_IMEI = 10010007;
     }
 
     public static class Error {
@@ -202,6 +203,9 @@ public final class LiveController extends BaseController implements IController 
                         }
                     }
                 }
+                break;
+            case Event.WANT_IMEI:
+                VbyteP2PModule.getInstance().setImei();
                 break;
         }
     }

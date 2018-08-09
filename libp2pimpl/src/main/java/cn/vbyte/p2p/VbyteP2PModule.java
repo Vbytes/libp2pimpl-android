@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -244,6 +245,7 @@ public final class VbyteP2PModule {
     private DynamicLibManager dynamicLibManager;
     // native代码对应的对象实例，标准做法
     private long _pointer;
+    private WeakReference<Context> _context;
 
     private VbyteP2PModule(Context context, String appId, String appKey, String appSecretKey)
             throws Exception {
@@ -298,10 +300,7 @@ public final class VbyteP2PModule {
         this._setAppId(_pointer, appId);
         this._setAppKey(_pointer, appKey);
         this._setAppSecretKey(_pointer, appSecretKey);
-        String imei = getDeviceid(context);
-        if (imei != null) {
-            this._setImei(_pointer, imei);
-        }
+        _context = new WeakReference<>(context);
 //        LiveController.getInstance();//首屏优化需要放开
     }
 
@@ -373,6 +372,14 @@ public final class VbyteP2PModule {
             e.printStackTrace();
         }
         return imei;
+    }
+
+    public void setImei() {
+        Context context = (Context)_context.get();
+        String imei = getDeviceid(context);
+        if (imei != null) {
+            this._setImei(_pointer, imei);
+        }
     }
 
     /**

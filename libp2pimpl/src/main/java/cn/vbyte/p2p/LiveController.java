@@ -80,6 +80,13 @@ public final class LiveController extends BaseController implements IController 
      * @return 直播控制器的唯一接口
      */
 
+    public static LiveController getInstance() {
+        if (instance == null) {
+            instance = new LiveController();
+        }
+        return instance;
+    }
+
     private long _pointer;
     private int id;
 

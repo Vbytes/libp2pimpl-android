@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.text.TextUtils;
+import android.util.Log;
 
 import org.json.JSONObject;
 import java.io.BufferedInputStream;
@@ -31,22 +32,18 @@ public class DynamicLibManager {
     private String libDirPath;
     private String currentLibDirPath;
 
-    //jni接口版本
-    private String jniVersion = "v3";
     //非https要下载的so
-    private String[] soNameArr = new String[]{"libp2pmodule", "libstun", "libevent"};
+    private String[] soNameArr = new String[]{"libp2pmodule", "libstun", "libevent", "libPcdnSdk"};
     private boolean supportHttps = false;
     //https情况下要下载的so
     private String[] soNameArrSupportHttps = new String[]{"libp2pmodule", "libstun", "libevent", "libevent_openssl", "libcrypto", "libssl"};
     private static String archCpuAbi = "";
 
-    /**
-     * cpuArch为传进来的，让这个类可以不依赖外面的类，cpuArch为 armeabi、armeabi-v7a、armeabi-v8a、x86、x86_64中的一个
-     * @param context
-     */
-    public DynamicLibManager(Context context) {
-        this.context = context;
-        libDirPath = this.context.getFilesDir().getAbsolutePath() + File.separator + "vlib";
+    public void ensureLibDir(String jniVersion) {
+
+        if (!TextUtils.isEmpty(currentLibDirPath)) {
+            return;
+        }
 
         StringBuilder tmpCurrentLibDirPath = new StringBuilder();
         tmpCurrentLibDirPath.append(context.getFilesDir().getAbsolutePath())
@@ -121,6 +118,16 @@ public class DynamicLibManager {
         }
     }
 
+
+    /**
+     * cpuArch为传进来的，让这个类可以不依赖外面的类，cpuArch为 armeabi、armeabi-v7a、armeabi-v8a、x86、x86_64中的一个
+     * @param context
+     */
+    public DynamicLibManager(Context context) {
+        this.context = context;
+        libDirPath = this.context.getFilesDir().getAbsolutePath() + File.separator + "vlib";
+    }
+
     public boolean isSoReady() {
         //如果ready存在,  files/vlib/当前jniVersion/当前armeabi/ready 那么hasAllJniSo = true
         File currentLibDir = new File(currentLibDirPath);
@@ -134,8 +141,19 @@ public class DynamicLibManager {
         }
     }
 
-    //第一次升级， true "", 第二次只检查libp2pmodule的升级
-    public void checkUpdateV2(final boolean firstDownload, final String soName, final String arch) {
+    /**
+     * 检查升级,目前在两种场景下使用
+     * 1.南瓜首次运行下载所有的so.(南瓜对size有要求)
+     * 2.p2p-sdk的so升级
+     * @param downloadAllSo true 下载所有的so
+     *                      false 升级soNameWithoutSubffix指定的so
+     * @param soNameWithoutSuffix 不带后缀名的so名称
+     * @param nativeVersion so的版本
+     * @param jniVersion JNI接口版本，当前仅对libp2pmodule这个so有效(只有它有jni接口)
+     * @param arch 架构名称，例如armeabi|armeabi-v7a|arm64-v8a|x86|x86_64
+     */
+    public void checkUpdateV2(final boolean downloadAllSo, final String soNameWithoutSuffix, final String nativeVersion, final String jniVersion, final String arch) {
+
         /**
          * 只有第一次下载的情况下，currentPath没有 endWith /armeabi-v7a
          * 此时currentLibDirPath为
@@ -172,18 +190,18 @@ public class DynamicLibManager {
                         sb.append("&supportHttps=true");
                         soNameArr = soNameArrSupportHttps;
                     }
-                    if (firstDownload) {
+                    if (downloadAllSo) {
                         sb.append("&fileId=").append(TextUtils.join(",", soNameArr));
                     } else {
-                        String[] tmpArr = soName.split("_");
 
-                        if (tmpArr.length == 3) {
-                            sb.append("&fileId=").append("libp2pmodule")
-                                    .append("&fifoVersion=").append(tmpArr[1]);
-                        } else {
+                        if (TextUtils.isEmpty(soNameWithoutSuffix) || TextUtils.isEmpty(nativeVersion)) {
                             return;
+                        } else {
+                            sb.append("&fileId=").append(soNameWithoutSuffix)
+                                    .append("&fifoVersion=").append(nativeVersion);
                         }
                     }
+
                     URL url = new URL(sb.toString());
 
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -202,21 +220,20 @@ public class DynamicLibManager {
 
                         if (jsonObj.has("downloadUrl")) {
                             String[] downloadSoArr;
-                            if (firstDownload) {
+                            if (downloadAllSo) {
                                 downloadSoArr = soNameArr;
                             } else {
-                                downloadSoArr = new String[]{"libp2pmodule"};
+                                downloadSoArr = new String[]{soNameWithoutSuffix};
                             }
 
                             Map<String, JSONObject> soJsonMap = new HashMap<>();
 
                             JSONObject jsonObjDownload = jsonObj.getJSONObject("downloadUrl");
 
-
                             for (String soName : downloadSoArr) {
                                 if (jsonObjDownload.has(soName)) {
                                     JSONObject jsonObjTmp = jsonObjDownload.getJSONObject(soName);
-                                    if (soName.equals("libp2pmodule")) {
+                                    if (soName.equals(soNameWithoutSuffix)) {
                                         //如果是libp2pmodule还检查jniVersion字段
                                         if (jsonObjTmp.has("jniVersion")
                                                 && !TextUtils.isEmpty(jsonObjTmp.getString("jniVersion"))
@@ -249,7 +266,7 @@ public class DynamicLibManager {
                                     JSONObject jsonObject = entry.getValue();
                                     writeReady = (writeReady && updateDynamicLib(entry.getKey(), jsonObject.getString("url"), jsonObject.getString("version"), jsonObject.getString("md5token")));
                                 }
-                                if (firstDownload && writeReady) {
+                                if (downloadAllSo && writeReady) {
                                     //第一次下载且都下载成功创建文件标识符
                                     new File(currentLibDirPath + File.separator + "ready").createNewFile();
                                 }

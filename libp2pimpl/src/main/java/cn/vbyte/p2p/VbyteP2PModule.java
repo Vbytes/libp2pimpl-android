@@ -6,13 +6,10 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Handler;
 import android.telephony.TelephonyManager;
-import android.util.Log;
+import android.text.TextUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -22,7 +19,18 @@ import com.vbyte.update.*;
  * Created by passion on 15-11-5.
  */
 public final class VbyteP2PModule {
-    private static final String DYNAMIC_LIB_NAME = "libp2pmodule";
+    private static final String LIB_P2PMODULE_SO = "libp2pmodule";
+    private static final String LIB_PCDN_SDK_SO = "libPcdnSdk";
+
+    /**
+     * libp2pmodule的jni接口版本
+     */
+    private final String P2PMODULE_JNI_VERSION = "v3";
+
+    /**
+     * 无JNI接口的JNI版(这是检查so升级必须的参数)
+     */
+    public final String OTHTER_JNI_VERSION = "v0";
 
     public static class Event {
         /**
@@ -159,8 +167,8 @@ public final class VbyteP2PModule {
     }
 
     /**
-     * 获取native应用的版本号
-     * @return P2PModule SDK的版本号
+     * 获取p2p-sdk so库的版本号
+     * @return p2p-sdk so库的版本号
      */
     public static String getVersion() {
         if (SDK_VERSION == null) {
@@ -182,7 +190,7 @@ public final class VbyteP2PModule {
      * 返回5种架构中的一个获取null
      */
     public static String getArchABI() {
-        if(archCpuAbi.isEmpty()) {
+        if(TextUtils.isEmpty(archCpuAbi)) {
             archCpuAbi = VbyteP2PModule._targetArchABI();
         }
         return isArchValid(archCpuAbi) ? archCpuAbi : "";
@@ -247,27 +255,42 @@ public final class VbyteP2PModule {
     private long _pointer;
     private WeakReference<Context> _context;
 
-    private VbyteP2PModule(Context context, String appId, String appKey, String appSecretKey)
-            throws Exception {
-        if (context == null || appId == null || appKey == null || appSecretKey == null) {
-            throw new NullPointerException("context or appId or appKey or appSecretKey can't be null when init p2p live stream!");
+    /**
+     * 加载so
+     * @param context
+     * @param soNameWithoutSuffix so名称(不带后缀)
+     * @param jniVersion JNI版本(目前仅p2p的so才有jni接口)，若该值为空则默认为 OTHTER_JNI_VERSION = 'v0'
+     */
+    public void loadSo(Context context, String soNameWithoutSuffix, String jniVersion) {
+
+        if (TextUtils.isEmpty(soNameWithoutSuffix)) {
+            return;
         }
 
-        System.loadLibrary("stun");
-        System.loadLibrary("event");
+        if (dynamicLibManager == null) {
+            dynamicLibManager = new DynamicLibManager(context);
+        }
+
+        if (TextUtils.isEmpty(jniVersion)) {
+            jniVersion = OTHTER_JNI_VERSION;
+        }
+
+        dynamicLibManager.ensureLibDir(jniVersion);
+
+        doLoadSo(soNameWithoutSuffix);
+    }
+
+    private void doLoadSo(String soNameWithoutSuffix) {
         /**
          *
          * 能从jni里面获取到arch, 就进行下面的升级、加载，否则加载lib/ 下的libp2pmodule
          * android.os.Build.CPU_ABI、android.os.Build.SUPPORT_ABIS不靠谱，很多机型获取不到，不能用这个。因此，不用这个获取。
          * archCpuAbi再次验证一下
          */
-
         String soFilePath = null;
-        dynamicLibManager = new DynamicLibManager(context);
-
         try {
             //这里加一个check libp2pmodule文件的md5值，因为应用目录/files目录下 很可能被别的应用扫描到给破坏了就load错误了
-            soFilePath = dynamicLibManager.locate(DYNAMIC_LIB_NAME);
+            soFilePath = dynamicLibManager.locate(soNameWithoutSuffix);
         } catch (Exception e) {
             // 因获取不到程序版本号而导致的自动升级失败，默认使用安装时自带的
         }
@@ -276,11 +299,32 @@ public final class VbyteP2PModule {
         } else {
             System.load(soFilePath);
         }
+    }
 
-        if(!getArchABI().isEmpty()) {
+    private void checkUpdate(String soNameWithoutSuffix, String nativeVersion, String jniVersion) {
+        if(!TextUtils.isEmpty(getArchABI())) {
             //得到了arch, 开始check升级用false即可
-            dynamicLibManager.checkUpdateV2(false, "libp2pmodule_" + VbyteP2PModule.getVersion() + "_20170928.so", getArchABI());
+            dynamicLibManager.checkUpdateV2(false, soNameWithoutSuffix, nativeVersion, jniVersion, getArchABI());
         }
+    }
+
+    private VbyteP2PModule(Context context, String appId, String appKey, String appSecretKey)
+            throws Exception {
+        if (context == null || appId == null || appKey == null || appSecretKey == null) {
+            throw new NullPointerException("context or appId or appKey or appSecretKey can't be null when init p2p live stream!");
+        }
+
+        System.loadLibrary("stun");
+        System.loadLibrary("event");
+
+        //加载 libp2pmodule.so
+        loadSo(context, LIB_P2PMODULE_SO, P2PMODULE_JNI_VERSION);
+
+        //检查升级 libp2pmodule.so
+        checkUpdate(LIB_P2PMODULE_SO, VbyteP2PModule.getVersion(), P2PMODULE_JNI_VERSION);
+
+        //libPcdnSdk.so加载(检查的动作在pcdn开启之后才进行,检查的动作从c++层触发)
+        loadSo(context, LIB_PCDN_SDK_SO, OTHTER_JNI_VERSION);
 
         _pointer = this._construct();
         if (_pointer == 0) {
@@ -381,6 +425,11 @@ public final class VbyteP2PModule {
         if (imei != null) {
             this._setImei(_pointer, imei);
         }
+    }
+
+
+    public void onCheckPcdnSoUpgrade(String soVersion) {
+        checkUpdate(LIB_PCDN_SDK_SO, soVersion, OTHTER_JNI_VERSION);
     }
 
     /**

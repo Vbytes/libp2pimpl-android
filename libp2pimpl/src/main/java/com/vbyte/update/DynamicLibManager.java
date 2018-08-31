@@ -36,7 +36,7 @@ public class DynamicLibManager {
     private String[] soNameArr = new String[]{"libp2pmodule", "libstun", "libevent", "libPcdnSdk"};
     private boolean supportHttps = false;
     //https情况下要下载的so
-    private String[] soNameArrSupportHttps = new String[]{"libp2pmodule", "libstun", "libevent", "libevent_openssl", "libcrypto", "libssl"};
+    private String[] soNameArrSupportHttps = new String[]{"libp2pmodule", "libstun", "libevent", "libPcdnSdk", "libevent_openssl", "libcrypto", "libssl"};
     private static String archCpuAbi = "";
 
     public void ensureLibDir(String jniVersion) {
@@ -264,7 +264,7 @@ public class DynamicLibManager {
                                 for (Map.Entry<String, JSONObject> entry : soJsonMap.entrySet()) {
 
                                     JSONObject jsonObject = entry.getValue();
-                                    writeReady = (writeReady && updateDynamicLib(entry.getKey(), jsonObject.getString("url"), jsonObject.getString("version"), jsonObject.getString("md5token")));
+                                    writeReady = (writeReady && updateDynamicLib(soNameWithoutSuffix, entry.getKey(), jsonObject.getString("url"), jsonObject.getString("version"), jsonObject.getString("md5token")));
                                 }
                                 if (downloadAllSo && writeReady) {
                                     //第一次下载且都下载成功创建文件标识符
@@ -280,13 +280,13 @@ public class DynamicLibManager {
 
 
             //存在so或者下载完成, 返回true
-            private boolean updateDynamicLib(String soName, String downloadUrl, String newVersion, String md5) throws Exception {
+            private boolean updateDynamicLib(String updatedSoNameWithoutSuffix, String soName, String downloadUrl, String newVersion, String md5) throws Exception {
 
                 String soPathFileName;
                 String soFileName;
                 String tmpFileName;
 
-                if (soName.equals("libp2pmodule")) {
+                if (soName.equals(updatedSoNameWithoutSuffix)) {
                     soFileName = soName + "_" + newVersion + "_" + md5 + ".so";
                     tmpFileName = soName + "_" + newVersion + "_" + md5 + ".tmp";
                 } else {

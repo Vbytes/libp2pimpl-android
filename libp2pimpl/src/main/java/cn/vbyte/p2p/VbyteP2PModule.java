@@ -7,6 +7,7 @@ import android.os.Message;
 import android.os.Handler;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
@@ -297,7 +298,10 @@ public final class VbyteP2PModule {
             e.printStackTrace();
         }
         if (soFilePath == null) {
-            System.loadLibrary("p2pmodule");
+            if (soNameWithoutSuffix.startsWith("lib")) {
+                String libNameWithoutPreffix = soNameWithoutSuffix.substring(3);
+                System.loadLibrary(libNameWithoutPreffix);
+            }
         } else {
             System.load(soFilePath);
         }

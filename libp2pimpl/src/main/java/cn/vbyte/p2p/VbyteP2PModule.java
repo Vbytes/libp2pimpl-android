@@ -293,6 +293,8 @@ public final class VbyteP2PModule {
             soFilePath = dynamicLibManager.locate(soNameWithoutSuffix);
         } catch (Exception e) {
             // 因获取不到程序版本号而导致的自动升级失败，默认使用安装时自带的
+        } catch (UnsatisfiedLinkError e) {
+            e.printStackTrace();
         }
         if (soFilePath == null) {
             System.loadLibrary("p2pmodule");
@@ -316,6 +318,7 @@ public final class VbyteP2PModule {
 
         System.loadLibrary("stun");
         System.loadLibrary("event");
+        System.loadLibrary("PcdnSdk");
 
         //加载 libp2pmodule.so
         loadSo(context, LIB_P2PMODULE_SO, P2PMODULE_JNI_VERSION);

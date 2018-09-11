@@ -21,7 +21,6 @@ import com.vbyte.update.*;
  */
 public final class VbyteP2PModule {
     private static final String LIB_P2PMODULE_SO = "libp2pmodule";
-    private static final String LIB_PCDN_SDK_SO = "libPcdnSdk";
 
     /**
      * libp2pmodule的jni接口版本
@@ -330,9 +329,6 @@ public final class VbyteP2PModule {
         //检查升级 libp2pmodule.so
         checkUpdate(LIB_P2PMODULE_SO, VbyteP2PModule.getVersion(), P2PMODULE_JNI_VERSION);
 
-        //libPcdnSdk.so加载(检查的动作在pcdn开启之后才进行,检查的动作从c++层触发)
-        loadSo(context, LIB_PCDN_SDK_SO, OTHTER_JNI_VERSION);
-
         _pointer = this._construct();
         if (_pointer == 0) {
             throw new RuntimeException("Can not init P2P");
@@ -432,11 +428,6 @@ public final class VbyteP2PModule {
         if (imei != null) {
             this._setImei(_pointer, imei);
         }
-    }
-
-
-    public void onCheckPcdnSoUpgrade(String soVersion) {
-        checkUpdate(LIB_PCDN_SDK_SO, soVersion, OTHTER_JNI_VERSION);
     }
 
     /**

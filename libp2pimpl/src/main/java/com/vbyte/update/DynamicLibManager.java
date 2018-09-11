@@ -33,7 +33,7 @@ public class DynamicLibManager {
     private String currentLibDirPath;
 
     //非https要下载的so
-    private String[] soNameArr = new String[]{"libp2pmodule", "libstun", "libevent", "libPcdnSdk"};
+    private String[] soNameArr = new String[]{"libp2pmodule", "libstun", "libevent"};
     private boolean supportHttps = false;
     //https情况下要下载的so
     private String[] soNameArrSupportHttps = new String[]{"libp2pmodule", "libstun", "libevent", "libPcdnSdk", "libevent_openssl", "libcrypto", "libssl"};

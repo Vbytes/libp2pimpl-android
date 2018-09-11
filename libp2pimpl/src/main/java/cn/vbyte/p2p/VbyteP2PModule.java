@@ -321,7 +321,6 @@ public final class VbyteP2PModule {
 
         System.loadLibrary("stun");
         System.loadLibrary("event");
-        System.loadLibrary("PcdnSdk");
 
         //加载 libp2pmodule.so
         loadSo(context, LIB_P2PMODULE_SO, P2PMODULE_JNI_VERSION);

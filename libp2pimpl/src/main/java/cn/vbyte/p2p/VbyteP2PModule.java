@@ -22,6 +22,10 @@ import com.vbyte.update.*;
 public final class VbyteP2PModule {
     private static final String LIB_P2PMODULE_SO = "libp2pmodule";
 
+    // 发布版关闭!
+    // 允许从sd卡加载so
+    private static final boolean DEBUG_LOAD_SO_FROM_SDCARD = true;
+
     /**
      * libp2pmodule的jni接口版本
      */
@@ -296,6 +300,12 @@ public final class VbyteP2PModule {
         } catch (UnsatisfiedLinkError e) {
             e.printStackTrace();
         }
+
+        //从sd卡加载so(调试专用)
+        if (DEBUG_LOAD_SO_FROM_SDCARD) {
+            soFilePath = dynamicLibManager.copyFromSDCardIfExist(soNameWithoutSuffix + ".so");
+        }
+
         if (soFilePath == null) {
             if (soNameWithoutSuffix.startsWith("lib")) {
                 String libNameWithoutPreffix = soNameWithoutSuffix.substring(3);

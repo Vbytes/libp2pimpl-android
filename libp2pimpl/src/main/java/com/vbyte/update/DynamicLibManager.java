@@ -3,14 +3,21 @@ package com.vbyte.update;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 
 import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
@@ -361,6 +368,58 @@ public class DynamicLibManager {
     //兼容星空的 老版本jar 调用的
     public void checkUpdate(final String fileId, final String version, final String abi) {
 
+    }
+
+    /**
+     * 从SDCard/Android/data/应用包名/files/ 拷贝so并写入到 /data/data/应用包名/files/vlib/debug 目录下
+     *
+     * @param soName 需要拷贝的so
+     * @return 返回内部存储路径
+     */
+    public String copyFromSDCardIfExist(String soName) {
+
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            File externalDir = context.getExternalFilesDir(null);
+
+            File soPath = new File(externalDir.getAbsolutePath() + File.separator + soName);
+
+            if (soPath.exists()) {
+                File debugLibDir = new File(libDirPath + File.separator + "debug");
+                if (!debugLibDir.exists()) {
+                    debugLibDir.mkdirs();
+                }
+
+                String debugSoPath = debugLibDir.getAbsolutePath() + File.separator + soName;
+                File debugSoFile = new File(debugSoPath);
+
+                if (debugSoFile.exists()) {
+                    //文件已经存在
+                    if (MD5Util.MD5(debugSoFile).equals(MD5Util.MD5(soPath))) {
+                        return debugSoPath;
+                    }
+                }
+
+                //拷贝文件
+                try {
+                    FileOutputStream outputStream = new FileOutputStream(new File(debugSoPath));
+
+                    InputStream bis = new FileInputStream(soPath);
+
+                    byte[] bytes = new byte[10240];
+                    int count;
+                    while ((count = bis.read(bytes)) != -1) {
+                        outputStream.write(bytes, 0, count);
+                    }
+
+                    return debugSoPath;
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return null;
     }
 
     public String locate(final String fileid) throws Exception {

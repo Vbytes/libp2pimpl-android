@@ -49,6 +49,7 @@ public final class LiveController extends BaseController implements IController 
 
         public static final int STATISTICS = 10010006;
         public static final int WANT_IMEI = 10010007;
+        public static final int REDIRECT_ADDR = 10010008;
     }
 
     public static class Error {

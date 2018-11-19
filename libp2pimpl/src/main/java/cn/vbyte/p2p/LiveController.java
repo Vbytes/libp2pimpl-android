@@ -184,6 +184,7 @@ public final class LiveController extends BaseController implements IController 
                 isUnload = true;
             }
         }
+        currentListener = null;
     }
 
     /**

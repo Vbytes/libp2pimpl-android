@@ -13,6 +13,7 @@ import java.util.List;
 
 import com.vbyte.update.*;
 import static cn.vbyte.p2p.BaseController.curLoadEvent;
+import static cn.vbyte.p2p.BaseController.initedSDK;
 
 /**
  * Created by passion on 15-11-5.
@@ -265,6 +266,8 @@ public final class VbyteP2PModule {
             soFilePath = dynamicLibManager.locate(DYNAMIC_LIB_NAME);
         } catch (Exception e) {
             // 因获取不到程序版本号而导致的自动升级失败，默认使用安装时自带的
+        } catch (UnsatisfiedLinkError e) {
+
         }
         if (soFilePath == null) {
             System.loadLibrary("p2pmodule");
@@ -317,7 +320,12 @@ public final class VbyteP2PModule {
 
     private void onEvent(int code, String msg) {
         List<BaseController.LoadEvent> loadQueue = BaseController.loadQueue;
-        if (code == LiveController.Event.STOPPED || code == VodController.Event.STOPPED) {
+        boolean isInited = false;
+        if (code == Event.INITED) {
+            initedSDK = true;
+            isInited = true;
+        }
+        if (isInited || code == LiveController.Event.STOPPED || code == VodController.Event.STOPPED) {
             synchronized(LiveController.class) {
                 if (curLoadEvent != null) {
                     curLoadEvent = null;

@@ -109,7 +109,7 @@ public final class LiveController extends BaseController implements IController 
             LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, listener);
             loadQueue.add(loadEvent);
             Log.i(TAG, "loadQueue size is " + loadQueue.size());
-            if (curLoadEvent == null) {
+            if (initedSDK && curLoadEvent == null) {
                 curLoadEvent = loadQueue.get(0);
                 loadQueue.remove(0);
                 this._load(_pointer, channel, resolution, startTime);
@@ -138,7 +138,7 @@ public final class LiveController extends BaseController implements IController 
             LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, netState, listener);
             loadQueue.add(loadEvent);
             Log.i(TAG, "loadQueue@1 size is " + loadQueue.size());
-            if (curLoadEvent == null) {
+            if (initedSDK && curLoadEvent == null) {
                 curLoadEvent = loadQueue.get(0);
                 loadQueue.remove(0);
                 this._load(_pointer, channel, resolution, startTime, netState);
@@ -194,7 +194,7 @@ public final class LiveController extends BaseController implements IController 
     protected void onEvent(int code, String msg) {
         switch (code) {
             case Event.STARTED:
-                synchronized(this) {
+                synchronized(LiveController.class) {
                     if (curLoadEvent != null) {
                         Uri uri = Uri.parse(msg);
                         if (curLoadEvent.listener != null) {

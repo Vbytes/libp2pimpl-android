@@ -296,7 +296,7 @@ public final class VbyteP2PModule {
         this._setAppKey(_pointer, appKey);
         this._setAppSecretKey(_pointer, appSecretKey);
         _context = new WeakReference<>(context);
-//        LiveController.getInstance();//首屏优化需要放开
+       LiveController.getInstance();//首屏优化需要放开
     }
 
     /**

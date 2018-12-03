@@ -6,25 +6,23 @@ import android.os.Message;
 /**
  * Created by passion on 16-8-23.
  */
-public class VbyteHandler extends Handler {
+public class VbyteHandler implements CallbackInterface {
 
     @Override
-    public void handleMessage(Message msg) {
-        int code = msg.what;
+    public void handleMessage(int code, String msg) {
         int prefixOfCode = code / 1000;
-        String description = (String) msg.obj;
         switch (prefixOfCode) {
             case 10010:
-                LiveController.getInstance().onEvent(code, description);
+                LiveController.getInstance().onEvent(code, msg);
                 break;
             case 10011:
-                LiveController.getInstance().onError(code, description);
+                LiveController.getInstance().onError(code, msg);
                 break;
             case 10020:
-                VodController.getInstance().onEvent(code, description);
+                VodController.getInstance().onEvent(code, msg);
                 break;
             case 10021:
-                VodController.getInstance().onError(code, description);
+                VodController.getInstance().onError(code, msg);
                 break;
         }
     }

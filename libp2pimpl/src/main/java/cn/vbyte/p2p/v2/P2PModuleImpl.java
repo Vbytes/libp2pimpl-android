@@ -92,48 +92,48 @@ public class P2PModuleImpl implements P2PModule {
         /**
          * aHander就是为了满足俊哥而弄的代理
          */
-        Handler aHandler = new Handler(new Handler.Callback() {
-            @Override
-            public boolean handleMessage(Message msg) {
-                Message message = Message.obtain();
-                message.obj = msg.obj;
-                switch (msg.what) {
-                    case VbyteP2PModule.Event.REPORTED:
-                        P2PModuleImpl.this.statistic = (String)msg.obj;
-                        break;
-                    case VbyteP2PModule.Event.STREAM_READY:
-                        message.what = P2PHandler.p2p_FirstDataSuccess;
-                        P2PModuleImpl.this.handler.sendMessage(message);
-                        break;
-                    case VbyteP2PModule.Event.CONF_READY:
-                        message.what = P2PHandler.p2p_ChannelInfoSuccess;
-                        P2PModuleImpl.this.handler.sendMessage(message);
-                        break;
-                    case VbyteP2PModule.Event.DATA_UNBLOCK:
-                        message.what = P2PHandler.p2p_WriteDataUnblock;
-                        P2PModuleImpl.this.handler.sendMessage(message);
-                        break;
-                    case VbyteP2PModule.Error.CONF_INVALID:
-                        message.what = P2PHandler.p2p_ChannelInfoFail;
-                        P2PModuleImpl.this.handler.sendMessage(message);
-                        break;
-                    case VbyteP2PModule.Error.BAD_NETWORK:
-                        message.what = P2PHandler.cdn_DownLoadFail;
-                        P2PModuleImpl.this.handler.sendMessage(message);
-                        break;
-                    case VbyteP2PModule.Error.DATA_BLOCK:
-                        message.what = P2PHandler.p2p_WriteDataBlock;
-                        P2PModuleImpl.this.handler.sendMessage(message);
-                        break;
-                    default:
-                        break;
-                }
-                return true;
-            }
-        });
-        if (proxy != null) {
-            proxy.setEventHandler(aHandler);
-            proxy.setErrorHandler(aHandler);
-        }
+//        Handler aHandler = new Handler(new Handler.Callback() {
+//            @Override
+//            public boolean handleMessage(Message msg) {
+//                Message message = Message.obtain();
+//                message.obj = msg.obj;
+//                switch (msg.what) {
+//                    case VbyteP2PModule.Event.REPORTED:
+//                        P2PModuleImpl.this.statistic = (String)msg.obj;
+//                        break;
+//                    case VbyteP2PModule.Event.STREAM_READY:
+//                        message.what = P2PHandler.p2p_FirstDataSuccess;
+//                        P2PModuleImpl.this.handler.sendMessage(message);
+//                        break;
+//                    case VbyteP2PModule.Event.CONF_READY:
+//                        message.what = P2PHandler.p2p_ChannelInfoSuccess;
+//                        P2PModuleImpl.this.handler.sendMessage(message);
+//                        break;
+//                    case VbyteP2PModule.Event.DATA_UNBLOCK:
+//                        message.what = P2PHandler.p2p_WriteDataUnblock;
+//                        P2PModuleImpl.this.handler.sendMessage(message);
+//                        break;
+//                    case VbyteP2PModule.Error.CONF_INVALID:
+//                        message.what = P2PHandler.p2p_ChannelInfoFail;
+//                        P2PModuleImpl.this.handler.sendMessage(message);
+//                        break;
+//                    case VbyteP2PModule.Error.BAD_NETWORK:
+//                        message.what = P2PHandler.cdn_DownLoadFail;
+//                        P2PModuleImpl.this.handler.sendMessage(message);
+//                        break;
+//                    case VbyteP2PModule.Error.DATA_BLOCK:
+//                        message.what = P2PHandler.p2p_WriteDataBlock;
+//                        P2PModuleImpl.this.handler.sendMessage(message);
+//                        break;
+//                    default:
+//                        break;
+//                }
+//                return true;
+//            }
+//        });
+//        if (proxy != null) {
+//            proxy.setEventHandler(aHandler);
+//            proxy.setErrorHandler(aHandler);
+//        }
     }
 }

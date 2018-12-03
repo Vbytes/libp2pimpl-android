@@ -235,9 +235,9 @@ public final class VbyteP2PModule {
     /*=========================================================*/
 
     // 事件监听gut
-    private Handler eventHandler = null;
-    private Handler errorHandler = null;
-    private Handler vbyteHandler = new VbyteHandler();
+    private CallbackInterface eventHandler = null;
+    private CallbackInterface errorHandler = null;
+    private CallbackInterface vbyteHandler = new VbyteHandler();
     private DynamicLibManager dynamicLibManager;
     // native代码对应的对象实例，标准做法
     private long _pointer;
@@ -306,7 +306,7 @@ public final class VbyteP2PModule {
      * 设置EventHandler，注意该handler不能叠加，之前设置的handler将无效
      * @param handler 要设置的EventHandler实例
      */
-    public void setEventHandler(Handler handler) {
+    public void setEventHandler(CallbackInterface handler) {
         this.eventHandler = handler;
     }
 
@@ -314,7 +314,7 @@ public final class VbyteP2PModule {
      * 设置ErrorHandler，注意该handler不能叠加，之前设置的handler将无效
      * @param handler 要设置的ErrorHandler实例
      */
-    public void setErrorHandler(Handler handler) {
+    public void setErrorHandler(CallbackInterface handler) {
         this.errorHandler = handler;
     }
 
@@ -342,28 +342,24 @@ public final class VbyteP2PModule {
                 }
             }
         }
-        Message message = vbyteHandler.obtainMessage();
-        message.what = code;
-        message.obj = msg;
-        vbyteHandler.sendMessage(message);
+        vbyteHandler.handleMessage(code, msg);
         if (eventHandler != null) {
-            message = eventHandler.obtainMessage();
-            message.what = code;
-            message.obj = msg;
-            eventHandler.sendMessage(Message.obtain(message));
+            try {
+                eventHandler.handleMessage(code, msg);
+            } catch (Exception e) {
+                // do nothing
+            }
         }
     }
 
     private void onError(int code, String msg) {
-        Message message = vbyteHandler.obtainMessage();
-        message.what = code;
-        message.obj = msg;
-        vbyteHandler.sendMessage(message);
+        vbyteHandler.handleMessage(code, msg);
         if (errorHandler != null) {
-            message = errorHandler.obtainMessage();
-            message.what = code;
-            message.obj = msg;
-            errorHandler.sendMessage(Message.obtain(message));
+            try {
+                errorHandler.handleMessage(code, msg);
+            } catch (Exception e) {
+                // do nothing
+            }
         }
     }
 

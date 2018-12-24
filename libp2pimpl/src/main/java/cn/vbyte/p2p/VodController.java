@@ -252,6 +252,21 @@ public final class VodController extends BaseController implements IController {
     }
 
     @Override
+    public void load(String channel, String resolution, double startTime, OnLoadedListener listener, boolean async) throws Exception {
+        //DO NOTHING
+    }
+
+    @Override
+    public void load(String channel, String resolution, double startTime, int netState, OnLoadedListener listener, boolean async) throws Exception {
+        //DO NOTHING
+    }
+
+    @Override
+    public void load(ChannelInfo channel) throws Exception {
+        //DO NOTHING
+    }
+
+    @Override
     public String playStreamInfo() {
         return this._playStreamInfo(_pointer);
     }

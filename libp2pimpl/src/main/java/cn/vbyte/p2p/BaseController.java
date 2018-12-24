@@ -32,27 +32,28 @@ public abstract class BaseController implements IController {
         public double startTime;
         public int netState;
         public OnLoadedListener listener;
+        public boolean callOnUIThread = false;//回调是否在UI线程,在UI线程需要使用Handler(斗鱼不使用Handler)
 
         public LoadEvent(int videoType, String channel, String resolution, OnLoadedListener listener) {
             this(videoType, channel, resolution, 0, listener);
         }
 
         public LoadEvent(int videoType, String channel, String resolution, double startTime, OnLoadedListener listener) {
-            this.videoType = videoType;
-            this.channel = channel;
-            this.resolution = resolution;
-            this.startTime = startTime;
-            this.netState = NETSTATE_WIFI;
-            this.listener = listener;
+            this(videoType, channel, resolution, startTime, NETSTATE_WIFI, listener);
         }
 
         public LoadEvent(int videoType, String channel, String resolution, double startTime, int netState, OnLoadedListener listener) {
+            this(videoType, channel, resolution, startTime, netState, listener, false);
+        }
+
+        public LoadEvent(int videoType, String channel, String resolution, double startTime, int netState, OnLoadedListener listener, boolean callOnUIThread) {
             this.videoType = videoType;
             this.channel = channel;
             this.resolution = resolution;
             this.netState = netState;
             this.startTime = startTime;
             this.listener = listener;
+            this.callOnUIThread = callOnUIThread;
         }
     }
 

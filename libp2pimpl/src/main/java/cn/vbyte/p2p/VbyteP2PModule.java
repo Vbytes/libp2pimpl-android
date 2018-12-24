@@ -5,11 +5,12 @@ import android.os.Environment;
 import android.os.Message;
 import android.os.Handler;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import com.vbyte.update.*;
 import static cn.vbyte.p2p.BaseController.curLoadEvent;
@@ -233,11 +234,15 @@ public final class VbyteP2PModule {
 
     /////////////////////////////////////////////////////////////
     /*=========================================================*/
-
-    // 事件监听gut
+    //用于跟踪Controller(目前低延迟直播项目只使用了LiveController)的不同实例
+    public static final ConcurrentMap<Integer, BaseController> contrlMap = new ConcurrentHashMap<>();
+    // 事件监听接口(提供给不喜欢Handler的客户使用)
     private CallbackInterface eventHandler = null;
     private CallbackInterface errorHandler = null;
-    private CallbackInterface vbyteHandler = new VbyteHandler();
+    private MultiCallbackInterface vbyteHandler = new VbyteHandler();
+    //事件监听的Handler
+    private Handler nativeEventHandler = null;
+    private Handler nativeErrorHandler = null;
     private DynamicLibManager dynamicLibManager;
     // native代码对应的对象实例，标准做法
     private long _pointer;
@@ -299,11 +304,12 @@ public final class VbyteP2PModule {
         this._setAppKey(_pointer, appKey);
         this._setAppSecretKey(_pointer, appSecretKey);
         _context = new WeakReference<>(context);
-       LiveController.getInstance();//首屏优化需要放开
+//        LiveController.getInstance();//首屏优化需要放开
     }
 
     /**
      * 设置EventHandler，注意该handler不能叠加，之前设置的handler将无效
+     * 使用该接口LiveController仅可以使用
      * @param handler 要设置的EventHandler实例
      */
     public void setEventHandler(CallbackInterface handler) {
@@ -318,13 +324,66 @@ public final class VbyteP2PModule {
         this.errorHandler = handler;
     }
 
-    private void onEvent(int code, String msg) {
+    /**
+     * 设置监听事件的Handler，若需要在UI线程收到通知需要传递UI线程的Handler
+     * @param handler 需要监听事件的Handler
+     */
+    public void setEventHandler(Handler handler) {
+        this.nativeEventHandler = handler;
+    }
+
+    /**
+     * 设置监听错误事件的Handler，若需要在UI线程收到通知需要传递UI线程的Handler
+     * @param handler 需要监听事件的Handler
+     */
+    public void setErrorHandler(Handler handler) {
+        this.nativeErrorHandler = handler;
+    }
+
+    private void senOnEventMessage(int code, String msg, int id, boolean callOnUIThread) {
+        if (callOnUIThread) {
+            //在UI线程将消息通知给LiveController
+            Handler handler = ((Handler)vbyteHandler);
+            Message message = handler.obtainMessage();
+            message.what = code;
+            message.obj = msg;
+            message.arg1 = id;
+            handler.sendMessage(message);
+        } else {
+            //直接将消息发送给LiveController(XP2P线程)
+            vbyteHandler.handleMessage(code, msg, id);
+        }
+    }
+
+    private void notifyEventIfNeeded(CallbackInterface handler, int code, String msg, int id) {
+        if (handler != null) {
+            try {
+                handler.handleMessage(code, msg);
+            } catch (Exception e) {
+                // do nothing
+            }
+        }
+    }
+
+    private void notifyEventIfNeeded(Handler handler, int code, String msg, int id) {
+        if (handler != null) {
+            Message message = handler.obtainMessage();
+            message.what = code;
+            message.obj = msg;
+            message.arg1 = id;
+            handler.sendMessage(Message.obtain(message));
+        }
+    }
+
+    private void onEvent(int code, String msg, int ctrlID) {
         List<BaseController.LoadEvent> loadQueue = BaseController.loadQueue;
         boolean isInited = false;
         if (code == Event.INITED) {
             initedSDK = true;
             isInited = true;
         }
+        boolean callOnUIThread = curLoadEvent != null && curLoadEvent.callOnUIThread;
+
         if (isInited || code == LiveController.Event.STOPPED || code == VodController.Event.STOPPED) {
             synchronized(LiveController.class) {
                 if (curLoadEvent != null) {
@@ -335,32 +394,29 @@ public final class VbyteP2PModule {
                     loadQueue.remove(0);
                     if (curLoadEvent.videoType == BaseController.VIDEO_LIVE) {
                         LiveController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime, curLoadEvent.netState);
-//                    LiveController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime);
                     } else {
                         VodController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime);
                     }
                 }
             }
         }
-        vbyteHandler.handleMessage(code, msg);
-        if (eventHandler != null) {
-            try {
-                eventHandler.handleMessage(code, msg);
-            } catch (Exception e) {
-                // do nothing
-            }
-        }
+
+        //发送消息给LiveController
+        senOnEventMessage(code, msg, ctrlID, callOnUIThread);
+
+        //将消息发送给客户
+        notifyEventIfNeeded(eventHandler, code, msg, ctrlID);
+        notifyEventIfNeeded(nativeEventHandler, code, msg, ctrlID);
     }
 
-    private void onError(int code, String msg) {
-        vbyteHandler.handleMessage(code, msg);
-        if (errorHandler != null) {
-            try {
-                errorHandler.handleMessage(code, msg);
-            } catch (Exception e) {
-                // do nothing
-            }
-        }
+    private void onError(int code, String msg, int ctrlID) {
+        boolean callOnUIThread = curLoadEvent != null && curLoadEvent.callOnUIThread;
+
+        //发送消息给LiveController
+        senOnEventMessage(code, msg, ctrlID, callOnUIThread);
+        notifyEventIfNeeded(errorHandler, code, msg, ctrlID);
+        //将消息发送给客户
+        notifyEventIfNeeded(nativeErrorHandler, code, msg, ctrlID);
     }
 
     private String getDeviceid(Context context) {

@@ -49,6 +49,10 @@ public final class LiveController extends BaseController implements IController 
 
         public static final int STATISTICS = 10010006;
         public static final int WANT_IMEI = 10010007;
+        /**
+         * 返回切片重定向后的地址
+         */
+        public static final int REDIRECT_ADDR = 10010008;
     }
 
     public static class Error {
@@ -85,7 +89,7 @@ public final class LiveController extends BaseController implements IController 
 
     private long _pointer;
 
-    private LiveController() {
+    public LiveController() {
         _pointer = _construct();
     }
 
@@ -100,21 +104,41 @@ public final class LiveController extends BaseController implements IController 
     @Override
     public void load(String channel, String resolution, double startTime, OnLoadedListener listener)
             throws Exception {
+        load(channel, resolution, startTime, listener, false);
+    }
+
+    /**
+     * 为方便子类实现
+     * @param channel 对直播是频道ID，对点播是资源链接
+     * @param resolution 统一为 "UHD"
+     * @param startTime
+     * @param listener 当成功load时的回调函数
+     * @param async listener是否在UI线程回调
+     * @throws Exception 当load/unload没有成对调用时，会抛出异常提示
+     */
+    @Override
+    public void load(String channel, String resolution, double startTime, OnLoadedListener listener, boolean async) throws Exception {
         synchronized(LiveController.class) {
             if (!loadQueue.isEmpty()) {
                 loadQueue.clear();
 //            throw new Exception("You must forget unload last channel!");
             }
 
-            LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, listener);
+            LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, NETSTATE_WIFI, listener, async);
             loadQueue.add(loadEvent);
             Log.i(TAG, "loadQueue size is " + loadQueue.size());
+            VbyteP2PModule.contrlMap.put(getCtrlID(), this);
             if (initedSDK && curLoadEvent == null) {
                 curLoadEvent = loadQueue.get(0);
                 loadQueue.remove(0);
                 this._load(_pointer, channel, resolution, startTime);
             }
         }
+    }
+
+    //返回contrlMap内LiveController的ID
+    private int getCtrlID() {
+        return (int) (_pointer%10000);
     }
 
     /**
@@ -129,21 +153,58 @@ public final class LiveController extends BaseController implements IController 
     @Override
     public void load(String channel, String resolution, double startTime, int netState, OnLoadedListener listener)
             throws Exception {
+        load(channel, resolution, startTime, netState, listener, false);
+    }
+
+    /**
+     * 加载一个直播流。针对时移，该接口只为flv使用
+     * @param channel 直播流频道ID
+     * @param resolution 统一为 "UHD"
+     * @param startTime 视频的起始位置，以秒为单位，支持一天之内的视频时移回放
+     * @param netState 网络状态
+     * @param listener 当成功load时的回调函数
+     * @param async listener是否在UI线程回调
+     * @throws Exception 当load/unload没有成对调用时，会抛出异常提示
+     */
+    @Override
+    public void load(String channel, String resolution, double startTime, int netState, OnLoadedListener listener, boolean async) throws Exception{
         synchronized(LiveController.class) {
             if (!loadQueue.isEmpty()) {
                 loadQueue.clear();
 //            throw new Exception("You must forget unload last channel!");
             }
 
-            LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, netState, listener);
+            LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, netState, listener, async);
             loadQueue.add(loadEvent);
             Log.i(TAG, "loadQueue@1 size is " + loadQueue.size());
+            VbyteP2PModule.contrlMap.put(getCtrlID(), this);
             if (initedSDK && curLoadEvent == null) {
                 curLoadEvent = loadQueue.get(0);
                 loadQueue.remove(0);
                 this._load(_pointer, channel, resolution, startTime, netState);
             }
         }
+    }
+
+    /**
+     * 加载一个频道，此函数没有起始时间参数
+     * @param channel 对直播是频道ID，对点播是资源链接
+     * @param listener 当成功load时的回调函数
+     * @param async listener是否要在UI线程回调
+     * @throws Exception 当load/unload没有成对调用时，会抛出异常
+     */
+    public void load(String channel, OnLoadedListener listener, boolean async) throws Exception {
+        load(channel, "UHD", 0, listener, async);
+    }
+
+
+    /**
+     * 加载一个频道，此函数没有起始时间参数
+     * @param channel {@see IController.Channel}
+     * @throws Exception
+     */
+    public void load(ChannelInfo channel) throws Exception {
+        load(channel.getChannel(), channel.getResolution(), channel.getStartTime(), channel.getListener(), channel.isAsync());
     }
 
     @Override
@@ -163,6 +224,7 @@ public final class LiveController extends BaseController implements IController 
     public void unload() {
         //当前有事件的时候, 才unload, 屏蔽空unload
         if(curLoadEvent != null) {
+            VbyteP2PModule.contrlMap.remove(getCtrlID());
             super.unload();
             this._unload(_pointer);
         }

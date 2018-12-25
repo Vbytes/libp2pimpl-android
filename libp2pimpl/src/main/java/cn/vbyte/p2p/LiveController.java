@@ -119,26 +119,18 @@ public final class LiveController extends BaseController implements IController 
     @Override
     public void load(String channel, String resolution, double startTime, OnLoadedListener listener, boolean async) throws Exception {
         synchronized(LiveController.class) {
-            if (!loadQueue.isEmpty()) {
-                loadQueue.clear();
-//            throw new Exception("You must forget unload last channel!");
-            }
-
             LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, NETSTATE_WIFI, listener, async);
-            loadQueue.add(loadEvent);
-            Log.i(TAG, "loadQueue size is " + loadQueue.size());
+            curLoadEvent = loadEvent;
             VbyteP2PModule.contrlMap.put(getCtrlID(), this);
-            if (initedSDK && curLoadEvent == null) {
-                curLoadEvent = loadQueue.get(0);
-                loadQueue.remove(0);
+            if (initedSDK) {
                 this._load(_pointer, channel, resolution, startTime);
             }
         }
     }
 
     //返回contrlMap内LiveController的ID
-    private int getCtrlID() {
-        return (int) (_pointer%10000);
+    private long getCtrlID() {
+        return _pointer;
     }
 
     /**
@@ -169,18 +161,13 @@ public final class LiveController extends BaseController implements IController 
     @Override
     public void load(String channel, String resolution, double startTime, int netState, OnLoadedListener listener, boolean async) throws Exception{
         synchronized(LiveController.class) {
-            if (!loadQueue.isEmpty()) {
-                loadQueue.clear();
-//            throw new Exception("You must forget unload last channel!");
-            }
-
             LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, netState, listener, async);
-            loadQueue.add(loadEvent);
-            Log.i(TAG, "loadQueue@1 size is " + loadQueue.size());
+//            loadQueue.add(loadEvent);
+            curLoadEvent = loadEvent;
             VbyteP2PModule.contrlMap.put(getCtrlID(), this);
-            if (initedSDK && curLoadEvent == null) {
-                curLoadEvent = loadQueue.get(0);
-                loadQueue.remove(0);
+            if (initedSDK) {
+//                curLoadEvent = loadQueue.get(0);
+//                loadQueue.remove(0);
                 this._load(_pointer, channel, resolution, startTime, netState);
             }
         }
@@ -222,9 +209,10 @@ public final class LiveController extends BaseController implements IController 
      */
     @Override
     public void unload() {
+        Log.i(LiveController.TAG, "LiveController:" + this + ", unload");
+
         //当前有事件的时候, 才unload, 屏蔽空unload
         if(curLoadEvent != null) {
-            VbyteP2PModule.contrlMap.remove(getCtrlID());
             super.unload();
             this._unload(_pointer);
         }
@@ -254,6 +242,7 @@ public final class LiveController extends BaseController implements IController 
 
     @Override
     protected void onEvent(int code, String msg) {
+        Log.i(LiveController.TAG, "LiveController onEvent code:" + code + ",msg:" + msg);
         switch (code) {
             case Event.STARTED:
                 synchronized(LiveController.class) {
@@ -262,10 +251,17 @@ public final class LiveController extends BaseController implements IController 
                         if (curLoadEvent.listener != null) {
                             curLoadEvent.listener.onLoaded(uri);
                             curLoadEvent.listener = null;
+                            Log.i(LiveController.TAG, "LiveController:" + this + ", Event.STARTED");
                         }
                     }
                 }
+
+            case Event.STOP:
+                Log.i(LiveController.TAG, "LiveController:" + this + "Event.STOP remove:" + getCtrlID());
+                VbyteP2PModule.contrlMap.remove(getCtrlID());
+                curLoadEvent.listener = null;
                 break;
+
             case Event.WANT_IMEI:
                 VbyteP2PModule.getInstance().setImei();
                 break;

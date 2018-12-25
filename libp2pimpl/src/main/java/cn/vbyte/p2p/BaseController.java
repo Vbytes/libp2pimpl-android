@@ -57,8 +57,7 @@ public abstract class BaseController implements IController {
         }
     }
 
-    protected static List<LoadEvent> loadQueue = Collections.synchronizedList(new LinkedList<LoadEvent>());
-    protected static LoadEvent curLoadEvent = null;
+    protected LoadEvent curLoadEvent = null;
     protected static boolean initedSDK = false;
 
     /**

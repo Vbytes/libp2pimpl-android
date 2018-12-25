@@ -118,15 +118,8 @@ public final class VodController extends BaseController implements IController {
     @Override
     public void load(String channel, String resolution, double startTime, OnLoadedListener listener)
             throws  Exception {
-        if (!loadQueue.isEmpty()) {
-            loadQueue.clear();
-            throw new Exception("You must forget to unload last channel!");
-        }
         LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener);
-        loadQueue.add(loadEvent);
         if (curLoadEvent == null) {
-            curLoadEvent = loadQueue.get(0);
-            loadQueue.remove(0);
             this._load(_pointer, channel, resolution, startTime);
         }
     }
@@ -143,15 +136,8 @@ public final class VodController extends BaseController implements IController {
     @Override
     public void load(String channel, String resolution, double startTime, int netState, OnLoadedListener listener)
             throws  Exception {
-        if (!loadQueue.isEmpty()) {
-            loadQueue.clear();
-            throw new Exception("You must forget to unload last channel!");
-        }
         LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener);
-        loadQueue.add(loadEvent);
         if (curLoadEvent == null) {
-            curLoadEvent = loadQueue.get(0);
-            loadQueue.remove(0);
             this._load(_pointer, channel, resolution, startTime);
         }
     }

@@ -1,19 +1,19 @@
 package cn.vbyte.p2p;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
 import android.os.Handler;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.vbyte.update.*;
-import static cn.vbyte.p2p.BaseController.curLoadEvent;
 import static cn.vbyte.p2p.BaseController.initedSDK;
 
 /**
@@ -235,7 +235,7 @@ public final class VbyteP2PModule {
     /////////////////////////////////////////////////////////////
     /*=========================================================*/
     //用于跟踪Controller(目前低延迟直播项目只使用了LiveController)的不同实例
-    public static final ConcurrentMap<Integer, BaseController> contrlMap = new ConcurrentHashMap<>();
+    public static final ConcurrentMap<Long, BaseController> contrlMap = new ConcurrentHashMap<>();
     // 事件监听接口(提供给不喜欢Handler的客户使用)
     private CallbackInterface eventHandler = null;
     private CallbackInterface errorHandler = null;
@@ -247,6 +247,8 @@ public final class VbyteP2PModule {
     // native代码对应的对象实例，标准做法
     private long _pointer;
     private WeakReference<Context> _context;
+    //@FIXME 企鹅电竞默认需要在UI线程调用, 其他客户需要在非UI线程调用
+    private boolean callOnLoadListener = true;
 
     private VbyteP2PModule(Context context, String appId, String appKey, String appSecretKey)
             throws Exception {
@@ -340,14 +342,17 @@ public final class VbyteP2PModule {
         this.nativeErrorHandler = handler;
     }
 
-    private void senOnEventMessage(int code, String msg, int id, boolean callOnUIThread) {
+    private void senOnEventMessage(int code, String msg, long id, boolean callOnUIThread) {
         if (callOnUIThread) {
             //在UI线程将消息通知给LiveController
             Handler handler = ((Handler)vbyteHandler);
             Message message = handler.obtainMessage();
+            Bundle data = new Bundle();
+            data.putLong("ctrlID", id);
             message.what = code;
             message.obj = msg;
-            message.arg1 = id;
+            message.setData(data);
+
             handler.sendMessage(message);
         } else {
             //直接将消息发送给LiveController(XP2P线程)
@@ -355,7 +360,11 @@ public final class VbyteP2PModule {
         }
     }
 
-    private void notifyEventIfNeeded(CallbackInterface handler, int code, String msg, int id) {
+    public void setCallOnLoadListener(boolean callOnLoadListener) {
+        this.callOnLoadListener = callOnLoadListener;
+    }
+
+    private void notifyEventIfNeeded(CallbackInterface handler, int code, String msg, long id) {
         if (handler != null) {
             try {
                 handler.handleMessage(code, msg);
@@ -365,55 +374,36 @@ public final class VbyteP2PModule {
         }
     }
 
-    private void notifyEventIfNeeded(Handler handler, int code, String msg, int id) {
+    private void notifyEventIfNeeded(Handler handler, int code, String msg, long id) {
         if (handler != null) {
             Message message = handler.obtainMessage();
             message.what = code;
             message.obj = msg;
-            message.arg1 = id;
+            Bundle data = new Bundle();
+            data.putLong("ctrlID", id);
+            message.setData(data);
             handler.sendMessage(Message.obtain(message));
         }
     }
 
-    private void onEvent(int code, String msg, int ctrlID) {
-        List<BaseController.LoadEvent> loadQueue = BaseController.loadQueue;
+    private void onEvent(int code, String msg, long ctrlID) {
         boolean isInited = false;
         if (code == Event.INITED) {
             initedSDK = true;
             isInited = true;
         }
-        boolean callOnUIThread = curLoadEvent != null && curLoadEvent.callOnUIThread;
-
-        if (isInited || code == LiveController.Event.STOPPED || code == VodController.Event.STOPPED) {
-            synchronized(LiveController.class) {
-                if (curLoadEvent != null) {
-                    curLoadEvent = null;
-                }
-                if (!loadQueue.isEmpty()) {
-                    curLoadEvent = loadQueue.get(0);
-                    loadQueue.remove(0);
-                    if (curLoadEvent.videoType == BaseController.VIDEO_LIVE) {
-                        LiveController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime, curLoadEvent.netState);
-                    } else {
-                        VodController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime);
-                    }
-                }
-            }
-        }
 
         //发送消息给LiveController
-        senOnEventMessage(code, msg, ctrlID, callOnUIThread);
+        senOnEventMessage(code, msg, ctrlID, callOnLoadListener);
 
         //将消息发送给客户
         notifyEventIfNeeded(eventHandler, code, msg, ctrlID);
         notifyEventIfNeeded(nativeEventHandler, code, msg, ctrlID);
     }
 
-    private void onError(int code, String msg, int ctrlID) {
-        boolean callOnUIThread = curLoadEvent != null && curLoadEvent.callOnUIThread;
-
-        //发送消息给LiveController
-        senOnEventMessage(code, msg, ctrlID, callOnUIThread);
+    private void onError(int code, String msg, long ctrlID) {
+         //发送消息给LiveController
+        senOnEventMessage(code, msg, ctrlID, callOnLoadListener);
         notifyEventIfNeeded(errorHandler, code, msg, ctrlID);
         //将消息发送给客户
         notifyEventIfNeeded(nativeErrorHandler, code, msg, ctrlID);

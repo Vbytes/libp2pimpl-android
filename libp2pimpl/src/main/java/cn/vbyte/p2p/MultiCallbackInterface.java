@@ -12,5 +12,5 @@ public interface MultiCallbackInterface{
      * @param msg 事件参数
      * @param id LiveController的实例ID
      */
-    public void handleMessage(int code, String msg, int id);
+    public void handleMessage(int code, String msg, long id);
 }

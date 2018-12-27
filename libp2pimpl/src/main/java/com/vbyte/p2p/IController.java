@@ -43,37 +43,12 @@ public interface IController {
      * @param channel 资源链接，主要为点播调用
      * @param resolution 统一为 "UHD"
      * @param startTime 视频的起始位置，以秒为单位
-     * @param listener 当成功load时的回调函数
-     * @param async listener是否在UI线程回调
-     * @throws Exception 当load/unload没有成对调用时，会抛出异常
-     * @deprecated 请使用{@link com.vbyte.p2p.IController#load(ChannelInfo)}替代
-     */
-    void load(String channel, String resolution, double startTime, OnLoadedListener listener, boolean async) throws Exception;
-
-    /**
-     * 加载一个频道
-     * @param channel 资源链接，主要为点播调用
-     * @param resolution 统一为 "UHD"
-     * @param startTime 视频的起始位置，以秒为单位
      * @param netState 网络状态
      * @param listener 当成功load时的回调函数
      * @throws Exception 当load/unload没有成对调用时，会抛出异常
      * @deprecated 请使用{@link com.vbyte.p2p.IController#load(ChannelInfo)}替代
      */
     void load(String channel, String resolution, double startTime, int netState, OnLoadedListener listener) throws Exception;
-
-    /**
-     * 加载一个频道
-     * @param channel 资源链接，主要为点播调用
-     * @param resolution 统一为 "UHD"
-     * @param startTime 视频的起始位置，以秒为单位
-     * @param netState 网络状态
-     * @param listener 当成功load时的回调函数
-     * @param async listener是否在UI线程回调
-     * @throws Exception 当load/unload没有成对调用时，会抛出异常
-     * @deprecated 请使用{@link com.vbyte.p2p.IController#load(ChannelInfo)}替代
-     */
-    void load(String channel, String resolution, double startTime, int netState, OnLoadedListener listener, boolean async) throws Exception;
 
     /**
      * 加载一个频道
@@ -110,6 +85,11 @@ public interface IController {
     void unload();
 
     /**
+     * 销毁Native层创建的实例，请注意该函数被调用后控制器无法复用
+     */
+    void destruct();
+
+    /**
      * 获取播放统计信息
      * @return
      */
@@ -141,10 +121,6 @@ public interface IController {
          * 当成功load时的回调函数
          */
         private OnLoadedListener listener;
-        /**
-         * listener是否在UI线程回调
-         */
-        private boolean async;
 
         public static class Builder {
             private ChannelInfo channelInfo;
@@ -180,10 +156,6 @@ public interface IController {
                 channelInfo.netState = netState;
                 return this;
             }
-            public Builder resolution(boolean async) {
-                channelInfo.async = async;
-                return this;
-            }
             public ChannelInfo build() {
                 return channelInfo;
             }
@@ -207,10 +179,6 @@ public interface IController {
 
         public OnLoadedListener getListener() {
             return listener;
-        }
-
-        public boolean isAsync() {
-            return async;
         }
     }
 

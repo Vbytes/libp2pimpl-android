@@ -25,6 +25,10 @@ public abstract class BaseController implements IController {
     //同步等待时间为100ms
     public static final long syncWaitTime = 100;
 
+    protected List<LoadEvent> loadQueue = Collections.synchronizedList(new LinkedList<LoadEvent>());
+    protected LoadEvent curLoadEvent = null;
+    protected static boolean initedSDK = false;
+
     public static class LoadEvent {
         public int videoType;
         public String channel;
@@ -56,9 +60,6 @@ public abstract class BaseController implements IController {
             this.callOnUIThread = callOnUIThread;
         }
     }
-
-    protected LoadEvent curLoadEvent = null;
-    protected static boolean initedSDK = false;
 
     /**
      * 这2个工具函数能让LiveController和VodController能事先对P2P线程反应的事件进行预处理

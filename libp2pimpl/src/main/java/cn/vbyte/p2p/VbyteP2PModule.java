@@ -387,10 +387,8 @@ public final class VbyteP2PModule {
     }
 
     private void onEvent(int code, String msg, long ctrlID) {
-        boolean isInited = false;
         if (code == Event.INITED) {
             initedSDK = true;
-            isInited = true;
         }
 
         //发送消息给LiveController

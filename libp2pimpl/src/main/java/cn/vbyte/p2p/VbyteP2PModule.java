@@ -1,12 +1,11 @@
 package cn.vbyte.p2p;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.os.Environment;
-import android.os.Looper;
 import android.os.Message;
 import android.os.Handler;
 import android.telephony.TelephonyManager;
-import android.text.TextUtils;
 import android.util.Log;
 
 import java.lang.ref.WeakReference;
@@ -15,22 +14,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.vbyte.update.*;
+import static cn.vbyte.p2p.BaseController.initedSDK;
 
 /**
  * Created by passion on 15-11-5.
  */
 public final class VbyteP2PModule {
-    private static final String LIB_P2PMODULE_SO = "libp2pmodule";
-
-    /**
-     * libp2pmodule的jni接口版本
-     */
-    private final String P2PMODULE_JNI_VERSION = "v3";
-
-    /**
-     * 无JNI接口的JNI版(这是检查so升级必须的参数)
-     */
-    public final String OTHTER_JNI_VERSION = "v0";
+    private static final String DYNAMIC_LIB_NAME = "libp2pmodule";
 
     public static class Event {
         /**
@@ -143,7 +133,6 @@ public final class VbyteP2PModule {
     private static String SDK_VERSION;
     private static VbyteP2PModule instance;
     private static String archCpuAbi = "";
-    public static final ConcurrentMap<Integer, BaseController> contrlMap = new ConcurrentHashMap<>();
 
     /**
      * 新启动一个p2p模块，注意四个参数绝对不能为null,在程序启动时调用
@@ -167,8 +156,8 @@ public final class VbyteP2PModule {
     }
 
     /**
-     * 获取p2p-sdk so库的版本号
-     * @return p2p-sdk so库的版本号
+     * 获取native应用的版本号
+     * @return P2PModule SDK的版本号
      */
     public static String getVersion() {
         if (SDK_VERSION == null) {
@@ -190,7 +179,7 @@ public final class VbyteP2PModule {
      * 返回5种架构中的一个获取null
      */
     public static String getArchABI() {
-        if(TextUtils.isEmpty(archCpuAbi)) {
+        if(archCpuAbi.isEmpty()) {
             archCpuAbi = VbyteP2PModule._targetArchABI();
         }
         return isArchValid(archCpuAbi) ? archCpuAbi : "";
@@ -245,73 +234,21 @@ public final class VbyteP2PModule {
 
     /////////////////////////////////////////////////////////////
     /*=========================================================*/
-
-    // 事件监听gut
-    private Handler eventHandler = null;
-    private Handler errorHandler = null;
-    private Handler vbyteHandler = new VbyteHandler();
+    //用于跟踪Controller(目前低延迟直播项目只使用了LiveController)的不同实例
+    public static final ConcurrentMap<Long, BaseController> contrlMap = new ConcurrentHashMap<>();
+    // 事件监听接口(提供给不喜欢Handler的客户使用)
+    private CallbackInterface eventHandler = null;
+    private CallbackInterface errorHandler = null;
+    private MultiCallbackInterface vbyteHandler = new VbyteHandler();
+    //事件监听的Handler
+    private Handler nativeEventHandler = null;
+    private Handler nativeErrorHandler = null;
     private DynamicLibManager dynamicLibManager;
     // native代码对应的对象实例，标准做法
     private long _pointer;
     private WeakReference<Context> _context;
-
-    /**
-     * 加载so
-     * @param context
-     * @param soNameWithoutSuffix so名称(不带后缀)
-     * @param jniVersion JNI版本(目前仅p2p的so才有jni接口)，若该值为空则默认为 OTHTER_JNI_VERSION = 'v0'
-     */
-    public void loadSo(Context context, String soNameWithoutSuffix, String jniVersion) {
-
-        if (TextUtils.isEmpty(soNameWithoutSuffix)) {
-            return;
-        }
-
-        if (dynamicLibManager == null) {
-            dynamicLibManager = new DynamicLibManager(context);
-        }
-
-        if (TextUtils.isEmpty(jniVersion)) {
-            jniVersion = OTHTER_JNI_VERSION;
-        }
-
-        dynamicLibManager.ensureLibDir(jniVersion);
-
-        doLoadSo(soNameWithoutSuffix);
-    }
-
-    private void doLoadSo(String soNameWithoutSuffix) {
-        /**
-         *
-         * 能从jni里面获取到arch, 就进行下面的升级、加载，否则加载lib/ 下的libp2pmodule
-         * android.os.Build.CPU_ABI、android.os.Build.SUPPORT_ABIS不靠谱，很多机型获取不到，不能用这个。因此，不用这个获取。
-         * archCpuAbi再次验证一下
-         */
-        String soFilePath = null;
-        try {
-            //这里加一个check libp2pmodule文件的md5值，因为应用目录/files目录下 很可能被别的应用扫描到给破坏了就load错误了
-            soFilePath = dynamicLibManager.locate(soNameWithoutSuffix);
-        } catch (Exception e) {
-            // 因获取不到程序版本号而导致的自动升级失败，默认使用安装时自带的
-        } catch (UnsatisfiedLinkError e) {
-            e.printStackTrace();
-        }
-        if (soFilePath == null) {
-            if (soNameWithoutSuffix.startsWith("lib")) {
-                String libNameWithoutPreffix = soNameWithoutSuffix.substring(3);
-                System.loadLibrary(libNameWithoutPreffix);
-            }
-        } else {
-            System.load(soFilePath);
-        }
-    }
-
-    private void checkUpdate(String soNameWithoutSuffix, String nativeVersion, String jniVersion) {
-        if(!TextUtils.isEmpty(getArchABI())) {
-            //得到了arch, 开始check升级用false即可
-            dynamicLibManager.checkUpdateV2(false, soNameWithoutSuffix, nativeVersion, jniVersion, getArchABI());
-        }
-    }
+    //@FIXME 企鹅电竞默认需要在UI线程调用, 其他客户需要在非UI线程调用
+    private boolean callOnLoadListener = true;
 
     private VbyteP2PModule(Context context, String appId, String appKey, String appSecretKey)
             throws Exception {
@@ -321,12 +258,34 @@ public final class VbyteP2PModule {
 
         System.loadLibrary("stun");
         System.loadLibrary("event");
+        /**
+         *
+         * 能从jni里面获取到arch, 就进行下面的升级、加载，否则加载lib/ 下的libp2pmodule
+         * android.os.Build.CPU_ABI、android.os.Build.SUPPORT_ABIS不靠谱，很多机型获取不到，不能用这个。因此，不用这个获取。
+         * archCpuAbi再次验证一下
+         */
 
-        //加载 libp2pmodule.so
-        loadSo(context, LIB_P2PMODULE_SO, P2PMODULE_JNI_VERSION);
+        String soFilePath = null;
+        dynamicLibManager = new DynamicLibManager(context);
 
-        //检查升级 libp2pmodule.so
-        checkUpdate(LIB_P2PMODULE_SO, VbyteP2PModule.getVersion(), P2PMODULE_JNI_VERSION);
+        try {
+            //这里加一个check libp2pmodule文件的md5值，因为应用目录/files目录下 很可能被别的应用扫描到给破坏了就load错误了
+            soFilePath = dynamicLibManager.locate(DYNAMIC_LIB_NAME);
+        } catch (Exception e) {
+            // 因获取不到程序版本号而导致的自动升级失败，默认使用安装时自带的
+        } catch (UnsatisfiedLinkError e) {
+
+        }
+        if (soFilePath == null) {
+            System.loadLibrary("p2pmodule");
+        } else {
+            System.load(soFilePath);
+        }
+
+        if(!getArchABI().isEmpty()) {
+            //得到了arch, 开始check升级用false即可
+            dynamicLibManager.checkUpdateV2(false, "libp2pmodule_" + VbyteP2PModule.getVersion() + "_20170928.so", getArchABI());
+        }
 
         _pointer = this._construct();
         if (_pointer == 0) {
@@ -347,14 +306,15 @@ public final class VbyteP2PModule {
         this._setAppKey(_pointer, appKey);
         this._setAppSecretKey(_pointer, appSecretKey);
         _context = new WeakReference<>(context);
-        LiveController.getInstance();//首屏优化需要放开
+//        LiveController.getInstance();//首屏优化需要放开
     }
 
     /**
      * 设置EventHandler，注意该handler不能叠加，之前设置的handler将无效
+     * 使用该接口LiveController仅可以使用
      * @param handler 要设置的EventHandler实例
      */
-    public void setEventHandler(Handler handler) {
+    public void setEventHandler(CallbackInterface handler) {
         this.eventHandler = handler;
     }
 
@@ -362,46 +322,89 @@ public final class VbyteP2PModule {
      * 设置ErrorHandler，注意该handler不能叠加，之前设置的handler将无效
      * @param handler 要设置的ErrorHandler实例
      */
-    public void setErrorHandler(Handler handler) {
+    public void setErrorHandler(CallbackInterface handler) {
         this.errorHandler = handler;
     }
 
-    public void onEvent(int code, String msg, int id) {
+    /**
+     * 设置监听事件的Handler，若需要在UI线程收到通知需要传递UI线程的Handler
+     * @param handler 需要监听事件的Handler
+     */
+    public void setEventHandler(Handler handler) {
+        this.nativeEventHandler = handler;
+    }
 
-        synchronized (this) {
-            Message message = vbyteHandler.obtainMessage();
+    /**
+     * 设置监听错误事件的Handler，若需要在UI线程收到通知需要传递UI线程的Handler
+     * @param handler 需要监听事件的Handler
+     */
+    public void setErrorHandler(Handler handler) {
+        this.nativeErrorHandler = handler;
+    }
+
+    private void senOnEventMessage(int code, String msg, long id, boolean callOnUIThread) {
+        if (callOnUIThread) {
+            //在UI线程将消息通知给LiveController
+            Handler handler = ((Handler)vbyteHandler);
+            Message message = handler.obtainMessage();
+            Bundle data = new Bundle();
+            data.putLong("ctrlID", id);
             message.what = code;
             message.obj = msg;
-            message.arg1 = id;
-            vbyteHandler.sendMessage(message);
-            if (eventHandler != null) {
-                Looper.getMainLooper();
-                message = eventHandler.obtainMessage();
-                message.what = code;
-                message.obj = msg;
-                message.arg1 = id;
-                eventHandler.sendMessage(Message.obtain(message));
+            message.setData(data);
+
+            handler.sendMessage(message);
+        } else {
+            //直接将消息发送给LiveController(XP2P线程)
+            vbyteHandler.handleMessage(code, msg, id);
+        }
+    }
+
+    public void setCallOnLoadListener(boolean callOnLoadListener) {
+        this.callOnLoadListener = callOnLoadListener;
+    }
+
+    private void notifyEventIfNeeded(CallbackInterface handler, int code, String msg, long id) {
+        if (handler != null) {
+            try {
+                handler.handleMessage(code, msg);
+            } catch (Exception e) {
+                // do nothing
             }
         }
     }
 
-    public void onError(int code, String msg, int id) {
-
-        synchronized (this) {
-            Message message = vbyteHandler.obtainMessage();
+    private void notifyEventIfNeeded(Handler handler, int code, String msg, long id) {
+        if (handler != null) {
+            Message message = handler.obtainMessage();
             message.what = code;
             message.obj = msg;
-            message.arg1 = id;
-            vbyteHandler.sendMessage(message);
-            if (errorHandler != null) {
-                Looper.getMainLooper();
-                message = errorHandler.obtainMessage();
-                message.what = code;
-                message.obj = msg;
-                message.arg1 = id;
-                errorHandler.sendMessage(Message.obtain(message));
-            }
+            Bundle data = new Bundle();
+            data.putLong("ctrlID", id);
+            message.setData(data);
+            handler.sendMessage(Message.obtain(message));
         }
+    }
+
+    private void onEvent(int code, String msg, long ctrlID) {
+        if (code == Event.INITED) {
+            initedSDK = true;
+        }
+
+        //发送消息给LiveController
+        senOnEventMessage(code, msg, ctrlID, callOnLoadListener);
+
+        //将消息发送给客户
+        notifyEventIfNeeded(eventHandler, code, msg, ctrlID);
+        notifyEventIfNeeded(nativeEventHandler, code, msg, ctrlID);
+    }
+
+    private void onError(int code, String msg, long ctrlID) {
+         //发送消息给LiveController
+        senOnEventMessage(code, msg, ctrlID, callOnLoadListener);
+        notifyEventIfNeeded(errorHandler, code, msg, ctrlID);
+        //将消息发送给客户
+        notifyEventIfNeeded(nativeErrorHandler, code, msg, ctrlID);
     }
 
     private String getDeviceid(Context context) {
@@ -427,13 +430,6 @@ public final class VbyteP2PModule {
         if (imei != null) {
             this._setImei(_pointer, imei);
         }
-    }
-
-    /**
-     * @return 成功返回@param id 对应的controller对象，没有返回null
-     */
-    public BaseController getContrlByID(int id) {
-        return contrlMap.get(id);
     }
 
     /**

@@ -113,23 +113,22 @@ public final class VodController extends BaseController implements IController {
      * @param resolution 资源的清晰度，现在统一为"UHD"
      * @param startTime 视频的起始位置，以秒为单位
      * @param listener 当成功load时的回调函数
-     * @throws Exception 当load/unload没有成对调用时，会抛出异常提示
+     * @throws RuntimeException 当load/unload没有成对调用时，会抛出异常提示
      */
     @Override
     public void load(String channel, String resolution, double startTime, OnLoadedListener listener)
-            throws  Exception {
-//        if (!loadQueue.isEmpty()) {
-//            loadQueue.clear();
-//            throw new Exception("You must forget to unload last channel!");
-//        }
-//        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener);
-//        loadQueue.add(loadEvent);
-//        if (curLoadEvent == null) {
-//            curLoadEvent = loadQueue.get(0);
-//            loadQueue.remove(0);
-//            this._load(_pointer, channel, resolution, startTime);
-//        }
-        this._load(_pointer, channel, resolution, startTime);
+            throws  RuntimeException {
+        if (!loadQueue.isEmpty()) {
+            loadQueue.clear();
+            throw new RuntimeException("You must forget to unload last channel!");
+        }
+        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener);
+        loadQueue.add(loadEvent);
+        if (curLoadEvent == null) {
+            curLoadEvent = loadQueue.get(0);
+            loadQueue.remove(0);
+            this._load(_pointer, channel, resolution, startTime);
+        }
     }
 
     /**
@@ -139,33 +138,31 @@ public final class VodController extends BaseController implements IController {
      * @param startTime 视频的起始位置，以秒为单位
      * @param netState 网络状态
      * @param listener 当成功load时的回调函数
-     * @throws Exception 当load/unload没有成对调用时，会抛出异常提示
+     * @throws RuntimeException 当load/unload没有成对调用时，会抛出异常提示
      */
     @Override
     public void load(String channel, String resolution, double startTime, int netState, OnLoadedListener listener)
-            throws  Exception {
-//        if (!loadQueue.isEmpty()) {
-//            loadQueue.clear();
-//            throw new Exception("You must forget to unload last channel!");
-//        }
-//        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener);
-//        loadQueue.add(loadEvent);
-//        if (curLoadEvent == null) {
-//            curLoadEvent = loadQueue.get(0);
-//            loadQueue.remove(0);
-//            this._load(_pointer, channel, resolution, startTime);
-//        }
-        this._load(_pointer, channel, resolution, startTime);
+            throws  RuntimeException {
+        if (!loadQueue.isEmpty()) {
+            loadQueue.clear();
+            throw new RuntimeException("You must forget to unload last channel!");
+        }
+        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener);
+        loadQueue.add(loadEvent);
+        if (curLoadEvent == null) {
+            curLoadEvent = loadQueue.get(0);
+            loadQueue.remove(0);
+            this._load(_pointer, channel, resolution, startTime);
+        }
     }
 
-    protected void onLocalEvent(int code, String msg) {
+    protected void onEvent(int code, String msg) {
         switch (code) {
             case Event.STARTED:
-                //TODO
-//                if (curLoadEvent != null) {
-//                    Uri uri = Uri.parse(msg);
-//                    curLoadEvent.listener.onLoaded(uri);
-//                }
+                if (curLoadEvent != null) {
+                    Uri uri = Uri.parse(msg);
+                    curLoadEvent.listener.onLoaded(uri);
+                }
                 break;
             case Event.RETRIEVE_URL:
                 if (urlGenerator != null) {
@@ -248,10 +245,20 @@ public final class VodController extends BaseController implements IController {
     @Override
     public void unload() {
         //当前有事件的时候, 才unload, 屏蔽空unload
-//        if(curLoadEvent != null) {
+        if(curLoadEvent != null) {
             super.unload();
             this._unload(_pointer);
-//        }
+        }
+    }
+
+    @Override
+    public void load(ChannelInfo channel) throws RuntimeException {
+        //DO NOTHING
+    }
+
+    @Override
+    public void destruct() {
+        //DO NOTHING
     }
 
     @Override

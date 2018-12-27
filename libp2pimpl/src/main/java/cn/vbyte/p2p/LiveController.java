@@ -5,7 +5,6 @@ import android.util.Log;
 
 import com.vbyte.p2p.IController;
 import com.vbyte.p2p.OnLoadedListener;
-import static cn.vbyte.p2p.VbyteP2PModule.contrlMap;
 
 /**
  * Created by passion on 16-1-14.
@@ -42,6 +41,7 @@ public final class LiveController extends BaseController implements IController 
          * 告诉应用直播流已被停止
          */
         public static final int STOPPED = 10010003;
+
         /**
          * 告诉应用直播流播放异常，需要回源播放
          */
@@ -49,6 +49,9 @@ public final class LiveController extends BaseController implements IController 
 
         public static final int STATISTICS = 10010006;
         public static final int WANT_IMEI = 10010007;
+        /**
+         * 返回切片重定向后的地址
+         */
         public static final int REDIRECT_ADDR = 10010008;
     }
 
@@ -71,16 +74,14 @@ public final class LiveController extends BaseController implements IController 
         public static final int LIVE_SOURCE_DATA_ERROR = 10011004;
     }
 
-    private static LiveController instance;//TODO：对象池
-    private boolean isUnload = false;
-
-    private  OnLoadedListener currentListener;
+    private static LiveController instance;
+    private long _pointer;
+    private boolean pendingDestruct = false;
 
     /**
      * 获取直播控制器
      * @return 直播控制器的唯一接口
      */
-
     public static LiveController getInstance() {
         if (instance == null) {
             instance = new LiveController();
@@ -88,44 +89,50 @@ public final class LiveController extends BaseController implements IController 
         return instance;
     }
 
-    private long _pointer;
-    private int id;
+
 
     public LiveController() {
         _pointer = _construct();
     }
 
+    private long getPointer() {
+        if (_pointer == 0) {
+            throw new RuntimeException("LiveController的Native层实例已经被销毁，请确认是否已经调用了destruct()");
+        }
+        return _pointer;
+    }
     /**
      * 加载一个直播流。针对时移，该接口只为flv使用
      * @param channel 直播流频道ID
      * @param resolution 统一为 "UHD"
      * @param startTime 视频的起始位置，以秒为单位，支持一天之内的视频时移回放
      * @param listener 当成功load时的回调函数
-     * @throws Exception 当load/unload没有成对调用时，会抛出异常提示
+     * @throws RuntimeException 当load/unload没有成对调用时，会抛出异常提示
      */
     @Override
     public void load(String channel, String resolution, double startTime, OnLoadedListener listener)
-            throws Exception {
-        synchronized(this) {
+            throws RuntimeException {
+        if (!loadQueue.isEmpty()) {
+            loadQueue.clear();
+//            throw new Exception("You must forget unload last channel!");
+        }
 
-            currentListener = listener;
+        LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, listener);
+        loadQueue.add(loadEvent);
+        Log.i(TAG, "loadQueue size is " + loadQueue.size());
+        if (initedSDK && curLoadEvent == null) {
+            curLoadEvent = loadQueue.get(0);
+            loadQueue.remove(0);
+            VbyteP2PModule.contrlMap.put(getCtrlID(), this);
             this._load(_pointer, channel, resolution, startTime);
-            contrlMap.put(this.getID(), this);
-            id = this.getID();
         }
     }
 
-
-    public void load(String channel, byte[] data, OnLoadedListener listener)
-            throws Exception {
-
-        synchronized(this) {
-            currentListener = listener;
-            this._preLoad(_pointer, channel, data);
-            contrlMap.put(this.getID(), this);
-            id = this.getID();
-        }
+    //返回contrlMap内LiveController的ID
+    private long getCtrlID() {
+        return _pointer;
     }
+
     /**
      * 加载一个直播流。针对时移，该接口只为flv使用
      * @param channel 直播流频道ID
@@ -137,65 +144,79 @@ public final class LiveController extends BaseController implements IController 
      */
     @Override
     public void load(String channel, String resolution, double startTime, int netState, OnLoadedListener listener)
-            throws Exception {
-
-        synchronized(this) {
-
-            currentListener = listener;
-            this._load(_pointer, channel, resolution, startTime, netState);
-            contrlMap.put(this.getID(), this);
-            id = this.getID();
+            throws RuntimeException {
+        if (!loadQueue.isEmpty()) {
+            loadQueue.clear();
+//            throw new Exception("You must forget unload last channel!");
         }
+        LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, netState, listener);
+        loadQueue.add(loadEvent);
+        Log.i(TAG, "loadQueue@1 size is " + loadQueue.size());
+        if (initedSDK && curLoadEvent == null) {
+            VbyteP2PModule.contrlMap.put(getCtrlID(), this);
+            curLoadEvent = loadQueue.get(0);
+            loadQueue.remove(0);
+            this._load(_pointer, channel, resolution, startTime, netState);
+        }
+    }
+
+    /**
+     * 加载一个频道，此函数没有起始时间参数
+     * @param channel 对直播是频道ID，对点播是资源链接
+     * @param listener 当成功load时的回调函数
+     * @param async listener是否要在UI线程回调，这个参数现在无效了，请使用{@link cn.vbyte.p2p.VbyteP2PModule#setCallOnLoadListener(boolean)}
+     * @throws Exception 当load/unload没有成对调用时，会抛出异常
+     */
+    public void load(String channel, OnLoadedListener listener, boolean async) throws RuntimeException {
+        load(channel, "UHD", 0, listener);
+    }
+
+    /**
+     * 加载一个频道，此函数没有起始时间参数
+     * @param channel {@see IController.Channel}
+     * @throws RuntimeException
+     */
+    public void load(ChannelInfo channel) throws RuntimeException {
+        load(channel.getChannel(), channel.getResolution(), channel.getStartTime(), channel.getListener());
     }
 
     @Override
     protected void loadDirectly(String channel, String resolution, double startTime) {
-        this._load(_pointer, channel, resolution, startTime);
+        this._load(getPointer(), channel, resolution, startTime);
     }
 
     @Override
     protected void loadDirectly(String channel, String resolution, double startTime, int netState) {
-        this._load(_pointer, channel, resolution, startTime, netState);
+        this._load(getPointer(), channel, resolution, startTime, netState);
     }
 
     /**
      * 卸载当前直播流频道
      */
     @Override
-    public void unload() {
+    public void unload() throws RuntimeException{
+        Log.i(LiveController.TAG, "LiveController:" + this + ", unload");
+
         //当前有事件的时候, 才unload, 屏蔽空unload
-        synchronized(this) {
-            if (!isUnload) {
-                if (contrlMap.containsKey(id)) {
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                LiveController contrl = (LiveController)contrlMap.get(id);
-                                if (contrl != null) {
-                                    contrl.delayUnload();
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }).start();
-                }
-                isUnload = true;
-            }
+        if(curLoadEvent != null) {
+            super.unload();
+            this._unload(getPointer());
         }
-        currentListener = null;
     }
 
     /**
-     * 卸载当前直播流频道
+     * 销毁Native层实例，调用该函数后当前LiveController无法继续使用，若要使用请重新创建
      */
-    private void delayUnload() {
-        if (contrlMap.containsKey(id)) {
-            contrlMap.remove(id);
-            super.unload();
-            this._unload(_pointer);
+    @Override
+    public void destruct() throws RuntimeException{
+        if (curLoadEvent == null) {
+            _destruct(getPointer());
+            _pointer = 0;
+        } else {
+            //用户已调用unload但未收到stoped信号, 我们标记一下在收到stoped之后再析构
+            pendingDestruct = true;
         }
+
     }
 
     /**
@@ -203,41 +224,65 @@ public final class LiveController extends BaseController implements IController 
      * @return 当前播放的时间点
      */
     public int getCurrentPlayTime() {
-        return _getCurrentPlayTime(_pointer);
-    }
-    /**
-     * 获取特征ID
-     * @return 特征ID
-     */
-    public int getID() {
-        return _getID(_pointer);
+        return _getCurrentPlayTime(getPointer());
     }
 
     /*
      *获取统计数据接口
      */
     public long getStatistic(int type) {
-        return this._getStatistic(_pointer, type);
+        return this._getStatistic(getPointer(), type);
     }
 
     /*
 
      */
     public void resetStatistic(int type) {
-        this._resetStatistic(_pointer, type);
+        this._resetStatistic(getPointer(), type);
+    }
+
+    /**
+     * 在unload之后Event.STOPPED信号收到以前，用户可能会执行{@link LiveController#load 或者 {@link LiveController#destruct()}
+     * 这个时候我们需要在收到该信号以后完成用户执行的操作
+     */
+    private void afterEventSTOPED() {
+        if (pendingDestruct) {
+            _destruct(getPointer());
+            _pointer = 0;
+            curLoadEvent = null;
+            VbyteP2PModule.contrlMap.remove(getCtrlID());
+            Log.i(LiveController.TAG, "LiveController afterEventSTOPED _destruct");
+        } else if (!loadQueue.isEmpty()){
+            Log.i(LiveController.TAG, "LiveController afterEventSTOPED");
+            //unload完成以前用户加载了频道
+            curLoadEvent = loadQueue.get(0);
+            loadQueue.remove(0);
+            VbyteP2PModule.contrlMap.put(getCtrlID(), this);
+            if (curLoadEvent.videoType == BaseController.VIDEO_LIVE) {
+                loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime, curLoadEvent.netState);
+            }
+        }
     }
 
     @Override
-    protected void onLocalEvent(int code, String msg) {
+    protected void onEvent(int code, String msg) {
+        Log.i(LiveController.TAG, "LiveController onEvent code:" + code + ",msg:" + msg);
         switch (code) {
             case Event.STARTED:
-                synchronized(this) {
-                    if (currentListener != null) {
+                synchronized(LiveController.class) {
+                    if (curLoadEvent != null) {
                         Uri uri = Uri.parse(msg);
-                        currentListener.onLoaded(uri);
-                        currentListener = null;
+                        if (curLoadEvent.listener != null) {
+                            curLoadEvent.listener.onLoaded(uri);
+                            curLoadEvent.listener = null;
+                            Log.i(LiveController.TAG, "LiveController:" + this + ", Event.STARTED");
+                        }
                     }
                 }
+                break;
+            case Event.STOPPED:
+                Log.i(LiveController.TAG, "LiveController:" + this + "Event.STOPPED pendingDestruct:" + pendingDestruct);
+                afterEventSTOPED();
                 break;
             case Event.WANT_IMEI:
                 VbyteP2PModule.getInstance().setImei();
@@ -249,17 +294,17 @@ public final class LiveController extends BaseController implements IController 
 
     private native void _load(long pointer, String channel, String resolution, double startTime);
 
-
-    private native void _preLoad(long pointer, String channel, byte[] data);
-
     private native void _load(long pointer, String channel, String resolution, double startTime, int netState);
-
 
     private native void _unload(long pointer);
 
     private native int _getCurrentPlayTime(long pointer);
-    private native int _getID(long pointer);
 
     private native long _getStatistic(long pointer, int type);
     private native void _resetStatistic(long pointer, int type);
+
+    /**
+     * 调用这个接口会销毁所有native层的对象，调用之后LiveController不可复用
+     */
+    private native void _destruct(long pointer);
 }

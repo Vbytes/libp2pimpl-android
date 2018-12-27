@@ -1,10 +1,6 @@
 package cn.vbyte.p2p;
 
 import android.net.Uri;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
-import android.util.Log;
 
 import com.vbyte.p2p.IController;
 import com.vbyte.p2p.OnLoadedListener;
@@ -29,30 +25,64 @@ public abstract class BaseController implements IController {
     //同步等待时间为100ms
     public static final long syncWaitTime = 100;
 
+    protected List<LoadEvent> loadQueue = Collections.synchronizedList(new LinkedList<LoadEvent>());
+    protected LoadEvent curLoadEvent = null;
+    protected static boolean initedSDK = false;
 
+    public static class LoadEvent {
+        public int videoType;
+        public String channel;
+        public String resolution;
+        public double startTime;
+        public int netState;
+        public OnLoadedListener listener;
+        public boolean callOnUIThread = false;//回调是否在UI线程,在UI线程需要使用Handler(斗鱼不使用Handler)
+
+        public LoadEvent(int videoType, String channel, String resolution, OnLoadedListener listener) {
+            this(videoType, channel, resolution, 0, listener);
+        }
+
+        public LoadEvent(int videoType, String channel, String resolution, double startTime, OnLoadedListener listener) {
+            this(videoType, channel, resolution, startTime, NETSTATE_WIFI, listener);
+        }
+
+        public LoadEvent(int videoType, String channel, String resolution, double startTime, int netState, OnLoadedListener listener) {
+            this(videoType, channel, resolution, startTime, netState, listener, false);
+        }
+
+        public LoadEvent(int videoType, String channel, String resolution, double startTime, int netState, OnLoadedListener listener, boolean callOnUIThread) {
+            this.videoType = videoType;
+            this.channel = channel;
+            this.resolution = resolution;
+            this.netState = netState;
+            this.startTime = startTime;
+            this.listener = listener;
+            this.callOnUIThread = callOnUIThread;
+        }
+    }
 
     /**
      * 这2个工具函数能让LiveController和VodController能事先对P2P线程反应的事件进行预处理
      * @param code 事件码
      * @param msg 事件说明
      */
-    protected void onLocalEvent(int code, String msg) {}
-    protected void onLocalError(int code, String msg) {}
+    protected void onEvent(int code, String msg) {}
+    protected void onError(int code, String msg) {}
 
     /**
      * 为方便子类实现
      * @param channel 对直播是频道ID，对点播是资源链接
      * @param resolution 统一为 "UHD"
      * @param listener 当成功load时的回调函数
-     * @throws Exception 当load/unload没有成对调用时，会抛出异常提示
+     * @throws RuntimeException 当load/unload没有成对调用时，会抛出异常提示
      */
     @Override
-    public void load(String channel, String resolution, OnLoadedListener listener) throws Exception {
+    public void load(String channel, String resolution, OnLoadedListener listener) throws RuntimeException {
         load(channel, resolution, 0, listener);
     }
 
     @Override
-    public void load(String channel, int netState, OnLoadedListener listener) throws Exception {
+    public void load(String channel, int netState, OnLoadedListener listener) throws RuntimeException {
         load(channel, "UHD", 0, netState, listener);
     }
 
@@ -148,7 +178,7 @@ public abstract class BaseController implements IController {
     public void resume() { return; }
 
     @Override
-    public void unload() {
+    public void unload() throws RuntimeException{
         mUri = null;
     }
 

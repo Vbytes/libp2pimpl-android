@@ -261,6 +261,8 @@ public final class LiveController extends BaseController implements IController 
             if (curLoadEvent.videoType == BaseController.VIDEO_LIVE) {
                 loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime, curLoadEvent.netState);
             }
+        } else {
+            curLoadEvent = null;
         }
     }
 

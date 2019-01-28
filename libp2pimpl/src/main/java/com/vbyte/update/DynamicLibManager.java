@@ -32,7 +32,7 @@ public class DynamicLibManager {
     private String currentLibDirPath;
 
     //jni接口版本
-    private String jniVersion = "v2";
+    private String jniVersion = "v4";
     //非https要下载的so
     private String[] soNameArr = new String[]{"libp2pmodule", "libstun", "libevent"};
     private boolean supportHttps = false;

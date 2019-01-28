@@ -25,39 +25,52 @@ public abstract class BaseController implements IController {
     //同步等待时间为100ms
     public static final long syncWaitTime = 100;
 
-    public static class LoadEvent {
+    public static class LoadEvent implements Runnable {
         public int videoType;
         public String channel;
         public String resolution;
         public double startTime;
         public int netState;
         public OnLoadedListener listener;
-        public boolean callOnUIThread = false;//回调是否在UI线程,在UI线程需要使用Handler(斗鱼不使用Handler)
+        public OnTimeoutListener onTimeoutListener;
 
-        public LoadEvent(int videoType, String channel, String resolution, OnLoadedListener listener) {
-            this(videoType, channel, resolution, 0, listener);
+        LoadEvent(int videoType, String channel, OnLoadedListener listener, OnTimeoutListener onTimeoutListener) {
+            this(videoType, channel, "UHD", 0, listener, onTimeoutListener);
         }
 
-        public LoadEvent(int videoType, String channel, String resolution, double startTime, OnLoadedListener listener) {
-            this(videoType, channel, resolution, startTime, NETSTATE_WIFI, listener);
+        LoadEvent(int videoType, String channel, String resolution,
+                  double startTime, OnLoadedListener listener, OnTimeoutListener onTimeoutListener) {
+            this.videoType = videoType;
+            this.channel = channel;
+            this.resolution = resolution;
+            this.startTime = startTime;
+            this.netState = NETSTATE_WIFI;
+            this.listener = listener;
+            this.onTimeoutListener = onTimeoutListener;
         }
 
-        public LoadEvent(int videoType, String channel, String resolution, double startTime, int netState, OnLoadedListener listener) {
-            this(videoType, channel, resolution, startTime, netState, listener, false);
-        }
-
-        public LoadEvent(int videoType, String channel, String resolution, double startTime, int netState, OnLoadedListener listener, boolean callOnUIThread) {
+        LoadEvent(int videoType, String channel, String resolution, double startTime,
+                  int netState, OnLoadedListener listener, OnTimeoutListener onTimeoutListener) {
             this.videoType = videoType;
             this.channel = channel;
             this.resolution = resolution;
             this.netState = netState;
             this.startTime = startTime;
             this.listener = listener;
-            this.callOnUIThread = callOnUIThread;
+            this.onTimeoutListener = onTimeoutListener;
+        }
+
+        @Override
+        public void run() {
+            if (onTimeoutListener != null) {
+                Uri uri = Uri.parse(this.channel);
+                onTimeoutListener.onTimeout(uri);
+            }
         }
     }
 
-    protected LoadEvent curLoadEvent = null;
+    protected static List<LoadEvent> loadQueue = Collections.synchronizedList(new LinkedList<LoadEvent>());
+    protected static LoadEvent curLoadEvent = null;
     protected static boolean initedSDK = false;
 
     /**
@@ -85,6 +98,10 @@ public abstract class BaseController implements IController {
         load(channel, "UHD", 0, netState, listener);
     }
 
+    @Override
+    public void load(String channel, String resolution, double startTime, int netState, OnLoadedListener onLoadedListener, OnTimeoutListener onTimeoutListener) throws Exception {
+        load(channel, resolution, startTime, netState, onLoadedListener, onTimeoutListener);
+    }
 
     protected volatile Uri mUri = null;
     /**

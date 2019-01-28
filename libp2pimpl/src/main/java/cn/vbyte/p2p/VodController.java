@@ -118,8 +118,15 @@ public final class VodController extends BaseController implements IController {
     @Override
     public void load(String channel, String resolution, double startTime, OnLoadedListener listener)
             throws  Exception {
-        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener);
+        if (!loadQueue.isEmpty()) {
+            loadQueue.clear();
+            throw new Exception("You must forget to unload last channel!");
+        }
+        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener, null);
+        loadQueue.add(loadEvent);
         if (curLoadEvent == null) {
+            curLoadEvent = loadQueue.get(0);
+            loadQueue.remove(0);
             this._load(_pointer, channel, resolution, startTime);
         }
     }
@@ -136,10 +143,22 @@ public final class VodController extends BaseController implements IController {
     @Override
     public void load(String channel, String resolution, double startTime, int netState, OnLoadedListener listener)
             throws  Exception {
-        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener);
+        if (!loadQueue.isEmpty()) {
+            loadQueue.clear();
+            throw new Exception("You must forget to unload last channel!");
+        }
+        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener, null);
+        loadQueue.add(loadEvent);
         if (curLoadEvent == null) {
+            curLoadEvent = loadQueue.get(0);
+            loadQueue.remove(0);
             this._load(_pointer, channel, resolution, startTime);
         }
+    }
+
+    @Override
+    public void load(String channel, int netState, OnLoadedListener onLoadedListener, OnTimeoutListener onTimeoutListener) throws Exception {
+        // not implement
     }
 
     protected void onEvent(int code, String msg) {
@@ -179,6 +198,7 @@ public final class VodController extends BaseController implements IController {
 
     /**
      * 获取点播视频的总时长
+     * @return return
      */
     public int getDuration() {
         return this._getDuration(_pointer);
@@ -235,21 +255,6 @@ public final class VodController extends BaseController implements IController {
             super.unload();
             this._unload(_pointer);
         }
-    }
-
-    @Override
-    public void load(String channel, String resolution, double startTime, OnLoadedListener listener, boolean async) throws Exception {
-        //DO NOTHING
-    }
-
-    @Override
-    public void load(String channel, String resolution, double startTime, int netState, OnLoadedListener listener, boolean async) throws Exception {
-        //DO NOTHING
-    }
-
-    @Override
-    public void load(ChannelInfo channel) throws Exception {
-        //DO NOTHING
     }
 
     @Override

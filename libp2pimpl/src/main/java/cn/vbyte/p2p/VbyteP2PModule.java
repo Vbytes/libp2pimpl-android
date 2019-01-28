@@ -1,7 +1,6 @@
 package cn.vbyte.p2p;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
 import android.os.Handler;
@@ -10,10 +9,10 @@ import android.util.Log;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.List;
 
 import com.vbyte.update.*;
+import static cn.vbyte.p2p.BaseController.curLoadEvent;
 import static cn.vbyte.p2p.BaseController.initedSDK;
 
 /**
@@ -75,6 +74,22 @@ public final class VbyteP2PModule {
          * 公共的，表明接收到请求
          */
         public static final int RECEIVE_REQUEST = 10000014;
+        /**
+         * 公共的，表明盒子加速模式的守护线程已经启动
+         */
+        public static final int DEAMON_STARTED = 10000015;
+        /**
+         * 公共的，表明盒子加速模式的守护线程已经停止
+         */
+        public static final int DEAMON_STOPPED = 10000016;
+        /**
+         * 公共的，表明已探测到NAT类型, 当内容为"UDPBlocked"或"SymmetricNAT"时，网络无法分享
+         */
+        public static final int NAT_DETECTED = 10000017;
+        /**
+         * 公共的，定期回调，返回上一次回调的累积分享数据
+         */
+        public static final int METRIC = 10000018;
     }
 
     public static class Error {
@@ -234,21 +249,16 @@ public final class VbyteP2PModule {
 
     /////////////////////////////////////////////////////////////
     /*=========================================================*/
-    //用于跟踪Controller(目前低延迟直播项目只使用了LiveController)的不同实例
-    public static final ConcurrentMap<Long, BaseController> contrlMap = new ConcurrentHashMap<>();
-    // 事件监听接口(提供给不喜欢Handler的客户使用)
+
+    // 事件监听gut
     private CallbackInterface eventHandler = null;
     private CallbackInterface errorHandler = null;
-    private MultiCallbackInterface vbyteHandler = new VbyteHandler();
-    //事件监听的Handler
-    private Handler nativeEventHandler = null;
-    private Handler nativeErrorHandler = null;
+    private Handler eventAndroidHandler = null;
+    protected static VbyteHandler vbyteHandler = new VbyteHandler();
     private DynamicLibManager dynamicLibManager;
     // native代码对应的对象实例，标准做法
     private long _pointer;
     private WeakReference<Context> _context;
-    //@FIXME 企鹅电竞默认需要在UI线程调用, 其他客户需要在非UI线程调用
-    private boolean callOnLoadListener = true;
 
     private VbyteP2PModule(Context context, String appId, String appKey, String appSecretKey)
             throws Exception {
@@ -256,7 +266,7 @@ public final class VbyteP2PModule {
             throw new NullPointerException("context or appId or appKey or appSecretKey can't be null when init p2p live stream!");
         }
 
-        System.loadLibrary("stun");
+        //System.loadLibrary("stun");
         System.loadLibrary("event");
         /**
          *
@@ -311,11 +321,18 @@ public final class VbyteP2PModule {
 
     /**
      * 设置EventHandler，注意该handler不能叠加，之前设置的handler将无效
-     * 使用该接口LiveController仅可以使用
-     * @param handler 要设置的EventHandler实例
+     * @param handler 要设置的EventHandler实例(该回调发生在p2p线程)
      */
     public void setEventHandler(CallbackInterface handler) {
         this.eventHandler = handler;
+    }
+
+    /**
+     * 设置EventHandler，注意该handler不能叠加，之前设置的handler将无效
+     * @param handler 要设置的EventHandler实例(该回调发生在p2p线程)
+     */
+    public void setEventHandler(Handler handler) {
+        this.eventAndroidHandler = handler;
     }
 
     /**
@@ -326,87 +343,56 @@ public final class VbyteP2PModule {
         this.errorHandler = handler;
     }
 
-    /**
-     * 设置监听事件的Handler，若需要在UI线程收到通知需要传递UI线程的Handler
-     * @param handler 需要监听事件的Handler
-     */
-    public void setEventHandler(Handler handler) {
-        this.nativeEventHandler = handler;
-    }
-
-    /**
-     * 设置监听错误事件的Handler，若需要在UI线程收到通知需要传递UI线程的Handler
-     * @param handler 需要监听事件的Handler
-     */
-    public void setErrorHandler(Handler handler) {
-        this.nativeErrorHandler = handler;
-    }
-
-    private void senOnEventMessage(int code, String msg, long id, boolean callOnUIThread) {
-        if (callOnUIThread) {
-            //在UI线程将消息通知给LiveController
-            Handler handler = ((Handler)vbyteHandler);
-            Message message = handler.obtainMessage();
-            Bundle data = new Bundle();
-            data.putLong("ctrlID", id);
-            message.what = code;
-            message.obj = msg;
-            message.setData(data);
-
-            handler.sendMessage(message);
-        } else {
-            //直接将消息发送给LiveController(XP2P线程)
-            vbyteHandler.handleMessage(code, msg, id);
-        }
-    }
-
-    public void setCallOnLoadListener(boolean callOnLoadListener) {
-        this.callOnLoadListener = callOnLoadListener;
-    }
-
-    private void notifyEventIfNeeded(CallbackInterface handler, int code, String msg, long id) {
-        if (handler != null) {
-            try {
-                handler.handleMessage(code, msg);
-            } catch (Exception e) {
-                // do nothing
-            }
-        }
-    }
-
-    private void notifyEventIfNeeded(Handler handler, int code, String msg, long id) {
-        if (handler != null) {
-            Message message = handler.obtainMessage();
-            message.what = code;
-            message.obj = msg;
-            Bundle data = new Bundle();
-            data.putLong("ctrlID", id);
-            message.setData(data);
-            handler.sendMessage(Message.obtain(message));
-        }
-    }
-
-    private void onEvent(int code, String msg, long ctrlID) {
+    private void onEvent(int code, String msg) {
+        List<BaseController.LoadEvent> loadQueue = BaseController.loadQueue;
         boolean isInited = false;
         if (code == Event.INITED) {
             initedSDK = true;
             isInited = true;
         }
+        if (isInited || code == LiveController.Event.STOPPED || code == VodController.Event.STOPPED) {
+            synchronized(LiveController.class) {
+                if (curLoadEvent != null) {
+                    curLoadEvent = null;
+                }
+                if (!loadQueue.isEmpty()) {
+                    curLoadEvent = loadQueue.get(0);
+                    loadQueue.remove(0);
+                    if (curLoadEvent.videoType == BaseController.VIDEO_LIVE) {
+                        LiveController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime, curLoadEvent.netState);
+//                    LiveController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime);
+                    } else {
+                        VodController.getInstance().loadDirectly(curLoadEvent.channel, curLoadEvent.resolution, curLoadEvent.startTime);
+                    }
+                }
+            }
+        }
+        vbyteHandler.handleMessage(code, msg);
+        if (eventHandler != null) {
+            try {
+                eventHandler.handleMessage(code, msg);
+            } catch (Exception e) {
+                // do nothing
+            }
+        }
 
-        //发送消息给LiveController
-        senOnEventMessage(code, msg, ctrlID, callOnLoadListener);
-
-        //将消息发送给客户
-        notifyEventIfNeeded(eventHandler, code, msg, ctrlID);
-        notifyEventIfNeeded(nativeEventHandler, code, msg, ctrlID);
+        if (eventAndroidHandler != null) {
+            Message message = eventAndroidHandler.obtainMessage();
+            message.what = code;
+            message.obj = msg;
+            eventAndroidHandler.sendMessage(Message.obtain(message));
+        }
     }
 
-    private void onError(int code, String msg, long ctrlID) {
-         //发送消息给LiveController
-        senOnEventMessage(code, msg, ctrlID, callOnLoadListener);
-        notifyEventIfNeeded(errorHandler, code, msg, ctrlID);
-        //将消息发送给客户
-        notifyEventIfNeeded(nativeErrorHandler, code, msg, ctrlID);
+    private void onError(int code, String msg) {
+        vbyteHandler.handleMessage(code, msg);
+        if (errorHandler != null) {
+            try {
+                errorHandler.handleMessage(code, msg);
+            } catch (Exception e) {
+                // do nothing
+            }
+        }
     }
 
     private String getDeviceid(Context context) {
@@ -432,6 +418,21 @@ public final class VbyteP2PModule {
         if (imei != null) {
             this._setImei(_pointer, imei);
         }
+    }
+
+    /**
+     * 启动盒子加速模式的守护线程.
+     * 启动后终端会按需向CDN请求流量，并分享出去给需要的用户使用
+     */
+    public void startDeamon() {
+        this._startDeamon();
+    }
+
+    /**
+     * 停止加速盒子守护线程
+     */
+    public void stopDeamon() {
+        this._stopDeamon();
     }
 
     /**
@@ -488,4 +489,16 @@ public final class VbyteP2PModule {
      * @param pointer native层对应对象的指针
      */
     private native void _setImei(long pointer, String imei);
+
+    /**
+     * 启动盒子加速模式的守护线程
+     * @param pointer native层对应对象的指针
+     */
+    private native void _startDeamon();
+
+    /**
+     * 停止加速盒子守护线程
+     * @param pointer native层对应对象的指针
+     */
+    private native void _stopDeamon();
 }

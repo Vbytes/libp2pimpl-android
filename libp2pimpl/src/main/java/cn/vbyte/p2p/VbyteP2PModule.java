@@ -421,6 +421,23 @@ public final class VbyteP2PModule {
     }
 
     /**
+     * 设置userId，以便全网用户统一计费
+     * @param userId
+     */
+    public void setUserId(String userId) {
+        _setUserId(_pointer, userId);
+    }
+
+    /**
+     * 设置userId并启动盒子加速模式的守护线程
+     * @param userId
+     */
+    public void startDeamonWithUserId(String userId) {
+        _setUserId(_pointer, userId);
+        startDeamon();
+    }
+
+    /**
      * 启动盒子加速模式的守护线程.
      * 启动后终端会按需向CDN请求流量，并分享出去给需要的用户使用
      */
@@ -501,4 +518,7 @@ public final class VbyteP2PModule {
      * @param pointer native层对应对象的指针
      */
     private native void _stopDeamon();
+
+    private native void _setUserId(long pointer, String userID);
+
 }

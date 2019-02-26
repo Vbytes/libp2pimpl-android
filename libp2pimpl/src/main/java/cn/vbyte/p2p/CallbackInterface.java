@@ -10,5 +10,5 @@ public interface CallbackInterface {
      * @param code
      * @param msg
      */
-    void handleMessage(int code, String msg);
+    void handleMessage(long ctrlId, int code, String msg);
 }

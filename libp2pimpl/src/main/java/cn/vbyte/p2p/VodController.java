@@ -113,16 +113,16 @@ public final class VodController extends BaseController implements IController {
      * @param resolution 资源的清晰度，现在统一为"UHD"
      * @param startTime 视频的起始位置，以秒为单位
      * @param listener 当成功load时的回调函数
-     * @throws Exception 当load/unload没有成对调用时，会抛出异常提示
+     * @throws RuntimeException 当load/unload没有成对调用时，会抛出异常提示
      */
     @Override
     public void load(String channel, String resolution, double startTime, OnLoadedListener listener)
-            throws  Exception {
+            throws  RuntimeException {
         if (!loadQueue.isEmpty()) {
             loadQueue.clear();
-            throw new Exception("You must forget to unload last channel!");
+            throw new RuntimeException("You must forget to unload last channel!");
         }
-        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener);
+        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener, null);
         loadQueue.add(loadEvent);
         if (curLoadEvent == null) {
             curLoadEvent = loadQueue.get(0);
@@ -138,22 +138,27 @@ public final class VodController extends BaseController implements IController {
      * @param startTime 视频的起始位置，以秒为单位
      * @param netState 网络状态
      * @param listener 当成功load时的回调函数
-     * @throws Exception 当load/unload没有成对调用时，会抛出异常提示
+     * @throws RuntimeException 当load/unload没有成对调用时，会抛出异常提示
      */
     @Override
     public void load(String channel, String resolution, double startTime, int netState, OnLoadedListener listener)
-            throws  Exception {
+            throws  RuntimeException {
         if (!loadQueue.isEmpty()) {
             loadQueue.clear();
-            throw new Exception("You must forget to unload last channel!");
+            throw new RuntimeException("You must forget to unload last channel!");
         }
-        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener);
+        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener, null);
         loadQueue.add(loadEvent);
         if (curLoadEvent == null) {
             curLoadEvent = loadQueue.get(0);
             loadQueue.remove(0);
             this._load(_pointer, channel, resolution, startTime);
         }
+    }
+
+    @Override
+    public void load(String channel, int netState, OnLoadedListener onLoadedListener, OnTimeoutListener onTimeoutListener) throws Exception {
+        // not implement
     }
 
     protected void onEvent(int code, String msg) {
@@ -193,6 +198,7 @@ public final class VodController extends BaseController implements IController {
 
     /**
      * 获取点播视频的总时长
+     * @return return
      */
     public int getDuration() {
         return this._getDuration(_pointer);
@@ -252,7 +258,7 @@ public final class VodController extends BaseController implements IController {
     }
 
     @Override
-    public void load(ChannelInfo channel) throws Exception {
+    public void load(ChannelInfo channel) throws RuntimeException {
         //DO NOTHING
     }
 

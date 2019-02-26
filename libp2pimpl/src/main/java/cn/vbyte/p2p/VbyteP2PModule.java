@@ -3,6 +3,7 @@ package cn.vbyte.p2p;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Looper;
 import android.os.Message;
 import android.os.Handler;
 import android.telephony.TelephonyManager;
@@ -239,7 +240,7 @@ public final class VbyteP2PModule {
     // 事件监听接口(提供给不喜欢Handler的客户使用)
     private CallbackInterface eventHandler = null;
     private CallbackInterface errorHandler = null;
-    private MultiCallbackInterface vbyteHandler = new VbyteHandler();
+    protected static VbyteHandler vbyteHandler = null;
     //事件监听的Handler
     private Handler nativeEventHandler = null;
     private Handler nativeErrorHandler = null;
@@ -247,8 +248,7 @@ public final class VbyteP2PModule {
     // native代码对应的对象实例，标准做法
     private long _pointer;
     private WeakReference<Context> _context;
-    //@FIXME 企鹅电竞默认需要在UI线程调用, 其他客户需要在非UI线程调用
-    private boolean callOnLoadListener = true;
+    private Thread thread = null;
 
     private VbyteP2PModule(Context context, String appId, String appKey, String appSecretKey)
             throws Exception {
@@ -256,7 +256,20 @@ public final class VbyteP2PModule {
             throw new NullPointerException("context or appId or appKey or appSecretKey can't be null when init p2p live stream!");
         }
 
-        System.loadLibrary("stun");
+        if (Looper.getMainLooper() == Looper.myLooper()) {
+            vbyteHandler = new VbyteHandler();
+        } else {
+            thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Looper.prepare();
+                    vbyteHandler = new VbyteHandler();
+                    Looper.loop();
+                }
+            });
+
+            thread.start();
+        }
         System.loadLibrary("event");
         /**
          *
@@ -342,32 +355,27 @@ public final class VbyteP2PModule {
         this.nativeErrorHandler = handler;
     }
 
-    private void senOnEventMessage(int code, String msg, long id, boolean callOnUIThread) {
+    private void senOnEventMessage(int code, String msg, long id) {
+        boolean callOnUIThread = vbyteHandler.getLooper() == Looper.getMainLooper();
         if (callOnUIThread) {
             //在UI线程将消息通知给LiveController
-            Handler handler = ((Handler)vbyteHandler);
-            Message message = handler.obtainMessage();
+            Message message = vbyteHandler.obtainMessage();
             Bundle data = new Bundle();
             data.putLong("ctrlID", id);
             message.what = code;
             message.obj = msg;
             message.setData(data);
-
-            handler.sendMessage(message);
+            vbyteHandler.sendMessage(message);
         } else {
             //直接将消息发送给LiveController(XP2P线程)
             vbyteHandler.handleMessage(code, msg, id);
         }
     }
 
-    public void setCallOnLoadListener(boolean callOnLoadListener) {
-        this.callOnLoadListener = callOnLoadListener;
-    }
-
     private void notifyEventIfNeeded(CallbackInterface handler, int code, String msg, long id) {
         if (handler != null) {
             try {
-                handler.handleMessage(code, msg);
+                handler.handleMessage(id, code, msg);
             } catch (Exception e) {
                 // do nothing
             }
@@ -392,7 +400,7 @@ public final class VbyteP2PModule {
         }
 
         //发送消息给LiveController
-        senOnEventMessage(code, msg, ctrlID, callOnLoadListener);
+        senOnEventMessage(code, msg, ctrlID);
 
         //将消息发送给客户
         notifyEventIfNeeded(eventHandler, code, msg, ctrlID);
@@ -401,7 +409,7 @@ public final class VbyteP2PModule {
 
     private void onError(int code, String msg, long ctrlID) {
          //发送消息给LiveController
-        senOnEventMessage(code, msg, ctrlID, callOnLoadListener);
+        senOnEventMessage(code, msg, ctrlID);
         notifyEventIfNeeded(errorHandler, code, msg, ctrlID);
         //将消息发送给客户
         notifyEventIfNeeded(nativeErrorHandler, code, msg, ctrlID);

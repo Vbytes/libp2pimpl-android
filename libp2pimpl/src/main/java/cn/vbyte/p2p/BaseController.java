@@ -29,35 +29,45 @@ public abstract class BaseController implements IController {
     protected LoadEvent curLoadEvent = null;
     protected static boolean initedSDK = false;
 
-    public static class LoadEvent {
+    public static class LoadEvent implements Runnable {
         public int videoType;
         public String channel;
         public String resolution;
         public double startTime;
         public int netState;
         public OnLoadedListener listener;
+        public OnTimeoutListener onTimeoutListener;
         public boolean callOnUIThread = false;//回调是否在UI线程,在UI线程需要使用Handler(斗鱼不使用Handler)
 
-        public LoadEvent(int videoType, String channel, String resolution, OnLoadedListener listener) {
-            this(videoType, channel, resolution, 0, listener);
+        LoadEvent(int videoType, String channel, OnLoadedListener listener, OnTimeoutListener onTimeoutListener) {
+            this(videoType, channel, "UHD", 0, listener, onTimeoutListener);
         }
 
-        public LoadEvent(int videoType, String channel, String resolution, double startTime, OnLoadedListener listener) {
-            this(videoType, channel, resolution, startTime, NETSTATE_WIFI, listener);
+        public LoadEvent(int videoType, String channel, String resolution, double startTime, OnLoadedListener listener, OnTimeoutListener onTimeoutListener) {
+            this(videoType, channel, resolution, startTime, NETSTATE_WIFI, listener, onTimeoutListener);
         }
 
-        public LoadEvent(int videoType, String channel, String resolution, double startTime, int netState, OnLoadedListener listener) {
-            this(videoType, channel, resolution, startTime, netState, listener, false);
+        public LoadEvent(int videoType, String channel, String resolution, double startTime, int netState, OnLoadedListener listener, OnTimeoutListener onTimeoutListener) {
+            this(videoType, channel, resolution, startTime, netState, listener, onTimeoutListener, false);
         }
 
-        public LoadEvent(int videoType, String channel, String resolution, double startTime, int netState, OnLoadedListener listener, boolean callOnUIThread) {
+        public LoadEvent(int videoType, String channel, String resolution, double startTime, int netState, OnLoadedListener listener, OnTimeoutListener onTimeoutListener, boolean callOnUIThread) {
             this.videoType = videoType;
             this.channel = channel;
             this.resolution = resolution;
             this.netState = netState;
             this.startTime = startTime;
             this.listener = listener;
+            this.onTimeoutListener = onTimeoutListener;
             this.callOnUIThread = callOnUIThread;
+        }
+
+        @Override
+        public void run() {
+            if (onTimeoutListener != null) {
+                Uri uri = Uri.parse(this.channel);
+                onTimeoutListener.onTimeout(uri);
+            }
         }
     }
 
@@ -74,18 +84,22 @@ public abstract class BaseController implements IController {
      * @param channel 对直播是频道ID，对点播是资源链接
      * @param resolution 统一为 "UHD"
      * @param listener 当成功load时的回调函数
-     * @throws Exception 当load/unload没有成对调用时，会抛出异常提示
+     * @throws RuntimeException 当load/unload没有成对调用时，会抛出异常提示
      */
     @Override
-    public void load(String channel, String resolution, OnLoadedListener listener) throws Exception {
+    public void load(String channel, String resolution, OnLoadedListener listener) throws RuntimeException {
         load(channel, resolution, 0, listener);
     }
 
     @Override
-    public void load(String channel, int netState, OnLoadedListener listener) throws Exception {
+    public void load(String channel, int netState, OnLoadedListener listener) throws RuntimeException {
         load(channel, "UHD", 0, netState, listener);
     }
 
+    @Override
+    public void load(String channel, String resolution, double startTime, int netState, OnLoadedListener onLoadedListener, OnTimeoutListener onTimeoutListener) throws RuntimeException {
+        //子类实现
+    }
 
     protected volatile Uri mUri = null;
     /**
@@ -178,7 +192,7 @@ public abstract class BaseController implements IController {
     public void resume() { return; }
 
     @Override
-    public void unload() {
+    public void unload() throws RuntimeException{
         mUri = null;
     }
 

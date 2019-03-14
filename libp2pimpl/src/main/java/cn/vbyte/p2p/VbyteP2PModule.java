@@ -453,6 +453,17 @@ public final class VbyteP2PModule {
     }
 
     /**
+     *  @return 返回守护进程状态
+     *  STATUS_STOPPED= 0,  // 暂停
+     *  STATUS_STARTED= 1,  // 开启
+     *  STATUS_RUNNING= 2, // 运行任务中
+     *  STATUS_SHARING= 3, // 运行任务中，分享数据
+     */
+    public int getDeamonStatus() {
+        return this._getDeamonStatus();
+    }
+
+    /**
      * native应用初始化
      * @return 成功返回native代码里面对应对象的指针，失败返回0
      */
@@ -520,5 +531,7 @@ public final class VbyteP2PModule {
     private native void _stopDeamon();
 
     private native void _setUserId(long pointer, String userID);
+
+    private native int _getDeamonStatus();
 
 }

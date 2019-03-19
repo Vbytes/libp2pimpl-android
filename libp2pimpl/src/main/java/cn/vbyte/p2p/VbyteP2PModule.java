@@ -397,6 +397,9 @@ public final class VbyteP2PModule {
     private void onEvent(int code, String msg, long ctrlID) {
         if (code == Event.INITED) {
             initedSDK = true;
+            for (BaseController ctrl : contrlMap.values()) {
+                ctrl.onEvent(code, msg);
+            }
         }
 
         //发送消息给LiveController

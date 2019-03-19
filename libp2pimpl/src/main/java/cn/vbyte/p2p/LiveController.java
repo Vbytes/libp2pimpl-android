@@ -172,7 +172,7 @@ public final class LiveController extends BaseController implements IController 
             }
 
             LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, netState, onLoadedListener, onTimeoutListener);
-            int delay = 2500 - (timeoutTimes++ > 7 ? 2000 : timeoutTimes * 250);
+            int delay = 6500 - (timeoutTimes++ > 5 ? 2000 : timeoutTimes * 400);
             VbyteP2PModule.vbyteHandler.postDelayed(loadEvent, delay);
             loadQueue.add(loadEvent);
             if (initedSDK && curLoadEvent == null) {
@@ -257,20 +257,22 @@ public final class LiveController extends BaseController implements IController 
     }
 
     /**
-     * 在unload之后Event.STOPPED信号收到以前，用户可能会执行{@link LiveController#load 或者 {@link LiveController#destruct()}
+     * 在unload之后Event.STOPPED、INITED信号收到以前，用户可能会执行{@link LiveController#load 或者 {@link LiveController#destruct()}
      * 这个时候我们需要在收到该信号以后完成用户执行的操作
      */
-    private void afterEventSTOPED() {
+    private void recvAsyncEvent() {
         synchronized(this) {
             if (pendingDestruct) {
-                _destruct(getPointer());
+                if (_pointer != 0) {
+                    _destruct(getPointer());
+                    VbyteP2PModule.contrlMap.remove(getCtrlID());
+                }
                 _pointer = 0;
                 curLoadEvent = null;
-                VbyteP2PModule.contrlMap.remove(getCtrlID());
-                Log.i(LiveController.TAG, "LiveController afterEventSTOPED _destruct");
+                Log.i(LiveController.TAG, "LiveController recvAsyncEvent _destruct");
             } else if (!loadQueue.isEmpty()){
-                Log.i(LiveController.TAG, "LiveController afterEventSTOPED");
-                //unload完成以前用户加载了频道
+                Log.i(LiveController.TAG, "LiveController recvAsyncEvent");
+                // unload or init完成以前用户加载了频道
                 curLoadEvent = loadQueue.get(0);
                 loadQueue.remove(0);
                 VbyteP2PModule.contrlMap.put(getCtrlID(), this);
@@ -287,6 +289,9 @@ public final class LiveController extends BaseController implements IController 
     protected void onEvent(int code, String msg) {
         Log.i(LiveController.TAG, "LiveController onEvent code:" + code + ",msg:" + msg);
         switch (code) {
+            case VbyteP2PModule.Event.INITED:
+                recvAsyncEvent();
+                break;
             case Event.STARTED:
                 synchronized(this) {
                     if (curLoadEvent != null) {
@@ -303,7 +308,7 @@ public final class LiveController extends BaseController implements IController 
                 break;
             case Event.STOPPED:
                 Log.i(LiveController.TAG, "LiveController:" + this + "Event.STOPPED pendingDestruct:" + pendingDestruct);
-                afterEventSTOPED();
+                recvAsyncEvent();
                 break;
             case Event.WANT_IMEI:
                 VbyteP2PModule.getInstance().setImei();

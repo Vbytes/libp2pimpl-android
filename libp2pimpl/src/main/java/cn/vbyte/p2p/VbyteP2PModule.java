@@ -267,7 +267,7 @@ public final class VbyteP2PModule {
         }
 
         //System.loadLibrary("stun");
-        System.loadLibrary("event");
+        //System.loadLibrary("event");
         /**
          *
          * 能从jni里面获取到arch, 就进行下面的升级、加载，否则加载lib/ 下的libp2pmodule

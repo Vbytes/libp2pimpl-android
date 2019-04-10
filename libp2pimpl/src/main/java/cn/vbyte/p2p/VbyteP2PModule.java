@@ -287,7 +287,7 @@ public final class VbyteP2PModule {
 
         }
         if (soFilePath == null) {
-            System.loadLibrary("p2pmodule");
+            //System.loadLibrary("p2pmodule");
         } else {
             System.load(soFilePath);
         }

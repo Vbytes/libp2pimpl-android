@@ -255,7 +255,6 @@ public final class VbyteP2PModule {
     private CallbackInterface errorHandler = null;
     private Handler eventAndroidHandler = null;
     protected static VbyteHandler vbyteHandler = new VbyteHandler();
-    private DynamicLibManager dynamicLibManager;
     // native代码对应的对象实例，标准做法
     private long _pointer;
     private WeakReference<Context> _context;
@@ -264,37 +263,6 @@ public final class VbyteP2PModule {
             throws Exception {
         if (context == null || appId == null || appKey == null || appSecretKey == null) {
             throw new NullPointerException("context or appId or appKey or appSecretKey can't be null when init p2p live stream!");
-        }
-
-        //System.loadLibrary("stun");
-        System.loadLibrary("event");
-        /**
-         *
-         * 能从jni里面获取到arch, 就进行下面的升级、加载，否则加载lib/ 下的libp2pmodule
-         * android.os.Build.CPU_ABI、android.os.Build.SUPPORT_ABIS不靠谱，很多机型获取不到，不能用这个。因此，不用这个获取。
-         * archCpuAbi再次验证一下
-         */
-
-        String soFilePath = null;
-        dynamicLibManager = new DynamicLibManager(context);
-
-        try {
-            //这里加一个check libp2pmodule文件的md5值，因为应用目录/files目录下 很可能被别的应用扫描到给破坏了就load错误了
-            soFilePath = dynamicLibManager.locate(DYNAMIC_LIB_NAME);
-        } catch (Exception e) {
-            // 因获取不到程序版本号而导致的自动升级失败，默认使用安装时自带的
-        } catch (UnsatisfiedLinkError e) {
-
-        }
-        if (soFilePath == null) {
-            System.loadLibrary("p2pmodule");
-        } else {
-            System.load(soFilePath);
-        }
-
-        if(!getArchABI().isEmpty()) {
-            //得到了arch, 开始check升级用false即可
-            dynamicLibManager.checkUpdateV2(false, "libp2pmodule_" + VbyteP2PModule.getVersion() + "_20170928.so", getArchABI());
         }
 
         _pointer = this._construct();
@@ -429,6 +397,14 @@ public final class VbyteP2PModule {
     }
 
     /**
+     * 设置bssid(AP Mac address)
+     * @param bssid
+     */
+    public void setBssid(String bssid) {
+        _setBSSID(_pointer, bssid);
+    }
+
+    /**
      * 设置userId并启动盒子加速模式的守护线程
      * @param userId
      */
@@ -531,6 +507,8 @@ public final class VbyteP2PModule {
     private native void _stopDeamon();
 
     private native void _setUserId(long pointer, String userID);
+
+    private native void _setBSSID(long pointer, String bssid);
 
     private native int _getDeamonStatus();
 

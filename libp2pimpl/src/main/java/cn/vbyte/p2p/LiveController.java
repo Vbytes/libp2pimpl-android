@@ -165,15 +165,10 @@ public final class LiveController extends BaseController implements IController 
             throws RuntimeException {
         synchronized(this) {
             if (!loadQueue.isEmpty()) {
-                for (LoadEvent loadEvent : loadQueue) {
-                    VbyteP2PModule.vbyteHandler.removeCallbacks(loadEvent);
-                }
                 loadQueue.clear();
             }
 
-            LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, netState, onLoadedListener, onTimeoutListener);
-            int delay = 6500 - (timeoutTimes++ > 5 ? 2000 : timeoutTimes * 400);
-            VbyteP2PModule.vbyteHandler.postDelayed(loadEvent, delay);
+            LoadEvent loadEvent = new LoadEvent(VIDEO_LIVE, channel, resolution, startTime, netState, onLoadedListener);
             loadQueue.add(loadEvent);
             if (initedSDK && curLoadEvent == null) {
                 VbyteP2PModule.contrlMap.put(getCtrlID(), this);
@@ -212,7 +207,6 @@ public final class LiveController extends BaseController implements IController 
         synchronized (this) {
             //当前有事件的时候, 才unload, 屏蔽空unload
             if(curLoadEvent != null) {
-                VbyteP2PModule.vbyteHandler.removeCallbacks(curLoadEvent);
                 super.unload();
                 this._unload(_pointer);
             }
@@ -296,7 +290,6 @@ public final class LiveController extends BaseController implements IController 
                 synchronized(this) {
                     if (curLoadEvent != null) {
                         timeoutTimes = 0;
-                        VbyteP2PModule.vbyteHandler.removeCallbacks(curLoadEvent);
                         Uri uri = Uri.parse(msg);
                         if (curLoadEvent.listener != null) {
                             curLoadEvent.listener.onLoaded(uri);

@@ -7,7 +7,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Handler;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
@@ -240,7 +239,7 @@ public final class VbyteP2PModule {
     // 事件监听接口(提供给不喜欢Handler的客户使用)
     private CallbackInterface eventHandler = null;
     private CallbackInterface errorHandler = null;
-    protected static VbyteHandler vbyteHandler = null;
+    private static VbyteHandler vbyteHandler = null;
     //事件监听的Handler
     private Handler nativeEventHandler = null;
     private Handler nativeErrorHandler = null;
@@ -248,7 +247,6 @@ public final class VbyteP2PModule {
     // native代码对应的对象实例，标准做法
     private long _pointer;
     private WeakReference<Context> _context;
-    private Thread thread = null;
 
     private VbyteP2PModule(Context context, String appId, String appKey, String appSecretKey)
             throws Exception {
@@ -256,19 +254,11 @@ public final class VbyteP2PModule {
             throw new NullPointerException("context or appId or appKey or appSecretKey can't be null when init p2p live stream!");
         }
 
-        if (Looper.getMainLooper() == Looper.myLooper()) {
+        synchronized (VbyteP2PModule.class) {
+            if (Looper.myLooper() == null) {
+                Looper.prepare();
+            }
             vbyteHandler = new VbyteHandler();
-        } else {
-            thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    Looper.prepare();
-                    vbyteHandler = new VbyteHandler();
-                    Looper.loop();
-                }
-            });
-
-            thread.start();
         }
         System.loadLibrary("event");
         /**
@@ -297,7 +287,7 @@ public final class VbyteP2PModule {
 
         if(!getArchABI().isEmpty()) {
             //得到了arch, 开始check升级用false即可
-            dynamicLibManager.checkUpdateV2(false, "libp2pmodule_" + VbyteP2PModule.getVersion() + "_20170928.so", getArchABI());
+            dynamicLibManager.checkUpdate(DynamicLibManager.LIB_XP2P_SO_NAME, getArchABI(), VbyteP2PModule.getVersion());
         }
 
         _pointer = this._construct();
@@ -356,7 +346,10 @@ public final class VbyteP2PModule {
     }
 
     private void senOnEventMessage(int code, String msg, long id) {
-        boolean callOnUIThread = vbyteHandler.getLooper() == Looper.getMainLooper();
+        final boolean callOnUIThread;
+        synchronized (VbyteP2PModule.class) {
+            callOnUIThread = vbyteHandler.getLooper() == Looper.getMainLooper();
+        }
         if (callOnUIThread) {
             //在UI线程将消息通知给LiveController
             Message message = vbyteHandler.obtainMessage();

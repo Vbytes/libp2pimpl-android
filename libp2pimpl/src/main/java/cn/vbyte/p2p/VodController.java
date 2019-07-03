@@ -122,7 +122,7 @@ public final class VodController extends BaseController implements IController {
             loadQueue.clear();
             throw new RuntimeException("You must forget to unload last channel!");
         }
-        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener, null);
+        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener);
         loadQueue.add(loadEvent);
         if (curLoadEvent == null) {
             curLoadEvent = loadQueue.get(0);
@@ -147,7 +147,7 @@ public final class VodController extends BaseController implements IController {
             loadQueue.clear();
             throw new RuntimeException("You must forget to unload last channel!");
         }
-        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener, null);
+        LoadEvent loadEvent = new LoadEvent(VIDEO_VOD, channel, resolution, startTime, listener);
         loadQueue.add(loadEvent);
         if (curLoadEvent == null) {
             curLoadEvent = loadQueue.get(0);

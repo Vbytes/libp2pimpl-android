@@ -99,6 +99,7 @@ public class SecurityUrl {
      * 将设置好的防盗链请求以json格式序列化
      * @return 防盗链请求以json格式序列化的字符串
      */
+    @Override
     public String toString() {
         try {
             JSONObject obj = new JSONObject();

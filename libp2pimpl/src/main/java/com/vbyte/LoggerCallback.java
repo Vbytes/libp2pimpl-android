@@ -1,4 +1,4 @@
-package cn.vbyte.p2p;
+package com.vbyte;
 
 public abstract class LoggerCallback {
 

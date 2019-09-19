@@ -1,4 +1,4 @@
-package cn.vbyte.p2p;
+package com.vbyte.p2p;
 
 /**
  * 多实例版本的回调接口

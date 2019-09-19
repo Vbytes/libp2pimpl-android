@@ -5,332 +5,360 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.text.TextUtils;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
+
+/**
+ * Created by passion on 16-9-20.
+ */
 public class DynamicLibManager {
-    /** 动态库名称 **/
-    public static String LIB_XP2P_SO_NAME = "libp2pmodule";
-
-    /** 动态库根目录 **/
-    private static String ROOT_DIR = "vlib";
-
-    /** jni接口版本 **/
-    private String JNI_VERSION = "v2";
-
-    /** 新so(升级)的路径 **/
-    private String libPath;
-
-    /** 当前设备的架构ABI **/
-    private static String archCpuAbi = "";
+    private static final String UPDATE_HOST = "http://update.qvb.qcloud.com/checkupdate";
 
     private Context context;
+    private String libDirPath;
+    private String currentLibDirPath;
 
-    public DynamicLibManager(Context context) {
-        this.context = context;
-        scanDirs();
-    }
+    //jni接口版本
+    private String jniVersion = "v6";
+    //非https要下载的so
+    private String[] soNameArr = new String[]{"libp2pmodule", "libevent"};
+    private boolean supportHttps = false;
+    //https情况下要下载的so
+    private String[] soNameArrSupportHttps = new String[]{"libp2pmodule", "libevent", "libevent_openssl", "libcrypto", "libssl"};
+    private static String archCpuAbi = "";
 
     /**
-     * 获取我们升级so所在的文件路径 -> libPath
-     *
-     * 1.能获取App版本:
-     * /data/data/cn.vbyte.android.sample/files/vlib/0.4.3.5/v2/http/armeabi-v7a
-     *
-     * 2.不能获取App版本:
-     * /data/data/cn.vbyte.android.sample/files/vlib/v2/http/armeabi-v7a
-     *
+     * cpuArch为传进来的，让这个类可以不依赖外面的类，cpuArch为 armeabi、armeabi-v7a、armeabi-v8a、x86、x86_64中的一个
+     * @param context
      */
-    private void scanDirs() {
-        //路径拼接: /data/data/包名/files/vlib
-        StringBuilder tmpLibDirPath = new StringBuilder();
-        tmpLibDirPath.append(context.getFilesDir().getAbsolutePath())
-                .append(File.separator)
-                .append(ROOT_DIR);
+    public DynamicLibManager(Context context) {
+        this.context = context;
+        libDirPath = this.context.getFilesDir().getAbsolutePath() + File.separator + "vlib";
 
-        //路径拼接: /APP版本
+        StringBuilder tmpCurrentLibDirPath = new StringBuilder();
+        tmpCurrentLibDirPath.append(context.getFilesDir().getAbsolutePath())
+                .append(File.separator)
+                .append("vlib");
+        /**
+         /data/data/cn.vbyte.android.sample/files/vlib/0.4.3.5/v2/http/armeabi-v7a  能获取到Appversion的
+         data/data/cn.vbyte.android.sample/files/vlib/v2/http/armeabi-v7a           不能获取到jniVersion的
+         */
         try {
-            tmpLibDirPath.append(File.separator)
+            tmpCurrentLibDirPath.append(File.separator)
                     .append(getAppVersion());
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        //路径拼接: /jni版本/http
-        tmpLibDirPath.append(File.separator)
-                .append(JNI_VERSION)
-                .append(File.separator)
-                .append("http");
-        libPath = tmpLibDirPath.toString();
+        tmpCurrentLibDirPath.append(File.separator)
+                .append(jniVersion)
+                .append(File.separator);
 
-        File tmpHttpOrHttpsDir = new File(tmpLibDirPath.toString());
+        //放置支持https的库的
+        if (supportHttps) {
+            tmpCurrentLibDirPath.append("https");
+        } else {
+            tmpCurrentLibDirPath.append("http");
+            //放置不支持https的
+        }
+
+        File tmpHttpOrHttpsDir = new File(tmpCurrentLibDirPath.toString());
         if(!tmpHttpOrHttpsDir.exists()) {
             tmpHttpOrHttpsDir.mkdirs();
         }
 
-        //路径拼接: /CPU架构
-        if(scanArchDir(tmpHttpOrHttpsDir) == 1 && !archCpuAbi.isEmpty()) {
-            tmpLibDirPath.append(File.separator).append(archCpuAbi);
-            libPath = tmpLibDirPath.toString();
-            if(!(new File(libPath)).exists()) {
-                (new File(libPath)).mkdirs();
+        currentLibDirPath = tmpCurrentLibDirPath.toString();
+        int archCpuAbiNum = 0;
+        String tmpArchAbi = "";
+        for (File file : tmpHttpOrHttpsDir.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                if(file.isDirectory()) {
+                    return true;
+                }
+                return false;
+            }
+        })) {
+            final String[] cpuAbisArr = {"armeabi", "armeabi-v7a", "arm64-v8a", "x86", "x86_64"};
+            archCpuAbiNum += 1;
+
+            if(Arrays.asList(cpuAbisArr).contains(file.getName())) {
+                tmpArchAbi = file.getName();
+            }
+        }
+
+        //如果扫描到一个文件夹获取到arch, 就可以加载了, archCpuAbi不为"" 可以使用locate不然不能用locate
+        if(archCpuAbiNum == 1 && !tmpArchAbi.isEmpty()) {
+            archCpuAbi = tmpArchAbi;
+
+            tmpCurrentLibDirPath.append(File.separator)
+                    .append(archCpuAbi);
+            currentLibDirPath = tmpCurrentLibDirPath.toString();
+
+            //检测curentLibDirPath存不存在
+            if(!(new File(currentLibDirPath)).exists()) {
+                (new File(currentLibDirPath)).mkdirs();
             }
         } else {
+            /**
+             * /data/data/cn.vbyte.android.sample/files/vlib/0.4.3.5/v2/http/ 下面有armeabii armeabi-v7a等2种以上的出现，就删除
+             * 一般是不会走到这个分支的
+             */
             deleteDir(tmpHttpOrHttpsDir);
         }
     }
 
-    private int scanArchDir(File parentPath) {
-        int archCpuAbiNum = 0;
-        for (File file : parentPath.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File file) {
-                return file.isDirectory();
-            }
-        })) {
-            final String[] ABIs = {"armeabi", "armeabi-v7a", "arm64-v8a", "x86", "x86_64"};
-            archCpuAbiNum += 1;
-
-            if(Arrays.asList(ABIs).contains(file.getName())) {
-                archCpuAbi = file.getName();
-            }
+    public boolean isSoReady() {
+        //如果ready存在,  files/vlib/当前jniVersion/当前armeabi/ready 那么hasAllJniSo = true
+        File currentLibDir = new File(currentLibDirPath);
+        if (!currentLibDir.exists()) {
+            currentLibDir.mkdirs();
         }
-        return archCpuAbiNum;
+        try {
+            return new File(currentLibDirPath + File.separator + "ready").exists();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
-    private void makeArchDir(final String arch) {
-        if(!libPath.endsWith(File.separator + arch)) {
-            libPath = libPath + File.separator + arch;
-            File tmpDir = new File(libPath);
+    //第一次升级， true "", 第二次只检查libp2pmodule的升级
+    public void checkUpdateV2(final boolean firstDownload, final String soName, final String arch) {
+        /**
+         * 只有第一次下载的情况下，currentPath没有 endWith /armeabi-v7a
+         * 此时currentLibDirPath为
+         * /data/data/cn.vbyte.android.sample/files/vlib/0.4.3.5/v2/http
+         * 根据传进来的arch，创建文件夹
+         * /data/data/cn.vbyte.android.sample/files/vlib/0.4.3.5/v2/http/armeabi-v7a 这样的
+         */
+        if(!currentLibDirPath.endsWith(File.separator + arch)) {
+            currentLibDirPath = currentLibDirPath + File.separator + arch;
+            File tmpDir = new File(currentLibDirPath);
             if(!tmpDir.exists()) {
                 tmpDir.mkdirs();
             }
         }
-    }
-
-    /**
-     * 请求升级信息
-     * @param arch 需要的架构ABI
-     * @param soName 需要升级的so名称
-     * @param soVersion 当前已加载的so版本
-     * @return 以json格式返回请求升级的结果
-     * @throws Exception
-     */
-    private String doRequestUpdate(String arch, String soName, String soVersion) throws Exception {
-        if (arch.isEmpty() || soName.isEmpty() || soVersion.isEmpty()) {
-            return "";
-        }
-
-        String packageName = context.getPackageName();
-        String timeStamp = Long.toString((new Date().getTime()) / 1000); //获取10位unix时间戳
-        String token = MD5Util.MD5((timeStamp + "qvb2017tencent" + packageName).getBytes());
-
-        StringBuffer sb = new StringBuffer();
-        sb.append("http://update.qvb.qcloud.com/checkupdate").append("/v2")
-                .append("?abi=").append(arch)
-                .append("&token=").append(token)
-                .append("&timeStamp=").append(timeStamp)
-                .append("&jniVersion=").append(JNI_VERSION)
-                .append("&packageName=").append(context.getPackageName())
-                .append("&fileId=").append(soName)
-                .append("&fifoVersion=").append(soVersion);
-
-        URL url = new URL(sb.toString());
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setConnectTimeout(30_000);
-        conn.setReadTimeout(10_000);
-        conn.setRequestMethod("GET");
-        if (conn.getResponseCode() == 200) {
-            BufferedReader input = new BufferedReader(new InputStreamReader(
-                    conn.getInputStream()));
-            String jsonStr = "";
-            String line;
-            while ((line = input.readLine()) != null) {
-                jsonStr += line;
-            }
-            return jsonStr;
-        }
-        return "";
-    }
-
-    /**
-     * 检查返回的json中是否存在需要升级的so，
-     * 针对libp2pmodule.so会检查jniVersion字段
-     * @param soName 需要升级的so
-     * @param jsonObj 服务端返回的升级信息
-     * @return 返回需要升级so对应的json
-     *
-     * @throws JSONException
-     */
-    private JSONObject checkSoExistInJson(String soName, JSONObject jsonObj) throws JSONException {
-        if (jsonObj.has("downloadUrl")) {
-            JSONObject jsonObjDownload = jsonObj.getJSONObject("downloadUrl");
-            if (jsonObjDownload.has(soName)) {
-                JSONObject soJsObj = jsonObjDownload.getJSONObject(soName);
-                if (soName.equals(LIB_XP2P_SO_NAME)) {
-                    if (soJsObj.has("jniVersion")
-                            && !TextUtils.isEmpty(soJsObj.getString("jniVersion"))
-                            && soJsObj.has("version")
-                            && !TextUtils.isEmpty(soJsObj.getString("version"))
-                            && soJsObj.has("url")
-                            && !TextUtils.isEmpty(soJsObj.getString("url"))
-                            && soJsObj.has("md5token")
-                            && !TextUtils.isEmpty(soJsObj.getString("md5token"))) {
-                        return soJsObj;
-                    }
-                } else {
-                    if (soJsObj.has("version")
-                            && !TextUtils.isEmpty(soJsObj.getString("version"))
-                            && soJsObj.has("url")
-                            && !TextUtils.isEmpty(soJsObj.getString("url"))
-                            && soJsObj.has("md5token")
-                            && !TextUtils.isEmpty(soJsObj.getString("md5token"))) {
-                        return soJsObj;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private boolean doDownloadSo(String downloadUrl, String tmpFileName, String soPath, String md5) throws IOException {
-        // 开始能断点式地下载
-        String soPathFileTmpName = libPath + File.separator + tmpFileName;
-
-        File tmpFile = new File(soPathFileTmpName);
-        if (!tmpFile.exists()) {
-            tmpFile.createNewFile();
-        }
-        long finishedSize = tmpFile.length();
-
-        URL url = new URL(downloadUrl);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setConnectTimeout(30_000);
-        conn.setReadTimeout(30_000);
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Range", "bytes=" + finishedSize + "-");
-        if (conn.getResponseCode() == 206 || conn.getResponseCode() == 200) {
-            BufferedInputStream bis = new BufferedInputStream(conn.getInputStream());
-            RandomAccessFile raf = new RandomAccessFile(tmpFile, "rw");
-            try {
-                //下载buffer要为4k以上，不然安全团队找
-                byte[] bytes = new byte[10240];
-                int count;
-                while ((count = bis.read(bytes)) != -1) {
-                    raf.seek(finishedSize);
-                    raf.write(bytes, 0, count);
-                    finishedSize += count;
-                }
-
-                // 对比指纹是否正确
-                String md5sum = MD5Util.MD5(tmpFile);
-                if (md5sum.toLowerCase(Locale.US).equals(md5.toLowerCase())) {
-                    tmpFile.renameTo(new File(soPath));
-                    return true;
-                }
-                tmpFile.delete();
-            } finally {
-                raf.close();
-                bis.close();
-            }
-        }
-        return false;
-    }
-
-    private void clearTmpFiles(String excludeFile) {
-        File tmpDir = new File(libPath);
-        // 删除无用的tmp文件
-        for (File file : tmpDir.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File file) {
-                return file.getName().endsWith(".tmp");
-            }
-        })) {
-            if (!file.getName().equals(excludeFile)) {
-                file.delete();
-            }
-        }
-    }
-
-    private boolean downloadSo(String soName, String downloadUrl, String newVersion, String md5) throws Exception {
-
-        String soPath;
-        String soFileName;
-        String tmpFileName;
-
-        if (soName.equals(LIB_XP2P_SO_NAME)) {
-            soFileName = soName + "_" + newVersion + "_" + md5 + ".so";
-            tmpFileName = soName + "_" + newVersion + "_" + md5 + ".tmp";
-        } else {
-            soFileName = soName + ".so";
-            tmpFileName = soName + ".tmp";
-        }
-        soPath = libPath + File.separator + soFileName;
-
-        if (new File(soPath).exists()) {
-            return true;
-        } else {
-            clearTmpFiles(soFileName);
-            return doDownloadSo(downloadUrl, tmpFileName, soPath, md5);
-        }
-    }
-
-    /**
-     * 检查升级
-     * @param soName 指定需要升级的so
-     * @param arch 当前设备的ABI
-     * @param soVersion 当前已加载的so版本
-     */
-    public void checkUpdate(final String soName, final String arch, final String soVersion) {
-        makeArchDir(arch);
-
+        //使用传进来的arch
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    String updateInfos = doRequestUpdate(arch, soName, soVersion);
-                    JSONObject soJsonObj = checkSoExistInJson(soName, new JSONObject(updateInfos));
-                    if (soJsonObj != null) {
-                        downloadSo(soName, soJsonObj.getString("url"), soJsonObj.getString("version"), soJsonObj.getString("md5token"));
+                    String packageName = context.getPackageName();
+                    //获取10位unix时间戳
+                    String timeStamp = Long.toString((new Date().getTime()) / 1000);
+                    String token = MD5Util.MD5((timeStamp + "qvb2017tencent" + packageName).getBytes());
+
+                    StringBuffer sb = new StringBuffer();
+                    sb.append("http://update.qvb.qcloud.com/checkupdate").append("/v2")
+                            .append("?abi=").append(arch)
+                            .append("&token=").append(token)
+                            .append("&timeStamp=").append(timeStamp)
+                            .append("&jniVersion=").append(jniVersion)
+                            .append("&packageName=").append(context.getPackageName());
+
+                    if (supportHttps) {
+                        sb.append("&supportHttps=true");
+                        soNameArr = soNameArrSupportHttps;
+                    }
+                    if (firstDownload) {
+                        sb.append("&fileId=").append(TextUtils.join(",", soNameArr));
+                    } else {
+                        String[] tmpArr = soName.split("_");
+
+                        if (tmpArr.length == 3) {
+                            sb.append("&fileId=").append("libp2pmodule")
+                                    .append("&fifoVersion=").append(tmpArr[1]);
+                        } else {
+                            return;
+                        }
+                    }
+                    URL url = new URL(sb.toString());
+
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setConnectTimeout(30_000);
+                    conn.setReadTimeout(10_000);
+                    conn.setRequestMethod("GET");
+                    if (conn.getResponseCode() == 200) {
+                        BufferedReader input = new BufferedReader(new InputStreamReader(
+                                conn.getInputStream()));
+                        String jsonStr = "";
+                        String line;
+                        while ((line = input.readLine()) != null) {
+                            jsonStr += line;
+                        }
+                        JSONObject jsonObj = new JSONObject(jsonStr);
+
+                        if (jsonObj.has("downloadUrl")) {
+                            String[] downloadSoArr;
+                            if (firstDownload) {
+                                downloadSoArr = soNameArr;
+                            } else {
+                                downloadSoArr = new String[]{"libp2pmodule"};
+                            }
+
+                            Map<String, JSONObject> soJsonMap = new HashMap<>();
+
+                            JSONObject jsonObjDownload = jsonObj.getJSONObject("downloadUrl");
+
+
+                            for (String soName : downloadSoArr) {
+                                if (jsonObjDownload.has(soName)) {
+                                    JSONObject jsonObjTmp = jsonObjDownload.getJSONObject(soName);
+                                    if (soName.equals("libp2pmodule")) {
+                                        //如果是libp2pmodule还检查jniVersion字段
+                                        if (jsonObjTmp.has("jniVersion")
+                                                && !TextUtils.isEmpty(jsonObjTmp.getString("jniVersion"))
+                                                && jsonObjTmp.has("version")
+                                                && !TextUtils.isEmpty(jsonObjTmp.getString("version"))
+                                                && jsonObjTmp.has("url")
+                                                && !TextUtils.isEmpty(jsonObjTmp.getString("url"))
+                                                && jsonObjTmp.has("md5token")
+                                                && !TextUtils.isEmpty(jsonObjTmp.getString("md5token"))) {
+                                            soJsonMap.put(soName, jsonObjTmp);
+                                        }
+                                    } else {
+                                        //不是libp2pmodule不检查jniVersion字段
+                                        if (jsonObjTmp.has("version")
+                                                && !TextUtils.isEmpty(jsonObjTmp.getString("version"))
+                                                && jsonObjTmp.has("url")
+                                                && !TextUtils.isEmpty(jsonObjTmp.getString("url"))
+                                                && jsonObjTmp.has("md5token")
+                                                && !TextUtils.isEmpty(jsonObjTmp.getString("md5token"))) {
+                                            soJsonMap.put(soName, jsonObjTmp);
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (soJsonMap.size() == downloadSoArr.length) {
+                                boolean writeReady = true;
+                                for (Map.Entry<String, JSONObject> entry : soJsonMap.entrySet()) {
+
+                                    JSONObject jsonObject = entry.getValue();
+                                    writeReady = (writeReady && updateDynamicLib(entry.getKey(), jsonObject.getString("url"), jsonObject.getString("version"), jsonObject.getString("md5token")));
+                                }
+                                if (firstDownload && writeReady) {
+                                    //第一次下载且都下载成功创建文件标识符
+                                    new File(currentLibDirPath + File.separator + "ready").createNewFile();
+                                }
+                            }
+                        }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
+
+
+            //存在so或者下载完成, 返回true
+            private boolean updateDynamicLib(String soName, String downloadUrl, String newVersion, String md5) throws Exception {
+
+                String soPathFileName;
+                String soFileName;
+                String tmpFileName;
+
+                if (soName.equals("libp2pmodule")) {
+                    soFileName = soName + "_" + newVersion + "_" + md5 + ".so";
+                    tmpFileName = soName + "_" + newVersion + "_" + md5 + ".tmp";
+                } else {
+                    soFileName = soName + ".so";
+                    tmpFileName = soName + ".tmp";
+                }
+                soPathFileName = currentLibDirPath + File.separator + soFileName;
+
+                //上次下载未完成，存在文件，返回true
+                if (new File(soPathFileName).exists()) {
+                    return true;
+                }
+                File tmpDir = new File(currentLibDirPath);
+                // 删除无用的tmp文件
+                for (File file : tmpDir.listFiles(new FileFilter() {
+                    @Override
+                    public boolean accept(File file) {
+                        return file.getName().endsWith(".tmp");
+                    }
+                })) {
+                    if (!file.getName().equals(soFileName)) {
+                        file.delete();
+                    }
+                }
+
+                // 开始能断点式地下载
+                String soPathFileTmpName = currentLibDirPath + File.separator + tmpFileName;
+
+                File tmpFile = new File(soPathFileTmpName);
+                if (!tmpFile.exists()) {
+                    tmpFile.createNewFile();
+                }
+                long finishedSize = tmpFile.length();
+
+                URL url = new URL(downloadUrl);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setConnectTimeout(30_000);
+                conn.setReadTimeout(30_000);
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("Range", "bytes=" + finishedSize + "-");
+                if (conn.getResponseCode() == 206 || conn.getResponseCode() == 200) {
+                    BufferedInputStream bis = new BufferedInputStream(conn.getInputStream());
+                    RandomAccessFile raf = new RandomAccessFile(tmpFile, "rw");
+                    try {
+                        //下载buffer要为4k以上，不然安全团队找
+                        byte[] bytes = new byte[10240];
+                        int count;
+                        while ((count = bis.read(bytes)) != -1) {
+                            raf.seek(finishedSize);
+                            raf.write(bytes, 0, count);
+                            finishedSize += count;
+                        }
+
+                        // 对比指纹是否正确
+                        String md5sum = MD5Util.MD5(tmpFile);
+                        if (md5sum.toLowerCase(Locale.US).equals(md5.toLowerCase())) {
+                            tmpFile.renameTo(new File(soPathFileName));
+                            return true;
+                        }
+                        tmpFile.delete();
+                    } finally {
+                        raf.close();
+                        bis.close();
+                    }
+                }
+
+                return false;
+            }
         }).start();
     }
 
-    private boolean newSoNotExist() {
-        return archCpuAbi.isEmpty();
+    //兼容星空的 老版本jar 调用的
+    public void checkUpdate(final String fileId, final String version, final String abi) {
+
     }
 
     public String locate(final String fileid) throws Exception {
-
-        if(newSoNotExist()) {
+        /**
+         * 只有在 /data/data/cn.vbyte.android.sample/files/vlib/0.4.3.5/v2/http/ 下面，找不到armeabi-v7a这样的唯一arch, 此时加载系统库
+         */
+        if(archCpuAbi.isEmpty()) {
             return null;
         }
 
-        String vlibdir = this.context.getFilesDir().getAbsolutePath() + File.separator + ROOT_DIR;
-
         //删除旧的版本号的version是为了极端情况下，升级失败，用户升级app就好了
-        File libDir = new File(vlibdir);
+        File libDir = new File(libDirPath);
         if (!libDir.exists()) {
             libDir.mkdirs();
         }
-
         final String appVersion = getAppVersion();
         File[] dirs = libDir.listFiles(new FileFilter() {
             @Override
@@ -347,7 +375,7 @@ public class DynamicLibManager {
 
         //校验md5值
         String md5 = "";
-        for (File file : (new File(libPath)).listFiles(new FileFilter() {
+        for (File file : (new File(currentLibDirPath)).listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
                 return (file.getName().startsWith(fileid) && file.getName().endsWith(".so"));
@@ -373,7 +401,7 @@ public class DynamicLibManager {
         // 对比指纹是否正确
         String md5sum = MD5Util.MD5(destFile);
         if ((md5sum + ".so").toLowerCase(Locale.US).equals(md5.toLowerCase())) {
-            return (destFile == null ? null : (libPath + File.separator + destFile.getName()));
+            return (destFile == null ? null : (currentLibDirPath + File.separator + destFile.getName()));
         }
         return null;
     }

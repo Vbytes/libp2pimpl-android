@@ -1,7 +1,9 @@
-package com.vbyte.p2p;
+package com.vbyte;
+
+import com.vbyte.p2p.SecurityUrl;
 
 /**
- * Created by passion on 16-12-20.
+ * Url生成器接口，客户端通过该接口生成防盗链
  */
 
 public interface UrlGenerator {
